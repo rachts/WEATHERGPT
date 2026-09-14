@@ -1,5 +1,7 @@
-// WeatherGPT — Production Structured JSON Logger
-// Provides structured, JSON-formatted logging with correlation IDs and timestamps.
+// WeatherGPT — Production Structured Logger (Pino)
+// Provides fast, structured JSON logging with correlation IDs, log levels, and timestamps.
+
+import pino from "pino";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -11,64 +13,80 @@ export interface LogMeta {
   [key: string]: unknown;
 }
 
-export interface LogPayload {
-  level: LogLevel;
-  message: string;
-  timestamp: string;
-  requestId?: string;
-  correlationId?: string;
-  context?: Record<string, unknown>;
-  error?: {
-    name?: string;
-    message?: string;
-    stack?: string;
-  };
-}
+const pinoInstance = pino({
+  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === "production" ? "info" : "debug"),
+  formatters: {
+    level: (label) => ({ level: label }),
+  },
+  timestamp: pino.stdTimeFunctions.isoTime,
+  browser: {
+    asObject: true,
+  },
+});
 
-function formatLog(level: LogLevel, message: string, meta?: LogMeta): string {
-  const reqId = meta?.correlationId || meta?.requestId;
-  const payload: LogPayload = {
-    level,
-    message,
-    timestamp: new Date().toISOString(),
-    requestId: reqId,
-    correlationId: reqId,
-    context: meta?.context,
-  };
-
-  if (meta?.error) {
-    if (meta.error instanceof Error) {
-      payload.error = {
-        name: meta.error.name,
-        message: meta.error.message,
-        stack: process.env.NODE_ENV !== "production" ? meta.error.stack : undefined,
-      };
-    } else {
-      payload.error = {
-        message: String(meta.error),
-      };
-    }
+function serializeError(err: unknown) {
+  if (err instanceof Error) {
+    return {
+      name: err.name,
+      message: err.message,
+      stack: process.env.NODE_ENV !== "production" ? err.stack : undefined,
+    };
   }
-
-  return JSON.stringify(payload);
+  return err ? { message: String(err) } : undefined;
 }
 
 export const logger = {
+  pino: pinoInstance,
+
   debug(message: string, meta?: LogMeta) {
-    if (process.env.NODE_ENV !== "production") {
-      console.debug(formatLog("debug", message, meta));
-    }
+    const correlationId = meta?.correlationId || meta?.requestId;
+    pinoInstance.debug(
+      {
+        ...meta,
+        correlationId,
+        requestId: correlationId,
+        error: meta?.error ? serializeError(meta.error) : undefined,
+      },
+      message
+    );
   },
 
   info(message: string, meta?: LogMeta) {
-    console.log(formatLog("info", message, meta));
+    const correlationId = meta?.correlationId || meta?.requestId;
+    pinoInstance.info(
+      {
+        ...meta,
+        correlationId,
+        requestId: correlationId,
+        error: meta?.error ? serializeError(meta.error) : undefined,
+      },
+      message
+    );
   },
 
   warn(message: string, meta?: LogMeta) {
-    console.warn(formatLog("warn", message, meta));
+    const correlationId = meta?.correlationId || meta?.requestId;
+    pinoInstance.warn(
+      {
+        ...meta,
+        correlationId,
+        requestId: correlationId,
+        error: meta?.error ? serializeError(meta.error) : undefined,
+      },
+      message
+    );
   },
 
   error(message: string, meta?: LogMeta) {
-    console.error(formatLog("error", message, meta));
+    const correlationId = meta?.correlationId || meta?.requestId;
+    pinoInstance.error(
+      {
+        ...meta,
+        correlationId,
+        requestId: correlationId,
+        error: meta?.error ? serializeError(meta.error) : undefined,
+      },
+      message
+    );
   },
 };

@@ -99,6 +99,8 @@ model Alert {
   isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())
 
+  @@index([districtCode, issueTime])
+  @@index([issueTime])
   @@index([districtCode, validTo])
   @@index([district, validTo])
   @@index([validFrom, validTo])

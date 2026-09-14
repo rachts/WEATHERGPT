@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { timingSafeEqual } from "crypto";
+import crypto, { timingSafeEqual } from "crypto";
 import {
   fetchLiveImdDistrictAlerts,
   routeWarningDissemination,
@@ -124,11 +124,11 @@ export async function POST(req: NextRequest) {
 
   let isAuthorized = false;
   if (configuredToken && providedToken) {
-    const a = Buffer.from(providedToken);
-    const b = Buffer.from(configuredToken);
-    if (a.length === b.length && timingSafeEqual(a, b)) {
-      isAuthorized = true;
-    }
+    // Hash both tokens to fixed 32-byte digests to prevent length-leak timing attacks
+    // and guarantee timingSafeEqual never throws on length mismatch
+    const hashProvided = crypto.createHash("sha256").update(providedToken).digest();
+    const hashConfigured = crypto.createHash("sha256").update(configuredToken).digest();
+    isAuthorized = timingSafeEqual(hashProvided, hashConfigured);
   }
 
   if (!isAuthorized) {

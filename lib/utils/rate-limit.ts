@@ -1,6 +1,5 @@
-// WeatherGPT — Distributed Rate Limiter
-// Provides distributed sliding-window rate limiting via Upstash Redis REST API
-// with seamless in-memory bounded LRU fallback when Redis is unconfigured or unreachable.
+// WeatherGPT — Distributed Serverless Rate Limiter (Upstash Redis + Bounded In-Memory Fallback)
+// Limits and windows are dynamically configurable via environment variables.
 
 interface RateLimitRecord {
   count: number;
@@ -8,25 +7,69 @@ interface RateLimitRecord {
 }
 
 const memoryLimitMap = new Map<string, RateLimitRecord>();
-const MAX_MEMORY_ENTRIES = 2000;
+const MAX_MEMORY_ENTRIES = 5000;
 
 /**
- * In-memory fallback rate limiter with automatic sweep to prevent memory leaks.
+ * Global rate-limiting configuration from environment variables.
+ * Default: 60 requests per 60 seconds (1 req/s average burst capacity).
+ * Configurable via RATE_LIMIT_MAX_REQUESTS and RATE_LIMIT_WINDOW_SECONDS.
+ */
+export function getRateLimitConfig(type: "default" | "ai" | "weather" | "alert" = "default") {
+  const windowSeconds = parseInt(process.env.RATE_LIMIT_WINDOW_SECONDS || "60", 10);
+  const windowMs = Math.max(1, windowSeconds) * 1000;
+
+  switch (type) {
+    case "ai": {
+      // AI endpoints are cost-intensive and compute-heavy; limit to 30 req/min
+      const max = parseInt(process.env.RATE_LIMIT_AI_MAX_REQUESTS || "30", 10);
+      return { maxRequests: max, windowMs };
+    }
+    case "weather": {
+      // Weather endpoints support farmer dashboard navigation; allow 120 req/min
+      const max = parseInt(process.env.RATE_LIMIT_WEATHER_MAX_REQUESTS || "120", 10);
+      return { maxRequests: max, windowMs };
+    }
+    case "alert": {
+      // Alert ingestion endpoint; limit to 15 emergency ingestions/min
+      const max = parseInt(process.env.RATE_LIMIT_ALERT_MAX_REQUESTS || "15", 10);
+      return { maxRequests: max, windowMs };
+    }
+    default: {
+      const max = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "60", 10);
+      return { maxRequests: max, windowMs };
+    }
+  }
+}
+
+/**
+ * Synchronous in-memory sliding-window fallback with active TTL cleanup and memory bounding.
  */
 export function isRateLimitedSync(
   identifier: string,
-  maxRequests: number = 60,
-  windowMs: number = 60_000
+  maxRequests?: number,
+  windowMs?: number
 ): boolean {
+  const config = getRateLimitConfig("default");
+  const limit = maxRequests ?? config.maxRequests;
+  const windowDuration = windowMs ?? config.windowMs;
   const now = Date.now();
 
-  // Sweep expired entries if map grows beyond threshold
+  // Automatic LRU-style pruning when approaching memory bounds
   if (memoryLimitMap.size > MAX_MEMORY_ENTRIES) {
-    memoryLimitMap.forEach((val, key) => {
-      if (now > val.resetTime) {
+    const expiredKeys: string[] = [];
+    memoryLimitMap.forEach((record, key) => {
+      if (now > record.resetTime) expiredKeys.push(key);
+    });
+    expiredKeys.forEach((key) => memoryLimitMap.delete(key));
+
+    // If still oversized, clear oldest 1000 entries
+    if (memoryLimitMap.size > MAX_MEMORY_ENTRIES) {
+      let count = 0;
+      for (const key of Array.from(memoryLimitMap.keys())) {
+        if (count++ > 1000) break;
         memoryLimitMap.delete(key);
       }
-    });
+    }
   }
 
   const record = memoryLimitMap.get(identifier);
@@ -34,34 +77,37 @@ export function isRateLimitedSync(
   if (!record || now > record.resetTime) {
     memoryLimitMap.set(identifier, {
       count: 1,
-      resetTime: now + windowMs,
+      resetTime: now + windowDuration,
     });
     return false;
   }
 
   record.count += 1;
-  return record.count > maxRequests;
+  return record.count > limit;
 }
 
 /**
- * Distributed rate limiter supporting Upstash Redis REST API in serverless environments.
- * Degrades gracefully to local in-memory sliding window if Redis is not configured or fails.
+ * Distributed rate limiter supporting Upstash Redis REST API across serverless functions.
+ * Degrades seamlessly to bounded in-memory sliding window if Redis is not configured or network drops.
  */
 export async function isRateLimited(
   identifier: string,
-  maxRequests: number = 60,
-  windowMs: number = 60_000
+  maxRequests?: number,
+  windowMs?: number
 ): Promise<boolean> {
+  const config = getRateLimitConfig("default");
+  const limit = maxRequests ?? config.maxRequests;
+  const windowDuration = windowMs ?? config.windowMs;
+
   const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-  // If Upstash Redis is configured, execute distributed atomic INCR + EXPIRE
+  // If Upstash Redis credentials exist, use atomic pipeline INCR + EXPIRE
   if (upstashUrl && upstashToken) {
     try {
-      const windowSeconds = Math.max(1, Math.ceil(windowMs / 1000));
-      const key = `ratelimit:${identifier}`;
+      const windowSeconds = Math.ceil(windowDuration / 1000);
+      const redisKey = `rl:${identifier}`;
 
-      // Use Upstash pipeline for atomic INCR and EXPIRE in a single round-trip
       const response = await fetch(`${upstashUrl}/pipeline`, {
         method: "POST",
         headers: {
@@ -69,23 +115,21 @@ export async function isRateLimited(
           "Content-Type": "application/json",
         },
         body: JSON.stringify([
-          ["INCR", key],
-          ["EXPIRE", key, windowSeconds],
+          ["INCR", redisKey],
+          ["EXPIRE", redisKey, windowSeconds],
         ]),
         signal: AbortSignal.timeout(1500),
       });
 
       if (response.ok) {
         const results = await response.json();
-        // results is an array of responses: [{ result: 1 }, { result: 1 }]
-        const currentCount = Number(results?.[0]?.result ?? 1);
-        return currentCount > maxRequests;
+        const currentCount = results[0]?.result ?? 1;
+        return currentCount > limit;
       }
     } catch {
-      // Degrade to in-memory sliding window on Redis network/timeout failure
+      // Degrade silently to in-memory limiter without crashing user request
     }
   }
 
-  // Graceful fallback to in-memory limiter
-  return isRateLimitedSync(identifier, maxRequests, windowMs);
+  return isRateLimitedSync(identifier, limit, windowDuration);
 }

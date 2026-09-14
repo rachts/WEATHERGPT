@@ -245,6 +245,15 @@ async function runTests() {
     record("G13", "15/15 Safety-Critical Integrity Gates", false, (err as Error).message);
   }
 
+  // --- GATE G14: Phase 1 Production & Security Gates ---
+  try {
+    await import("../tests/phase1-verification.test");
+    record("G14", "Phase 1 Security & Reliability Gates (Rate Limit 429, TimingSafeEqual, Fail-Fast Env, Pino Logger)", true,
+      "Rate limit 429 threshold, timingSafeEqual SHA-256 length immunity, fail-fast env validation, and Pino logger verified.");
+  } catch (err) {
+    record("G14", "Phase 1 Security & Reliability Gates", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

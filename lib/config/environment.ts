@@ -1,4 +1,4 @@
-// WeatherGPT — Runtime Environment Configuration & Mode Management
+// WeatherGPT — Runtime Environment Configuration & Fail-Fast Validation
 // Validates environment variables at startup and provides typed application configuration.
 
 import { z } from "zod";
@@ -11,13 +11,17 @@ export const environmentSchema = z.object({
   WEATHERGPT_MODE: z.enum(["production", "demo", "development", "test"]).optional(),
   ALERT_INGESTION_TOKEN: z
     .string()
-    .min(16, "ALERT_INGESTION_TOKEN should be at least 16 characters long for security.")
-    .optional(),
-  DATABASE_URL: z.string().url().optional().or(z.literal("")),
-  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+    .min(16, "ALERT_INGESTION_TOKEN must be at least 16 characters long for cryptographic security."),
+  DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL.").optional().or(z.literal("")),
+  NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL must be a valid URL.").default("http://localhost:3000"),
   UPSTASH_REDIS_REST_URL: z.string().url().optional().or(z.literal("")),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional().or(z.literal("")),
   DATA_GOV_IN_API_KEY: z.string().optional().or(z.literal("")),
+  RATE_LIMIT_MAX_REQUESTS: z.string().regex(/^\d+$/).optional().default("60"),
+  RATE_LIMIT_WINDOW_SECONDS: z.string().regex(/^\d+$/).optional().default("60"),
+  GEMINI_API_KEY: z.string().optional().or(z.literal("")),
+  GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional().or(z.literal("")),
+  OPENAI_API_KEY: z.string().optional().or(z.literal("")),
 });
 
 export type ValidatedEnvironment = z.infer<typeof environmentSchema>;
@@ -36,27 +40,55 @@ export interface AppConfig {
   appUrl: string;
 }
 
-export function validateEnvironment(): { success: boolean; data: ValidatedEnvironment; errors?: string[] } {
-  const parseResult = environmentSchema.safeParse({
-    NODE_ENV: process.env.NODE_ENV,
-    WEATHERGPT_MODE: process.env.WEATHERGPT_MODE,
-    ALERT_INGESTION_TOKEN: process.env.ALERT_INGESTION_TOKEN,
-    DATABASE_URL: process.env.DATABASE_URL,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
-    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
-    DATA_GOV_IN_API_KEY: process.env.DATA_GOV_IN_API_KEY,
-  });
+/**
+ * Validates environment variables and throws immediately if required variables are missing or invalid.
+ * Fails fast at startup with a formatted diagnostic listing all missing/invalid fields.
+ */
+export function assertEnvironmentValid(env: Record<string, string | undefined> = process.env): ValidatedEnvironment {
+  const isProd = env.NODE_ENV === "production" || env.WEATHERGPT_MODE === "production";
+
+  // In production, ALERT_INGESTION_TOKEN is strictly mandatory
+  const schema = isProd
+    ? environmentSchema.extend({
+        ALERT_INGESTION_TOKEN: z
+          .string()
+          .min(16, "ALERT_INGESTION_TOKEN is required in production (min 16 chars)."),
+      })
+    : environmentSchema.extend({
+        ALERT_INGESTION_TOKEN: z
+          .string()
+          .min(16)
+          .optional()
+          .default("weathergpt-local-dev-token-min-16-chars"),
+      });
+
+  const parseResult = schema.safeParse(env);
 
   if (!parseResult.success) {
-    const errorMessages = parseResult.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`);
-    logger.warn("Environment validation issues detected", {
-      context: { issues: errorMessages },
-    });
-    return { success: false, data: {} as ValidatedEnvironment, errors: errorMessages };
+    const errorMessages = parseResult.error.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`);
+    const fatalReport = `\n❌ FATAL CONFIGURATION ERROR: Application startup rejected due to missing or invalid environment variables:\n${errorMessages.join("\n")}\n`;
+    logger.error("Fail-fast environment validation failed", { error: fatalReport });
+    throw new Error(fatalReport);
   }
 
-  return { success: true, data: parseResult.data };
+  return parseResult.data as ValidatedEnvironment;
+}
+
+export function validateEnvironment(env: Record<string, string | undefined> = process.env): {
+  success: boolean;
+  data: Partial<ValidatedEnvironment>;
+  errors?: string[];
+} {
+  try {
+    const data = assertEnvironmentValid(env);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      data: {},
+      errors: (err as Error).message.split("\n").filter((l) => l.startsWith("  - ")),
+    };
+  }
 }
 
 export function resolveAppMode(): AppMode {
