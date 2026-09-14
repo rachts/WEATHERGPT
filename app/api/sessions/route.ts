@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isRateLimited } from "@/lib/utils/rate-limit";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ sessions });
   } catch (error) {
-    console.warn(`[Sessions API Warning - ${correlationId}]`, error);
+    logger.warn("Sessions API query notice", {
+      correlationId,
+      error: (error as Error).message,
+    });
     // Graceful fallback for offline / unconfigured database
     return NextResponse.json({ sessions: [], messages: [] });
   }

@@ -19,12 +19,37 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const station = searchParams.get("station") || "kol";
-  const product = searchParams.get("product") || "caz"; // caz, ppi, sri, pac, ppv
+  const rawStation = (searchParams.get("station") || "kol").toLowerCase().trim();
+  const product = (searchParams.get("product") || "caz").toLowerCase().trim();
+
+  // Map station full names / aliases to IMD radar abbreviations
+  const STATION_CODE_MAP: Record<string, string> = {
+    kolkata: "kol",
+    kol: "kol",
+    mumbai: "mum",
+    mum: "mum",
+    delhi: "delhi",
+    chennai: "cni",
+    cni: "cni",
+    kochi: "koc",
+    koc: "koc",
+    patna: "ptn",
+    ptn: "ptn",
+    srinagar: "srn",
+    srn: "srn",
+    guwahati: "ghy",
+    ghy: "ghy",
+    hyderabad: "hyd",
+    hyd: "hyd",
+    nagpur: "ngp",
+    ngp: "ngp",
+  };
+
+  const resolvedStation = STATION_CODE_MAP[rawStation] || rawStation;
 
   // Whitelist product & station parameters to prevent SSRF
   const sanitizedProduct = product.replace(/[^a-zA-Z0-9_-]/g, "");
-  const sanitizedStation = station.replace(/[^a-zA-Z0-9_-]/g, "");
+  const sanitizedStation = resolvedStation.replace(/[^a-zA-Z0-9_-]/g, "");
 
   let url = `${IMD_RADAR_BASE}/${sanitizedProduct}_${sanitizedStation}.gif`;
   if (sanitizedProduct === "mosaic") {
