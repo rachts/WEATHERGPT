@@ -254,6 +254,15 @@ async function runTests() {
     record("G14", "Phase 1 Security & Reliability Gates", false, (err as Error).message);
   }
 
+  // --- GATE G15: Phase 2 Conversational AI & Tool Calling Gates ---
+  try {
+    await import("../tests/phase2-conversational.test");
+    record("G15", "Phase 2 Conversational AI Overhaul (Vercel AI SDK, getWeather Tool, Memory, Natural Language)", true,
+      "getWeather tool execution, downstream failure handling, multi-turn history resolution, and system prompts verified.");
+  } catch (err) {
+    record("G15", "Phase 2 Conversational AI Overhaul", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");
