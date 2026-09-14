@@ -48,6 +48,48 @@ export interface TranslationDict {
     aboutTitle: string;
     attribution: string;
   };
+  dashboard: {
+    change: string;
+    issued: string;
+    noAlerts: string;
+    temperature: string;
+    humidity: string;
+    wind: string;
+    rain24h: string;
+    forecast7Day: string;
+    agrometAdvisory: string;
+    quickQuestions: string;
+    inspectRadar: string;
+    viewWarning: string;
+    loading: string;
+    askPlaceholder: string;
+    askBtn: string;
+    pesticideSpray: string;
+    nonLlmVerified: string;
+    chips: [string, string, string, string];
+  };
+  forecast: {
+    title: string;
+    change: string;
+    tempTrend: string;
+    rainChance: string;
+    rainfall: string;
+    loading: string;
+  };
+  alerts: {
+    title: string;
+    change: string;
+    subtitle: string;
+    noAlerts: string;
+    loading: string;
+  };
+  chat: {
+    title: string;
+    loading: string;
+    placeholder: string;
+    suggestedTitle: string;
+    suggested: [string, string, string, string];
+  };
 }
 
 export const I18N_RESOURCES: Record<SupportedLanguage, TranslationDict> = {
@@ -97,6 +139,58 @@ export const I18N_RESOURCES: Record<SupportedLanguage, TranslationDict> = {
       aboutTitle: "Data Attribution & Transparency",
       attribution: "Meteorological telemetry provided by India Meteorological Department (IMD) open data. Unofficial student prototype developed for SIH 2026.",
     },
+    dashboard: {
+      change: "Change",
+      issued: "Issued",
+      noAlerts: "No active severe weather warnings in your area.",
+      temperature: "Temperature",
+      humidity: "Relative Humidity",
+      wind: "Wind Speed",
+      rain24h: "Precipitation",
+      forecast7Day: "7-Day Agricultural Forecast",
+      agrometAdvisory: "Today's Crop Advisory",
+      quickQuestions: "Quick Inquiries",
+      inspectRadar: "Inspect Radar",
+      viewWarning: "View Full Warning",
+      loading: "Loading IMD weather feed...",
+      askPlaceholder: "Ask in Hindi, English, Tamil...",
+      askBtn: "Ask",
+      pesticideSpray: "Pesticide Spray",
+      nonLlmVerified: "Non-LLM Verified",
+      chips: [
+        "Will it rain today in {district}?",
+        "Is it safe to spray crops today?",
+        "Show 7-day weather outlook",
+        "Any cyclone or thunderstorm alert?",
+      ],
+    },
+    forecast: {
+      title: "7-Day District Forecast",
+      change: "Change",
+      tempTrend: "Temperature Trend (Max °C)",
+      rainChance: "Rain Chance",
+      rainfall: "Precipitation",
+      loading: "Loading 7-day meteorological outlook...",
+    },
+    alerts: {
+      title: "Weather Warnings & Bulletins",
+      change: "Change",
+      subtitle: "Multi-Tier Impact Warnings (IMD MoES)",
+      noAlerts: "No active weather warnings at this time.",
+      loading: "Fetching official IMD warning bulletins...",
+    },
+    chat: {
+      title: "Kisan Weather Intelligence",
+      loading: "Loading Kisan Weather Intelligence...",
+      placeholder: "Ask weather question in your language...",
+      suggestedTitle: "Suggested Inquiries",
+      suggested: [
+        "Will it rain in Kolkata tomorrow?",
+        "What about the day after?",
+        "Is it safe to spray crops today?",
+        "Show 7-day temperature forecast",
+      ],
+    },
   },
   "hi-IN": {
     nav: {
@@ -144,6 +238,58 @@ export const I18N_RESOURCES: Record<SupportedLanguage, TranslationDict> = {
       aboutTitle: "डेटा स्रोत और पारदर्शिता",
       attribution: "मौसम डेटा भारत मौसम विज्ञान विभाग (IMD) ओपन डेटा से प्राप्त। SIH 2026 के लिए विकसित अनौपचारिक छात्र प्रोटोटाइप।",
     },
+    dashboard: {
+      change: "बदलें",
+      issued: "जारी",
+      noAlerts: "आपके क्षेत्र में कोई गंभीर मौसम चेतावनी सक्रिय नहीं है।",
+      temperature: "तापमान",
+      humidity: "सापेक्ष आर्द्रता (नमी)",
+      wind: "हवा की गति",
+      rain24h: "वर्षा (24 घंटे)",
+      forecast7Day: "7-दिवसीय कृषि मौसम पूर्वानुमान",
+      agrometAdvisory: "आज की कृषि मौसम सलाह",
+      quickQuestions: "त्वरित मौसम प्रश्न",
+      inspectRadar: "रडार देखें",
+      viewWarning: "पूरी चेतावनी देखें",
+      loading: "आईएमडी मौसम डेटा लोड हो रहा है...",
+      askPlaceholder: "हिंदी, अंग्रेजी या तमिल में पूछें...",
+      askBtn: "पूछें",
+      pesticideSpray: "कीटनाशक छिड़काव",
+      nonLlmVerified: "नियम-सत्यापित",
+      chips: [
+        "क्या आज {district} में बारिश होगी?",
+        "क्या आज फसलों पर कीटनाशक छिड़कना सुरक्षित है?",
+        "7-दिवसीय मौसम पूर्वानुमान दिखाएं",
+        "क्या कोई आंधी-तूफ़ान या चक्रवात का अलर्ट है?",
+      ],
+    },
+    forecast: {
+      title: "7-दिवसीय जिला मौसम पूर्वानुमान",
+      change: "बदलें",
+      tempTrend: "तापमान रुझान (अधिकतम °C)",
+      rainChance: "बारिश की संभावना",
+      rainfall: "वर्षा",
+      loading: "7-दिवसीय मौसम पूर्वानुमान लोड हो रहा है...",
+    },
+    alerts: {
+      title: "मौसम चेतावनियां एवं बुलेटिन",
+      change: "बदलें",
+      subtitle: "बहु-स्तरीय प्रभाव चेतावनियां (आईएमडी)",
+      noAlerts: "इस समय कोई मौसम चेतावनी सक्रिय नहीं है।",
+      loading: "आईएमडी मौसम चेतावनियां लोड हो रही हैं...",
+    },
+    chat: {
+      title: "किसान मौसम बुद्धिमत्ता",
+      loading: "किसान मौसम बुद्धिमत्ता लोड हो रही है...",
+      placeholder: "अपनी भाषा में मौसम संबंधी प्रश्न पूछें...",
+      suggestedTitle: "सुझाए गए प्रश्न",
+      suggested: [
+        "क्या कल कोलकाता में बारिश होगी?",
+        "परसों का मौसम कैसा रहेगा?",
+        "क्या आज फसलों पर छिड़काव सुरक्षित है?",
+        "7-दिवसीय तापमान पूर्वानुमान दिखाएं",
+      ],
+    },
   },
   "ta-IN": {
     nav: {
@@ -190,6 +336,58 @@ export const I18N_RESOURCES: Record<SupportedLanguage, TranslationDict> = {
       smsDesc: "இணையம் இல்லாத நேரடி குறுஞ்செய்தி சேவை",
       aboutTitle: "தரவு ஆதாரம் மற்றும் வெளிப்படைத்தன்மை",
       attribution: "வானிலை தரவுகள் இந்திய வானிலை மையம் (IMD) திறந்தநிலை தரவு மூலம் பெறப்பட்டது. SIH 2026 மாணவர் முன்மாதிரி திட்டம்.",
+    },
+    dashboard: {
+      change: "மாற்றுக",
+      issued: "வெளியிடப்பட்டது",
+      noAlerts: "உங்கள் பகுதியில் தீவிர வானிலை எச்சரிக்கைகள் எதுவும் இல்லை.",
+      temperature: "வெப்பநிலை",
+      humidity: "காற்றின் ஈரப்பதம்",
+      wind: "காற்றின் வேகம்",
+      rain24h: "மழைப்பொழிவு (24 மணி)",
+      forecast7Day: "7 நாள் வேளாண் வானிலை முன்னறிவிப்பு",
+      agrometAdvisory: "இன்றைய வேளாண் பயிர் ஆலோசனை",
+      quickQuestions: "விரைவு வானிலை கேள்விகள்",
+      inspectRadar: "ரேடார் பார்க்க",
+      viewWarning: "முழு எச்சரிக்கை விவரம்",
+      loading: "வானிலை தரவு ஏற்றப்படுகிறது...",
+      askPlaceholder: "தமிழ், இந்தி அல்லது ஆங்கிலத்தில் கேளுங்கள்...",
+      askBtn: "கேளுங்கள்",
+      pesticideSpray: "பூச்சிக்கொல்லி தெளிப்பு",
+      nonLlmVerified: "விதிமுறை சரிபார்க்கப்பட்டது",
+      chips: [
+        "இன்று {district}-ல் மழை பெய்யுமா?",
+        "இன்று பயிர்களுக்கு மருந்து தெளிப்பது பாதுகாப்பானதா?",
+        "7 நாள் வானிலை முன்னறிவிப்பைக் காட்டு",
+        "புயல் அல்லது இடிமின்னல் எச்சரிக்கை உள்ளதா?",
+      ],
+    },
+    forecast: {
+      title: "7 நாள் மாவட்ட வானிலை முன்னறிவிப்பு",
+      change: "மாற்றுக",
+      tempTrend: "வெப்பநிலை போக்கு (அதிகபட்ச °C)",
+      rainChance: "மழை வாய்ப்பு",
+      rainfall: "மழைப்பொழிவு",
+      loading: "7 நாள் வானிலை முன்னறிவிப்பு ஏற்றப்படுகிறது...",
+    },
+    alerts: {
+      title: "வானிலை எச்சரிக்கைகள் & அறிவிப்புகள்",
+      change: "மாற்றுக",
+      subtitle: "பல அடுக்கு தாக்க எச்சரிக்கைகள் (IMD)",
+      noAlerts: "தற்போது வானிலை எச்சரிக்கைகள் எதுவும் இல்லை.",
+      loading: "ஐஎம்டி வானிலை எச்சரிக்கைகள் ஏற்றப்படுகின்றன...",
+    },
+    chat: {
+      title: "விவசாய வானிலை உரையாடல்",
+      loading: "வானிலை உரையாடல் சேவை ஏற்றப்படுகிறது...",
+      placeholder: "உங்கள் மொழியில் வானிலை கேள்விகளைக் கேளுங்கள்...",
+      suggestedTitle: "பரிந்துரைக்கப்பட்ட கேள்விகள்",
+      suggested: [
+        "நாளை கொல்கத்தாவில் மழை பெய்யுமா?",
+        "நாளை மறுநாள் வானிலை எப்படி இருக்கும்?",
+        "இன்று பயிர்களுக்கு மருந்து தெளிப்பது பாதுகாப்பானதா?",
+        "7 நாள் வெப்பநிலை முன்னறிவிப்பைக் காட்டு",
+      ],
     },
   },
 };

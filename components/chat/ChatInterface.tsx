@@ -5,18 +5,12 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import ReactMarkdown from "react-markdown";
 import { getActiveLocation } from "@/lib/utils/location";
+import { useTranslation } from "@/lib/i18n/context";
 
 function getSpeechRecognition(): any {
   if (typeof window === "undefined") return null;
   return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
 }
-
-const SUGGESTED_INQUIRIES = [
-  "Will it rain in Kolkata tomorrow?",
-  "What about the day after?",
-  "Is it safe to spray crops in Raigad today?",
-  "Show 7-day temperature forecast",
-];
 
 function extractMessageText(message: any): string {
   if (typeof message.content === "string") return message.content;
@@ -30,6 +24,7 @@ function extractMessageText(message: any): string {
 }
 
 export default function ChatInterface() {
+  const { t, lang } = useTranslation();
   const [activeLoc, setActiveLoc] = useState(() => getActiveLocation());
   const [input, setInput] = useState("");
   const [voiceActive, setVoiceActive] = useState(false);
@@ -43,6 +38,7 @@ export default function ChatInterface() {
       body: {
         district: activeLoc.district,
         state: activeLoc.state,
+        lang,
       },
     }),
     onError: (err) => {
@@ -76,7 +72,7 @@ export default function ChatInterface() {
 
     try {
       const recognition = new SpeechRecognition();
-      recognition.lang = "en-IN";
+      recognition.lang = lang;
       recognition.continuous = false;
       recognition.interimResults = false;
 
@@ -119,7 +115,9 @@ export default function ChatInterface() {
             🌾
           </div>
           <div>
-            <h2 className="text-sm font-medium text-text-primary">Kisan Weather Intelligence AI</h2>
+            <h2 className="text-sm font-medium text-text-primary">
+              {t.chat?.title || "Kisan Weather Intelligence AI"}
+            </h2>
             <p className="text-[11px] text-text-secondary">
               Conversational meteorologist for <span className="font-medium text-primary">{activeLoc.district}</span>
             </p>
@@ -131,7 +129,7 @@ export default function ChatInterface() {
               onClick={() => stop()}
               className="px-2.5 py-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md hover:bg-amber-100 transition-colors"
             >
-              Stop generating
+              {t.actions?.cancel || "Stop generating"}
             </button>
           )}
         </div>
@@ -145,19 +143,26 @@ export default function ChatInterface() {
               🌦️
             </div>
             <div>
-              <h3 className="text-base font-medium text-text-primary">How can I help you with weather today?</h3>
+              <h3 className="text-base font-medium text-text-primary">
+                {t.chat?.suggestedTitle || "Suggested Inquiries"}
+              </h3>
               <p className="text-xs text-text-secondary mt-1">
-                Ask about rainfall probabilities, temperatures, 7-day outlooks, or crop spraying conditions in your district.
+                {t.chat?.placeholder || "Ask weather question in your language..."}
               </p>
             </div>
 
             {/* Suggested Inquiries / Quick-question Chips */}
             <div className="w-full pt-2">
               <span className="text-[11px] font-medium text-text-secondary block mb-2 text-left">
-                Suggested Inquiries:
+                {t.chat?.suggestedTitle || "Suggested Inquiries"}:
               </span>
               <div className="flex flex-wrap gap-2">
-                {SUGGESTED_INQUIRIES.map((q, idx) => (
+                {(t.chat?.suggested || [
+                  `Will it rain in ${activeLoc.district} tomorrow?`,
+                  "What about the day after?",
+                  "Is it safe to spray crops today?",
+                  "Show 7-day temperature forecast",
+                ]).map((q, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -249,7 +254,7 @@ export default function ChatInterface() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={`Ask about weather, rain, or crops in ${activeLoc.district}...`}
+            placeholder={t.chat?.placeholder || `Ask about weather, rain, or crops in ${activeLoc.district}...`}
             className="flex-1 px-4 py-2.5 bg-surface text-text-primary border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-text-secondary/60"
           />
 
@@ -258,7 +263,7 @@ export default function ChatInterface() {
             disabled={!input.trim() || isLoading}
             className="px-5 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
-            Send
+            {t.actions?.send || "Send"}
           </button>
         </div>
       </form>

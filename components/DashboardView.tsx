@@ -9,6 +9,7 @@ import { getActiveLocation, findDistrictInfo, LOCATION_CHANGE_EVENT } from "@/li
 import LocationModal from "@/components/LocationModal";
 import DataStatusBadge from "@/components/DataStatusBadge";
 import type { DataProvenance } from "@/lib/types/provenance";
+import { useTranslation } from "@/lib/i18n/context";
 
 interface WeatherData {
   district: string;
@@ -47,6 +48,7 @@ interface AlertData {
 
 export default function DashboardView() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [activeLoc, setActiveLoc] = useState(() => getActiveLocation());
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [alerts, setAlerts] = useState<AlertData[]>([]);
@@ -148,7 +150,7 @@ export default function DashboardView() {
       <div className="py-12 flex flex-col items-center justify-center">
         <div className="top-loading-bar"></div>
         <p className="text-sm text-text-secondary mt-4">
-          Loading IMD weather feed for {activeLoc.district}...
+          {t.dashboard?.loading || "Loading IMD weather feed..."}
         </p>
       </div>
     );
@@ -197,7 +199,7 @@ export default function DashboardView() {
               onClick={() => setIsLocationModalOpen(true)}
               className="text-xs text-primary underline underline-offset-4 hover:text-primary-dark transition-colors cursor-pointer"
             >
-              Change
+              {t.dashboard?.change || "Change"}
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -208,7 +210,7 @@ export default function DashboardView() {
               observedAt={formattedIssueTime}
             />
             <span className="text-xs text-text-secondary">
-              Issued: {formattedIssueTime} IST
+              {t.dashboard?.issued || "Issued"}: {formattedIssueTime} IST
             </span>
           </div>
         </div>
@@ -254,10 +256,10 @@ export default function DashboardView() {
               </p>
               <div className="mt-2.5 flex items-center space-x-4 text-xs">
                 <Link href="/alerts" className="text-primary underline underline-offset-2">
-                  View Full Warning
+                  {t.dashboard?.viewWarning || "View Full Warning"}
                 </Link>
                 <Link href="/radar" className="text-text-secondary hover:text-text-primary">
-                  Inspect Radar
+                  {t.dashboard?.inspectRadar || "Inspect Radar"}
                 </Link>
               </div>
             </div>
@@ -266,7 +268,7 @@ export default function DashboardView() {
           <div className="bg-surface border border-border rounded-lg p-3.5 flex items-center space-x-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0"></span>
             <span className="text-xs text-text-primary font-medium">
-              No active severe weather warnings in your area.
+              {t.dashboard?.noAlerts || "No active severe weather warnings in your area."}
             </span>
           </div>
         )}
@@ -292,19 +294,25 @@ export default function DashboardView() {
         {/* 3-Metric Clean Grid (Table-like, hairline borders, no icons per Design_v2.md) */}
         <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border text-center">
           <div className="p-2 border border-border rounded bg-bg">
-            <div className="text-[11px] uppercase tracking-wider text-text-secondary">Humidity</div>
+            <div className="text-[11px] uppercase tracking-wider text-text-secondary">
+              {t.dashboard?.humidity || "Humidity"}
+            </div>
             <div className="text-base text-text-primary font-medium mt-0.5">
               {weather.current.humidity !== null ? `${weather.current.humidity}%` : "N/A"}
             </div>
           </div>
           <div className="p-2 border border-border rounded bg-bg">
-            <div className="text-[11px] uppercase tracking-wider text-text-secondary">Wind Speed</div>
+            <div className="text-[11px] uppercase tracking-wider text-text-secondary">
+              {t.dashboard?.wind || "Wind Speed"}
+            </div>
             <div className="text-base text-text-primary font-medium mt-0.5">
               {weather.current.windSpeed !== null ? `${weather.current.windSpeed} km/h` : "N/A"}
             </div>
           </div>
           <div className="p-2 border border-border rounded bg-bg">
-            <div className="text-[11px] uppercase tracking-wider text-text-secondary">Precipitation</div>
+            <div className="text-[11px] uppercase tracking-wider text-text-secondary">
+              {t.dashboard?.rain24h || "Precipitation"}
+            </div>
             <div className="text-base text-text-primary font-medium mt-0.5">
               {weather.current.rainfallLast24h !== null ? `${weather.current.rainfallLast24h} mm` : "N/A"}
             </div>
@@ -322,7 +330,7 @@ export default function DashboardView() {
         <div className="bg-surface border border-border rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-medium uppercase tracking-wider text-text-primary">
-              Today&apos;s Crop Advisory ({advisory.crop})
+              {t.dashboard?.agrometAdvisory || "Today's Crop Advisory"} ({advisory.crop})
             </h2>
             <span
               className={`text-xs px-2 py-0.5 rounded border ${
@@ -331,7 +339,7 @@ export default function DashboardView() {
                   : "border-border text-text-secondary bg-bg"
               }`}
             >
-              {advisory.sprayCondition}: Pesticide Spray
+              {advisory.sprayCondition}: {t.dashboard?.pesticideSpray || "Pesticide Spray"}
             </span>
           </div>
 
@@ -342,7 +350,7 @@ export default function DashboardView() {
 
           <div className="text-[11px] text-text-secondary pt-2 border-t border-border flex justify-between items-center">
             <span>Rule: {advisory.sourceRule}</span>
-            <span>Non-LLM Verified</span>
+            <span>{t.dashboard?.nonLlmVerified || "Non-LLM Verified"}</span>
           </div>
         </div>
       )}
@@ -350,23 +358,26 @@ export default function DashboardView() {
       {/* Quick Question Chips */}
       <div className="space-y-2 pt-1">
         <p className="text-xs uppercase tracking-wider text-text-secondary">
-          Quick Inquiries
+          {t.dashboard?.quickQuestions || "Quick Inquiries"}
         </p>
         <div className="flex flex-wrap gap-2">
-          {[
+          {(t.dashboard?.chips || [
             `Will it rain today in ${weather.district}?`,
             `Is it safe to spray ${advisory ? advisory.crop.toLowerCase() : "crops"} today?`,
             "Show 7-day weather outlook",
             "Any cyclone or thunderstorm alert?",
-          ].map((chip, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleQuickQuestion(chip)}
-              className="bg-surface border border-border hover:border-primary text-text-primary px-3.5 py-1.5 rounded-full text-xs transition-colors"
-            >
-              {chip}
-            </button>
-          ))}
+          ]).map((chip, idx) => {
+            const formattedChip = chip.replace("{district}", weather.district);
+            return (
+              <button
+                key={idx}
+                onClick={() => handleQuickQuestion(formattedChip)}
+                className="bg-surface border border-border hover:border-primary text-text-primary px-3.5 py-1.5 rounded-full text-xs transition-colors"
+              >
+                {formattedChip}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -380,10 +391,10 @@ export default function DashboardView() {
             <span className="material-symbols-outlined text-[20px] text-text-secondary">
               mic
             </span>
-            <span>Ask in Hindi, English, Tamil...</span>
+            <span>{t.dashboard?.askPlaceholder || "Ask in Hindi, English, Tamil..."}</span>
           </div>
           <span className="text-primary font-medium text-xs flex items-center space-x-1">
-            <span>Ask</span>
+            <span>{t.dashboard?.askBtn || "Ask"}</span>
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
           </span>
         </div>

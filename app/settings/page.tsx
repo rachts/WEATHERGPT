@@ -94,13 +94,14 @@ export default function SettingsPage() {
             </div>
           </div>
           <select
+            id="settings-language-select"
             value={lang}
             onChange={(e) => handleLanguageChange(e.target.value as any)}
-            className="text-xs p-1.5 border border-border rounded bg-bg text-text-primary focus:outline-none focus:border-primary font-medium"
+            className="text-xs p-1.5 border border-border rounded bg-bg text-text-primary focus:outline-none focus:border-primary font-medium cursor-pointer"
           >
             <option value="hi-IN">हिंदी (Hindi)</option>
-            <option value="ta-IN">தமிழ் (Tamil)</option>
             <option value="en-IN">English (Indian)</option>
+            <option value="ta-IN">தமிழ் (Tamil)</option>
           </select>
         </div>
 

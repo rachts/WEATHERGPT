@@ -6,6 +6,7 @@ import { formatISTDate } from "@/lib/utils/formatters";
 import { getActiveLocation, LOCATION_CHANGE_EVENT } from "@/lib/utils/location";
 import LocationModal from "@/components/LocationModal";
 import DataStatusBadge from "@/components/DataStatusBadge";
+import { useTranslation } from "@/lib/i18n/context";
 
 interface AlertItem {
   id: string;
@@ -21,6 +22,7 @@ interface AlertItem {
 }
 
 export default function AlertsPage() {
+  const { t } = useTranslation();
   const [activeLoc, setActiveLoc] = useState(() => getActiveLocation());
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,17 +109,17 @@ export default function AlertsPage() {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-xl sm:text-2xl text-text-primary font-medium tracking-tight">
-              Weather Warnings & Bulletins
+              {t.alerts?.title || "Weather Warnings & Bulletins"}
             </h1>
             <button
               onClick={() => setIsLocationModalOpen(true)}
               className="text-xs text-primary underline underline-offset-4 hover:text-primary-dark transition-colors"
             >
-              Change
+              {t.alerts?.change || "Change"}
             </button>
           </div>
           <p className="text-xs text-text-secondary mt-0.5">
-            {activeLoc.district} District, {activeLoc.state} · Multi-Tier Impact Warnings (IMD MoES)
+            {activeLoc.district} District, {activeLoc.state} · {t.alerts?.subtitle || "Multi-Tier Impact Warnings (IMD MoES)"}
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">

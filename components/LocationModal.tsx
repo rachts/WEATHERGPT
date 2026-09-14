@@ -9,6 +9,7 @@ import {
   getActiveLocation,
   DistrictInfo,
 } from "@/lib/utils/location";
+import { useTranslation } from "@/lib/i18n/context";
 
 interface LocationModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface LocationModalProps {
 }
 
 export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedState, setSelectedState] = useState<string>("ALL");
   const [gpsLoading, setGpsLoading] = useState(false);
@@ -96,7 +98,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
         <div className="p-4 border-b border-border flex items-center justify-between">
           <div>
             <h2 id="location-modal-title" className="text-base sm:text-lg font-medium text-text-primary tracking-tight">
-              Select Agricultural District
+              {t.nav?.changeDistrict || "Select Agricultural District"}
             </h2>
             <p className="text-xs text-text-secondary mt-0.5">
               Available for all 28 States & 8 Union Territories across India
@@ -104,8 +106,8 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="text-text-secondary hover:text-text-primary p-1.5 rounded-lg border border-border hover:bg-bg transition-colors"
-            title="Close modal"
+            className="text-text-secondary hover:text-text-primary p-1.5 rounded-lg border border-border hover:bg-bg transition-colors cursor-pointer"
+            title={t.actions?.close || "Close modal"}
           >
             <span className="material-symbols-outlined text-[18px] block">close</span>
           </button>

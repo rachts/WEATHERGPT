@@ -6,6 +6,7 @@ import { getActiveLocation, LOCATION_CHANGE_EVENT } from "@/lib/utils/location";
 import LocationModal from "@/components/LocationModal";
 import DataStatusBadge from "@/components/DataStatusBadge";
 import type { DataProvenance } from "@/lib/types/provenance";
+import { useTranslation } from "@/lib/i18n/context";
 
 interface ForecastDay {
   day: string;
@@ -18,6 +19,7 @@ interface ForecastDay {
 }
 
 export default function ForecastPage() {
+  const { t } = useTranslation();
   const [activeLoc, setActiveLoc] = useState(() => getActiveLocation());
   const [days, setDays] = useState<ForecastDay[]>([]);
   const [issueTime, setIssueTime] = useState("");
@@ -171,13 +173,13 @@ export default function ForecastPage() {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-xl sm:text-2xl text-text-primary font-medium tracking-tight">
-              7-Day District Forecast
+              {t.forecast?.title || "7-Day District Forecast"}
             </h1>
             <button
               onClick={() => setIsLocationModalOpen(true)}
               className="text-xs text-primary underline underline-offset-4 hover:text-primary-dark transition-colors"
             >
-              Change
+              {t.forecast?.change || "Change"}
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -197,7 +199,7 @@ export default function ForecastPage() {
       {/* Temperature Trend Line Chart (Design_v2.md: line graph, moss-green 1.5px stroke, no fill under line, no grid) */}
       <section className="space-y-2">
         <h2 className="text-xs font-medium uppercase tracking-widest text-text-secondary">
-          Temperature Trend (Max °C)
+          {t.forecast?.tempTrend || "Temperature Trend (Max °C)"}
         </h2>
         <div className="bg-surface border border-border p-4 rounded-xl">
           <div className="h-36 w-full relative flex flex-col justify-end">

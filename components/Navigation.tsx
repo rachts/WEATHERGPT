@@ -9,7 +9,7 @@ import { useTranslation } from "@/lib/i18n/context";
 
 export default function Navigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t, lang, setLanguage } = useTranslation();
   const [isOnline, setIsOnline] = useState(true);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [activeLocation, setActiveLocationState] = useState({
@@ -130,14 +130,65 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
           })}
         </nav>
 
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1.5 text-xs text-text-secondary">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Header Quick Language Switcher */}
+          <div
+            id="header-lang-switch"
+            className="flex items-center border border-border rounded-lg p-0.5 bg-bg text-xs"
+            role="group"
+            aria-label="Language selector"
+          >
+            <button
+              id="lang-btn-hi"
+              type="button"
+              aria-pressed={lang === "hi-IN"}
+              onClick={() => setLanguage("hi-IN")}
+              className={`px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
+                lang === "hi-IN"
+                  ? "bg-primary text-white font-medium shadow-none"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+              title="हिन्दी (Hindi)"
+            >
+              हिन्दी
+            </button>
+            <button
+              id="lang-btn-en"
+              type="button"
+              aria-pressed={lang === "en-IN"}
+              onClick={() => setLanguage("en-IN")}
+              className={`px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
+                lang === "en-IN"
+                  ? "bg-primary text-white font-medium shadow-none"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+              title="English"
+            >
+              EN
+            </button>
+            <button
+              id="lang-btn-ta"
+              type="button"
+              aria-pressed={lang === "ta-IN"}
+              onClick={() => setLanguage("ta-IN")}
+              className={`px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
+                lang === "ta-IN"
+                  ? "bg-primary text-white font-medium shadow-none"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+              title="தமிழ் (Tamil)"
+            >
+              தமிழ்
+            </button>
+          </div>
+
+          <div className="hidden sm:flex items-center space-x-1.5 text-xs text-text-secondary">
             <span
               className={`w-2 h-2 rounded-full ${
                 isOnline ? "bg-primary" : "bg-text-secondary"
               }`}
             ></span>
-            <span className="hidden sm:inline">{isOnline ? t.nav.imdLive : t.nav.offlineCache}</span>
+            <span className="hidden lg:inline">{isOnline ? t.nav.imdLive : t.nav.offlineCache}</span>
           </div>
           <Link
             href="/settings"
