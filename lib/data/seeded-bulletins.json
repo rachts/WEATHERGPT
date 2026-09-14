@@ -1,0 +1,58 @@
+[
+  {
+    "id": "chunk_01",
+    "district": "Raigad",
+    "product": "IMD Agromet Advisory Bulletin (Raigad District)",
+    "issueTime": "2026-09-13T08:30:00.000Z",
+    "chunkIndex": 1,
+    "content": "INDIA METEOROLOGICAL DEPARTMENT AGROMET ADVISORY BULLETIN FOR RAIGAD DISTRICT. Issued by Regional Meteorological Centre Mumbai on 13 September 2026, 08:30 IST. Rainfall outlook: Light to moderate widespread rain with isolated thunderstorms likely along coastal talukas (Alibag, Murud, Shrivardhan) during the next 48 hours. Relative humidity will remain between 78% and 92%."
+  },
+  {
+    "id": "chunk_02",
+    "district": "Raigad",
+    "product": "IMD Agromet Advisory Bulletin (Raigad District)",
+    "issueTime": "2026-09-13T08:30:00.000Z",
+    "chunkIndex": 2,
+    "content": "Paddy (Kharif Rice) Advisory: Early sown rice crops are in panicle initiation stage. Due to overcast sky and intermittent showers, sheath blight and stem borer incidence may occur. Maintain 2 to 3 cm standing water in paddy fields. Postpone pesticide/fungicide spraying until wind speed drops below 15 km/h and dry spells are established."
+  },
+  {
+    "id": "chunk_03",
+    "district": "Raigad",
+    "product": "IMD Agromet Advisory Bulletin (Raigad District)",
+    "issueTime": "2026-09-13T08:30:00.000Z",
+    "chunkIndex": 3,
+    "content": "Horticulture (Mango & Coconut): In mango orchards of coastal Raigad, provide proper drainage channels to prevent water stagnation in the root zone. Clear excess vegetation and epiphytes from tree trunks. For coconut palms, apply prophylactic bordeaux paste on leaf axils to prevent bud rot following humid conditions."
+  },
+  {
+    "id": "chunk_04",
+    "district": "Raigad",
+    "product": "IMD Coastal Cyclone Alert Bulletin",
+    "issueTime": "2026-09-13T12:00:00.000Z",
+    "chunkIndex": 4,
+    "content": "IMD Coastal Warning Bulletin for Maharashtra Coast: Strong south-westerly surface winds reaching 40-50 km/h gusting to 60 km/h are likely over East Central Arabian Sea along and off Raigad and Ratnagiri coasts. Sea conditions will be rough to very rough. Fishermen are advised not to venture into deep sea."
+  },
+  {
+    "id": "chunk_05",
+    "district": "Raigad",
+    "product": "IMD Vegetable & Pulse Advisory (Raigad)",
+    "issueTime": "2026-09-13T08:30:00.000Z",
+    "chunkIndex": 5,
+    "content": "Vegetable Crops: Provide staking support to tomato and brinjal vines to protect them against strong gusty winds. Avoid nitrogenous fertilizer application during heavy rainfall forecasts to prevent nutrient leaching. Construct drainage channels across ridges in vegetable nursery beds."
+  },
+  {
+    "id": "chunk_06",
+    "district": "Raigad",
+    "product": "IMD Livestock & Poultry Weather Advisory",
+    "issueTime": "2026-09-13T08:30:00.000Z",
+    "chunkIndex": 6,
+    "content": "Livestock Advisory: Keep dairy cattle in covered, well-ventilated sheds during heavy downpours. Ensure cattle shed floors are kept dry and disinfected with lime to avoid foot-and-mouth complications. Provide clean drinking water and supplement mineral mixtures."
+  },
+  {
+    "id": "chunk_07",
+    "district": "Raigad",
+    "product": "IMD Impact-Based Warning Bulletin (Raigad District)",
+    "issueTime": "2026-09-13T14:00:00.000Z",
+    "chunkIndex": 7,
+    "content": "IMD Impact-Based Warning: Yellow Alert (Moderate Severity) issued for Raigad district for isolated thunderstorms accompanied by lightning and gusty winds (30-40 km/h) valid till 14 September 2026. Action recommended: Stay indoors during lightning events, avoid taking shelter under isolated trees."
+  }
+]

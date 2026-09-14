@@ -1,0 +1,102 @@
+{
+  "district": "Raigad",
+  "state": "Maharashtra",
+  "coordinates": {
+    "latitude": 18.5158,
+    "longitude": 73.1822
+  },
+  "sourceProduct": "data.gov.in — IMD Daily District Forecast (Mumbai MC)",
+  "issueTime": "2026-09-13T14:30:00.000Z",
+  "validUntil": "2026-09-14T08:30:00.000Z",
+  "isCachedFallback": true,
+  "current": {
+    "temperature": 28.4,
+    "tempUnit": "°C",
+    "humidity": 84,
+    "humidityUnit": "%",
+    "windSpeed": 18.5,
+    "windDirection": "SW",
+    "windUnit": "km/h",
+    "condition": "Overcast with intermittent rain",
+    "rainfallLast24h": 14.2,
+    "rainUnit": "mm",
+    "pressure": 1008.2,
+    "cloudCover": 85
+  },
+  "forecastDaily": [
+    {
+      "day": "Today (Sun)",
+      "date": "2026-09-13",
+      "condition": "Intermittent rain & gusty winds",
+      "tempMin": 24,
+      "tempMax": 30,
+      "rainfallMm": 18.0,
+      "pop": 85
+    },
+    {
+      "day": "Mon",
+      "date": "2026-09-14",
+      "condition": "Moderate showers",
+      "tempMin": 24,
+      "tempMax": 31,
+      "rainfallMm": 12.0,
+      "pop": 75
+    },
+    {
+      "day": "Tue",
+      "date": "2026-09-15",
+      "condition": "Scattered rain",
+      "tempMin": 25,
+      "tempMax": 32,
+      "rainfallMm": 6.5,
+      "pop": 55
+    },
+    {
+      "day": "Wed",
+      "date": "2026-09-16",
+      "condition": "Partly cloudy with passing showers",
+      "tempMin": 25,
+      "tempMax": 33,
+      "rainfallMm": 2.0,
+      "pop": 35
+    },
+    {
+      "day": "Thu",
+      "date": "2026-09-17",
+      "condition": "Mainly clear",
+      "tempMin": 26,
+      "tempMax": 34,
+      "rainfallMm": 0.0,
+      "pop": 15
+    },
+    {
+      "day": "Fri",
+      "date": "2026-09-18",
+      "condition": "Sunny and humid",
+      "tempMin": 26,
+      "tempMax": 34,
+      "rainfallMm": 0.0,
+      "pop": 10
+    },
+    {
+      "day": "Sat",
+      "date": "2026-09-19",
+      "condition": "Partly cloudy",
+      "tempMin": 25,
+      "tempMax": 33,
+      "rainfallMm": 1.5,
+      "pop": 25
+    }
+  ],
+  "radarNowcast": {
+    "station": "Mumbai Colaba S-band (covering Raigad)",
+    "scanTime": "2026-09-13T14:48:00.000Z",
+    "summary": "Rain band moving northeast at 18 km/h. Expected over Alibag and Pen talukas by 15:40 IST.",
+    "reflectivityBands": [
+      { "band": "Light", "range": "under 2.5 mm/hr", "color": "#E8E6E1" },
+      { "band": "Moderate", "range": "2.5 to 7.5 mm/hr", "color": "#C4C1BA" },
+      { "band": "Heavy", "range": "7.5 to 35 mm/hr", "color": "#8A8781" },
+      { "band": "Very heavy", "range": "over 35 mm/hr", "color": "#4A4A4A" }
+    ]
+  }
+}

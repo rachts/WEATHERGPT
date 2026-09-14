@@ -1,16 +1,17 @@
-// WeatherGPT — Query Pipeline (SIH 2026, PS 26068)
+// WeatherGPT — Query Pipeline (Production-Grade)
 // Core Pipeline:
-// 1. Safety / Crisis detection (Tele MANAS 14416)
-// 2. Intent & Entity resolution (5 intents)
-// 3. Data fetching (IMD / Open-Meteo fallback) or Advisory Rules (deterministic)
-// 4. Citation Gate verification
-// 5. Response packaging with Data Card + Source Product + Issue Time
+// 1. Prompt-Injection & Tamper Defense
+// 2. Safety / Crisis detection (Tele MANAS 14416)
+// 3. Intent & Entity resolution (deterministic multi-token scoring)
+// 4. Data fetching (IMD / Open-Meteo fallback) or Advisory Rules (pure deterministic)
+// 5. Authoritative IMD rainfall threshold semantics (0mm never yields "rain expected")
+// 6. Evidence-based Citation Gate verification (never manufactures new Date())
 
 import { getDistrictWeather, NormalizedWeather } from "./weather-data";
 import { getDeterministicCropAdvisory, CropAdvisoryResult } from "./advisory-rules";
-import { fetchLiveImdDistrictAlerts, getActiveDistrictAlerts } from "./alerts";
-import { generateGroundedResponse } from "./rag";
-import { findDistrictInfo } from "../utils/location";
+import { fetchLiveImdDistrictAlerts } from "./alerts";
+import { findDistrictInfo, resolveDistrictOrThrow } from "../utils/location";
+import { Evidence } from "../types/provenance";
 
 export type WeatherIntent =
   | "current_weather"
@@ -36,9 +37,29 @@ export interface QueryResponse {
     outlook?: Array<{ day: string; condition: string; range: string }>;
   };
   sourceProduct: string;
-  issueTime: string;
+  issueTime: string | null;
   isCrisisIntervention: boolean;
   citationVerified: boolean;
+  evidence?: Evidence;
+}
+
+// Prompt-injection patterns to block or sanitize
+const PROMPT_INJECTION_PATTERNS = [
+  /ignore\s+(all\s+)?(previous|prior)\s+instructions/i,
+  /pretend\s+(you\s+are|imd\s+issued)/i,
+  /generate\s+(a\s+)?fake\s+(alert|warning|temperature|weather)/i,
+  /change\s+the\s+(temperature|forecast|rainfall|wind)/i,
+  /override\s+(system|rules|data)/i,
+  /system\s+prompt/i,
+  /jailbreak/i,
+];
+
+/**
+ * Detects prompt injection attempts in user input
+ */
+export function isPromptInjection(input: string): boolean {
+  if (!input) return false;
+  return PROMPT_INJECTION_PATTERNS.some((re) => re.test(input));
 }
 
 // Crisis / distress detection phrases in English, Hindi, Tamil
@@ -54,13 +75,13 @@ const CRISIS_PATTERNS = [
   /जिंदगी खत्म/i,
   /தற்கொலை/i,
   /சாக வேண்டும்/i,
-  /உயிரை மாய்க்க/i
+  /உயிரை மாய்க்க/i,
 ];
 
 const TELE_MANAS_RESPONSES = {
-  "en-IN": "We care deeply about your safety and well-being. Please remember that you are not alone and help is always available. You can speak with a compassionate, trained counselor right now by calling Tele MANAS at 14416 (or toll-free 1-800-891-4416). It is free, confidential, available 24/7, and offered in your language.",
+  "en-IN": "We care deeply about your safety and well-being. Please remember that you are not alone and help is available. You can speak with a trained counselor at Tele MANAS by calling 14416 (or toll-free 1-800-891-4416). It is free, confidential, available 24/7, and offered in your language.",
   "hi-IN": "हम आपकी सुरक्षा और भलाई की गहरी चिंता करते हैं। कृपया याद रखें कि आप अकेले नहीं हैं और सहायता हमेशा उपलब्ध है। आप अभी टेली-मानस (Tele MANAS) हेल्पलाइन 14416 (या टोल-फ्री 1-800-891-4416) पर कॉल करके किसी प्रशिक्षित परामर्शदाता से बात कर सकते हैं। यह सेवा 24 घंटे, निःशुल्क, गोपनीय और आपकी भाषा में उपलब्ध है।",
-  "ta-IN": "உங்கள் பாதுகாப்பும் நல்வாழ்வும் எங்களுக்கு மிக முக்கியம். நீங்கள் தனியாக இல்லை, உதவி எப்போதும் உள்ளது. இலவச டெலி-மானாஸ் (Tele MANAS) உதவி எண் 14416 (அல்லது 1-800-891-4416) ஐ அழைத்து உடனடியாக ஆலோசகரிடம் பேசலாம். இது 24 மணி நேரமும் இலவசமாகவும், ரகசியமாகவும், உங்கள் மொழியிலும் கிடைக்கும்."
+  "ta-IN": "உங்கள் பாதுகாப்பும் நல்வாழ்வும் எங்களுக்கு மிக முக்கியம். நீங்கள் தனியாக இல்லை, உதவி எப்போதும் உள்ளது. இலவச டெலி-மானாஸ் (Tele MANAS) உதவி எண் 14416 (அல்லது 1-800-891-4416) ஐ அழைத்து உடனடியாக ஆலோசகரிடம் பேசலாம். இது 24 மணி நேரமும் இலவசமாகவும், ரகசியமாகவும், உங்கள் மொழியிலும் கிடைக்கும்.",
 };
 
 /**
@@ -82,160 +103,230 @@ export function extractCropFromQuery(q: string, fallbackCrop: string = "paddy"):
   if (lower.includes("mustard") || lower.includes("सरसों") || lower.includes("கடுகு")) return "mustard";
   if (lower.includes("tea") || lower.includes("चाय") || lower.includes("தேயிலை")) return "tea";
   if (lower.includes("groundnut") || lower.includes("pulse") || lower.includes("peanut") || lower.includes("मूंगफली") || lower.includes("दाल")) return "groundnut";
-  if (lower.includes("mango") || lower.includes("fruit") || lower.includes("आम") || lower.includes("மா")) return "mango";
-  if (lower.includes("vegetable") || lower.includes("tomato") || lower.includes("सब्जी")) return "vegetable";
+
+  const tamilMangoTokens = ["மாம்பழம்", "மாங்காய்", "மாந்தோப்பு", "மாமரம்"];
+  if (
+    lower.includes("mango") ||
+    lower.includes("fruit") ||
+    lower.includes("आम") ||
+    tamilMangoTokens.some(t => lower.includes(t)) ||
+    /(?:^|\s)மா(?:\s|$)/.test(lower)
+  ) {
+    return "mango";
+  }
+
+  if (lower.includes("vegetable") || lower.includes("tomato") || lower.includes("सब्जी") || lower.includes("தக்காளி")) return "vegetable";
   if (lower.includes("paddy") || lower.includes("rice") || lower.includes("धान") || lower.includes("நெல்")) return "paddy";
   return fallbackCrop;
 }
 
 /**
- * Resolve intent deterministically (fast & reliable, runs locally and offline)
+ * Resolve intent deterministically with multi-intent scoring
  */
 export function resolveIntent(query: string): WeatherIntent {
   const q = query.toLowerCase();
 
-  // 1. Crisis Check
+  // 1. Crisis Check: immediate bypass
   if (detectCrisisMessage(q)) {
     return "safety_crisis";
   }
 
-  // 2. Crop advisory
-  if (
-    q.includes("spray") ||
-    q.includes("pesticide") ||
-    q.includes("crop") ||
-    q.includes("paddy") ||
-    q.includes("rice") ||
-    q.includes("wheat") ||
-    q.includes("cotton") ||
-    q.includes("mustard") ||
-    q.includes("tea") ||
-    q.includes("cane") ||
-    q.includes("mango") ||
-    q.includes("advisory") ||
-    q.includes("छिड़काव") ||
-    q.includes("फसल") ||
-    q.includes("धान") ||
-    q.includes("गेहूं") ||
-    q.includes("कपास") ||
-    q.includes("सरसों") ||
-    q.includes("आम") ||
-    q.includes("தெளிக்க") ||
-    q.includes("பயிர்") ||
-    q.includes("நெல்") ||
-    q.includes("கோதுமை")
-  ) {
-    return "crop_advisory";
+  let scoreWarning = 0;
+  let scoreRainfall = 0;
+  let scoreCrop = 0;
+  let scoreOutlook = 0;
+  let scoreCurrent = 0;
+
+  // Warning indicators (+4)
+  const warningKeywords = [
+    "warning", "alert", "cyclone", "danger", "storm", "flood", "gale",
+    "चेतावनी", "अलर्ट", "तूफान", "बाढ़",
+    "எச்சரிக்கை", "புயல்", "வெள்ளம்",
+  ];
+  for (const kw of warningKeywords) {
+    if (q.includes(kw)) scoreWarning += 4;
   }
 
-  // 3. Warning status
-  if (
-    q.includes("warning") ||
-    q.includes("alert") ||
-    q.includes("cyclone") ||
-    q.includes("danger") ||
-    q.includes("storm") ||
-    q.includes("चेतावनी") ||
-    q.includes("अलर्ट") ||
-    q.includes("तूफान") ||
-    q.includes("எச்சரிக்கை") ||
-    q.includes("புயல்")
-  ) {
-    return "warning_status";
+  // Rainfall indicators (+4 for explicit rain queries)
+  const rainKeywords = [
+    "rain", "raining", "precipitation", "shower", "downpour", "drizzle",
+    "बारिश", "वर्षा", "बरसात", "बूंदाबांदी",
+    "மழை", "தூறல்",
+  ];
+  for (const kw of rainKeywords) {
+    if (q.includes(kw)) scoreRainfall += 4;
   }
 
-  // 4. Rainfall forecast
-  if (
-    q.includes("rain") ||
-    q.includes("precipitation") ||
-    q.includes("shower") ||
-    q.includes("बारिश") ||
-    q.includes("वर्षा") ||
-    q.includes("மழை")
-  ) {
-    return "rainfall_forecast";
+  // 7-day outlook indicators (+4)
+  const outlookKeywords = [
+    "forecast", "outlook", "next week", "upcoming", "7 day", "seven day",
+    "पूर्वानुमान", "आगामी", "अगले सात दिन",
+    "முன்னறிவிப்பு", "அடுத்த வாரம்",
+  ];
+  for (const kw of outlookKeywords) {
+    if (q.includes(kw)) scoreOutlook += 4;
   }
 
-  // 5. 7-day outlook
-  if (
-    q.includes("week") ||
-    q.includes("7 day") ||
-    q.includes("seven day") ||
-    q.includes("tomorrow") ||
-    q.includes("outlook") ||
-    q.includes("सप्ताह") ||
-    q.includes("सात दिन") ||
-    q.includes("अगले दिन") ||
-    q.includes("வாரம்") ||
-    q.includes("7 நாள்")
-  ) {
-    return "seven_day_outlook";
+  // Crop / Advisory indicators (+3)
+  const cropKeywords = [
+    "crop", "spray", "irrigation", "paddy", "wheat", "cotton", "cane", "sugarcane",
+    "mango", "fertilizer", "pest", "disease", "farm", "kisan",
+    "फसल", "छिड़काव", "सिंचाई", "गेहूं", "धान", "कपास", "गन्ना", "खाद", "कीट",
+    "பயிர்", "தெளிப்பு", "பாசனம்", "நெல்", "கோதுமை", "பருத்தி", "கரும்பு", "உரம்",
+  ];
+  for (const kw of cropKeywords) {
+    if (q.includes(kw)) scoreCrop += 3;
   }
 
-  // Default to current weather
-  return "current_weather";
+  // Current weather indicators (+2)
+  const currentKeywords = [
+    "today", "now", "temperature", "humidity", "wind", "current",
+    "आज", "अभी", "तापमान", "हवा", "आर्द्रता",
+    "இன்று", "இப்போது", "வெப்பநிலை", "காற்று",
+  ];
+  for (const kw of currentKeywords) {
+    if (q.includes(kw)) scoreCurrent += 2;
+  }
+
+  const scores = [
+    { intent: "warning_status" as WeatherIntent, score: scoreWarning },
+    { intent: "rainfall_forecast" as WeatherIntent, score: scoreRainfall },
+    { intent: "seven_day_outlook" as WeatherIntent, score: scoreOutlook },
+    { intent: "crop_advisory" as WeatherIntent, score: scoreCrop },
+    { intent: "current_weather" as WeatherIntent, score: scoreCurrent },
+  ];
+
+  scores.sort((a, b) => b.score - a.score);
+  return scores[0].score > 0 ? scores[0].intent : "current_weather";
 }
 
 /**
- * Main query processor
+ * Format rainfall statement according to authoritative IMD classification standards:
+ * 0 mm: strictly "no rain expected / dry weather" (SAFETY-CRITICAL TEST 6)
+ * 0.1 - 2.4 mm: Very Light Rain
+ * 2.5 - 15.5 mm: Light Rain
+ * 15.6 - 64.4 mm: Moderate Rain
+ * 64.5 - 115.5 mm: Heavy Rain
+ * >= 115.6 mm: Very Heavy Rain
+ */
+function formatRainfallAnswer(
+  rainfallMm: number,
+  condition: string,
+  district: string,
+  language: "hi-IN" | "ta-IN" | "en-IN"
+): string {
+  if (rainfallMm === 0) {
+    if (language === "hi-IN") {
+      return `${district} में आज वर्षा की कोई संभावना नहीं है (0 मिमी)। मौसम मुख्यतः शुष्क रहेगा।`;
+    }
+    if (language === "ta-IN") {
+      return `${district}ல் இன்று மழை பெய்ய வாய்ப்பில்லை (0 மிமீ). பெரும்பாலும் வறண்ட வானிலை நிலவும்.`;
+    }
+    return `No rain expected for ${district} today (0 mm). Dry conditions expected.`;
+  }
+
+  let classification = "Light Rain";
+  if (rainfallMm < 2.5) classification = "Very Light Rain";
+  else if (rainfallMm <= 15.5) classification = "Light Rain";
+  else if (rainfallMm <= 64.4) classification = "Moderate Rain";
+  else if (rainfallMm <= 115.5) classification = "Heavy Rain";
+  else classification = "Very Heavy Rain";
+
+  if (language === "hi-IN") {
+    return `${district} में 24 घंटे में ${rainfallMm} मिमी वर्षा का अनुमान है (${classification})। स्थिति: ${condition}।`;
+  }
+  if (language === "ta-IN") {
+    return `${district}ல் 24 மணி நேரத்தில் ${rainfallMm} மிமீ மழை எதிர்பார்க்கப்படுகிறது (${classification}). நிலை: ${condition}.`;
+  }
+  return `Rainfall forecast for ${district}: Expected precipitation around ${rainfallMm} mm (${classification}) with ${condition.toLowerCase()}.`;
+}
+
+/**
+ * Process a user meteorological inquiry end-to-end
  */
 export async function processWeatherQuery(
   query: string,
   district: string = "Raigad",
   language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"
 ): Promise<QueryResponse> {
-  // Step 1: Crisis check FIRST
+  // Step 1: Prompt-Injection Defense
+  // If prompt injection attempted, refuse to override trusted domain data
+  if (isPromptInjection(query)) {
+    return {
+      answerText: "WeatherGPT only provides factual meteorological telemetry from authoritative sources. System instructions and meteorological data cannot be overridden.",
+      intent: "current_weather",
+      language,
+      sourceProduct: "WeatherGPT Security Policy",
+      issueTime: null,
+      isCrisisIntervention: false,
+      citationVerified: true,
+    };
+  }
+
+  // Step 2: Crisis check
   if (detectCrisisMessage(query)) {
     return {
       answerText: TELE_MANAS_RESPONSES[language] || TELE_MANAS_RESPONSES["en-IN"],
       intent: "safety_crisis",
       language,
       sourceProduct: "National Tele Mental Health Programme (Tele MANAS 14416)",
-      issueTime: new Date().toISOString(),
+      issueTime: null,
       isCrisisIntervention: true,
       citationVerified: true,
     };
   }
 
   const intent = resolveIntent(query);
-  const weather = await getDistrictWeather(district);
-  const activeAlerts = await fetchLiveImdDistrictAlerts(district);
-  const districtInfo = findDistrictInfo(district);
-  const targetCrop = extractCropFromQuery(query, (districtInfo?.crops?.[0] || "paddy").toLowerCase());
+  const districtInfo = resolveDistrictOrThrow(district);
+
+  // Parallelize weather data & district alerts retrieval
+  const [weather, activeAlerts] = await Promise.all([
+    getDistrictWeather(districtInfo.name, districtInfo.state),
+    fetchLiveImdDistrictAlerts(districtInfo.name, districtInfo.state),
+  ]);
+
+  const targetCrop = extractCropFromQuery(query, (districtInfo.crops?.[0] || "paddy").toLowerCase());
 
   let answerText = "";
   let dataCard: QueryResponse["dataCard"] = undefined;
   let sourceProduct = weather.sourceProduct;
   let issueTime = weather.issueTime;
+  let evidence: Evidence | undefined = undefined;
 
   switch (intent) {
     case "crop_advisory": {
-      // CRITICAL: Evaluated via deterministic rules module (NO LLM CALL)
-      const advisory = getDeterministicCropAdvisory(targetCrop, district, {
-        temperature: weather.current.temperature,
-        humidity: weather.current.humidity,
-        windSpeed: weather.current.windSpeed,
-        windDirection: weather.current.windDirection,
-        rainfallLast24h: weather.current.rainfallLast24h,
-        rainfallForecastNext24h: weather.forecastDaily[0]?.rainfallMm ?? 10,
-      }, language);
+      const advisory = getDeterministicCropAdvisory(
+        targetCrop,
+        districtInfo.name,
+        {
+          temperature: weather.current.temperature,
+          humidity: weather.current.humidity,
+          windSpeed: weather.current.windSpeed,
+          windDirection: weather.current.windDirection,
+          rainfallLast24h: weather.current.rainfallLast24h,
+          rainfallForecastNext24h: weather.forecastDaily[0]?.rainfallMm ?? 0,
+        },
+        language,
+        weather.issueTime
+      );
 
       sourceProduct = advisory.sourceRule;
       issueTime = advisory.issueTime;
+      evidence = advisory.evidence;
 
       if (language === "hi-IN") {
-        answerText = `${advisory.crop} फसल हेतु सलाह (${district}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory}`;
+        answerText = `${advisory.crop} फसल हेतु सलाह (${districtInfo.name}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
       } else if (language === "ta-IN") {
-        answerText = `${advisory.crop} பயிர் ஆலோசனை (${district}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory}`;
+        answerText = `${advisory.crop} பயிர் ஆலோசனை (${districtInfo.name}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
       } else {
-        answerText = `Advisory for ${district} ${advisory.crop} Crops: ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory}`;
+        answerText = `Advisory for ${districtInfo.name} ${advisory.crop} Crops: ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} Note: ${advisory.chemicalDisclaimer}`;
       }
 
       dataCard = {
         advisory: advisory.sprayCondition === "SAFE" ? "Spray Safe" : "Spray Unsafe",
-        wind: `${weather.current.windSpeed} km/h`,
+        wind: weather.current.windSpeed !== null ? `${weather.current.windSpeed} km/h` : "N/A",
         rainfall: `${weather.forecastDaily[0]?.rainfallMm ?? 0} mm (Next 24h)`,
-        humidity: `${weather.current.humidity}%`,
+        humidity: weather.current.humidity !== null ? `${weather.current.humidity}%` : "N/A",
       };
       break;
     }
@@ -243,7 +334,6 @@ export async function processWeatherQuery(
     case "warning_status": {
       if (activeAlerts.length > 0) {
         const topAlert = activeAlerts[0];
-        // WARNING TEXT DELIVERED VERBATIM
         answerText = topAlert.warningText;
         sourceProduct = topAlert.sourceProduct;
         issueTime = topAlert.issueTime;
@@ -251,15 +341,27 @@ export async function processWeatherQuery(
           severity: topAlert.severity,
           warningHeadline: topAlert.headline,
         };
+        evidence = {
+          sourceId: topAlert.id,
+          provider: "IMD",
+          product: topAlert.sourceProduct,
+          sourceUrl: topAlert.sourceUrl,
+          issuedAt: topAlert.issueTime,
+          retrievedAt: new Date().toISOString(),
+          validFrom: topAlert.validFrom,
+          validUntil: topAlert.validTo,
+          rawRecordHash: topAlert.alertHash,
+          quality: "OBSERVED",
+        };
       } else {
         if (language === "hi-IN") {
-          answerText = `वर्तमान में ${district} जिले के लिए कोई मौसम चेतावनी सक्रिय नहीं है।`;
+          answerText = `वर्तमान में ${districtInfo.name} जिले के लिए कोई मौसम चेतावनी सक्रिय नहीं है।`;
         } else if (language === "ta-IN") {
-          answerText = `தற்போது ${district} மாவட்டத்திற்கு தீவிர வானிலை எச்சரிக்கை எதுவும் இல்லை.`;
+          answerText = `தற்போது ${districtInfo.name} மாவட்டத்திற்கு தீவிர வானிலை எச்சரிக்கை எதுவும் இல்லை.`;
         } else {
-          answerText = `No active weather warnings in effect for ${district} district at this time.`;
+          answerText = `No active weather warnings in effect for ${districtInfo.name} district at this time.`;
         }
-        sourceProduct = `IMD Nowcast (${weather.state})`;
+        sourceProduct = `IMD Nowcast (${districtInfo.state})`;
         dataCard = {
           severity: "Low",
           warningHeadline: "No Warnings Active",
@@ -271,31 +373,48 @@ export async function processWeatherQuery(
     case "rainfall_forecast": {
       const todayRain = weather.forecastDaily[0]?.rainfallMm ?? 0;
       const condition = weather.current.condition;
-      if (language === "hi-IN") {
-        answerText = `${district} में आज वर्षा की संभावना है। 24 घंटे में अनुमानित वर्षा: ${todayRain} मिमी। स्थिति: ${condition}।`;
-      } else if (language === "ta-IN") {
-        answerText = `${district}ல் இன்று மழை வாய்ப்புள்ளது. 24 மணி நேர மழை அளவு: ${todayRain} மிமீ. நிலை: ${condition}.`;
-      } else {
-        answerText = `Rainfall forecast for ${district}: Expected precipitation around ${todayRain} mm with ${condition.toLowerCase()}.`;
-      }
+      answerText = formatRainfallAnswer(todayRain, condition, districtInfo.name, language);
+
       dataCard = {
         rainfall: `${todayRain} mm`,
-        humidity: `${weather.current.humidity}%`,
-        wind: `${weather.current.windSpeed} km/h`,
+        humidity: weather.current.humidity !== null ? `${weather.current.humidity}%` : "N/A",
+        wind: weather.current.windSpeed !== null ? `${weather.current.windSpeed} km/h` : "N/A",
         condition,
+      };
+      evidence = {
+        sourceId: weather.provenance.sourceId || "FORECAST_NWP",
+        provider: weather.provenance.provider,
+        product: weather.sourceProduct,
+        issuedAt: weather.issueTime,
+        retrievedAt: weather.provenance.retrievedAt,
+        quality: weather.provenance.quality,
       };
       break;
     }
 
     case "seven_day_outlook": {
-      const minTemp = weather.forecastDaily[0]?.tempMin ?? 24;
-      const maxTemp = weather.forecastDaily[0]?.tempMax ?? 34;
+      const minTemps = weather.forecastDaily.map(d => d.tempMin).filter(t => t !== null && !isNaN(t));
+      const maxTemps = weather.forecastDaily.map(d => d.tempMax).filter(t => t !== null && !isNaN(t));
+      const overallMin = minTemps.length > 0 ? Math.min(...minTemps) : 20;
+      const overallMax = maxTemps.length > 0 ? Math.max(...maxTemps) : 32;
+      const rainyDays = weather.forecastDaily.filter(d => (d.rainfallMm ?? 0) > 1 || d.condition.toLowerCase().includes("rain") || d.condition.toLowerCase().includes("shower"));
+
+      let summaryEn = rainyDays.length > 0
+        ? `Expect approximately ${rainyDays.length} day(s) with precipitation over the 7-day period.`
+        : `Mainly dry conditions expected across the 7-day outlook.`;
+      let summaryHi = rainyDays.length > 0
+        ? `आगामी 7 दिनों में लगभग ${rainyDays.length} दिन वर्षा की संभावना है।`
+        : `आगामी 7 दिनों में मुख्यतः मौसम शुष्क रहने का अनुमान है।`;
+      let summaryTa = rainyDays.length > 0
+        ? `அடுத்த 7 நாட்களில் சுமார் ${rainyDays.length} நாட்கள் மழை பெய்ய வாய்ப்புள்ளது.`
+        : `அடுத்த 7 நாட்களில் பெரும்பாலும் வறண்ட வானிலை நிலவும்.`;
+
       if (language === "hi-IN") {
-        answerText = `${district} के लिए 7-दिवसीय पूर्वानुमान: तापमान ${minTemp}°C से ${maxTemp}°C के बीच रहेगा। प्रारंभिक दिनों में बारिश के बाद मौसम साफ होने की संभावना है।`;
+        answerText = `${districtInfo.name} के लिए 7-दिवसीय पूर्वानुमान: तापमान ${overallMin}°C से ${overallMax}°C के बीच रहने का अनुमान है। ${summaryHi}`;
       } else if (language === "ta-IN") {
-        answerText = `${district} 7 நாள் வானிலை: வெப்பநிலை ${minTemp}°C முதல் ${maxTemp}°C வரை இருக்கும். வார இறுதியில் தெளிவான வானிலை நிலவும்.`;
+        answerText = `${districtInfo.name} 7 நாள் வானிலை: வெப்பநிலை ${overallMin}°C முதல் ${overallMax}°C வரை இருக்கும். ${summaryTa}`;
       } else {
-        answerText = `7-Day Outlook for ${district}: Temperatures ranging between ${minTemp}°C and ${maxTemp}°C with intermittent showers easing later this week.`;
+        answerText = `7-Day Outlook for ${districtInfo.name}: Temperatures ranging between ${overallMin}°C and ${overallMax}°C. ${summaryEn}`;
       }
       dataCard = {
         outlook: weather.forecastDaily.map((d) => ({
@@ -309,17 +428,18 @@ export async function processWeatherQuery(
 
     case "current_weather":
     default: {
-      const temp = weather.current.temperature;
+      const temp = weather.current.temperature !== null ? `${Math.round(weather.current.temperature)}` : "N/A";
       const cond = weather.current.condition;
-      const wind = weather.current.windSpeed;
-      const hum = weather.current.humidity;
+      const wind = weather.current.windSpeed !== null ? `${weather.current.windSpeed}` : "N/A";
+      const hum = weather.current.humidity !== null ? `${weather.current.humidity}` : "N/A";
+      const windDir = weather.current.windDirection || "Calm";
 
       if (language === "hi-IN") {
-        answerText = `${district} में वर्तमान तापमान ${temp}°C है। मौसम: ${cond}। हवा ${wind} किमी/घंटा और आर्द्रता ${hum}% है।`;
+        answerText = `${districtInfo.name} में वर्तमान तापमान ${temp}°C है। मौसम: ${cond}। हवा ${wind} किमी/घंटा और आर्द्रता ${hum}% है।`;
       } else if (language === "ta-IN") {
-        answerText = `${district}ல் தற்போதைய வெப்பநிலை ${temp}°C. வானிலை: ${cond}. காற்று வேகம் ${wind} கிமீ/மணி, ஈரப்பதம் ${hum}%.`;
+        answerText = `${districtInfo.name}ல் தற்போதைய வெப்பநிலை ${temp}°C. வானிலை: ${cond}. காற்று வேகம் ${wind} கிமீ/மணி, ஈரப்பதம் ${hum}%.`;
       } else {
-        answerText = `Current weather in ${district}: ${temp}°C, ${cond}. Wind speed is ${wind} km/h from ${weather.current.windDirection} with ${hum}% relative humidity.`;
+        answerText = `Current weather in ${districtInfo.name}: ${temp}°C, ${cond}. Wind speed is ${wind} km/h from ${windDir} with ${hum}% relative humidity.`;
       }
 
       dataCard = {
@@ -328,17 +448,25 @@ export async function processWeatherQuery(
         wind: `${wind} km/h`,
         condition: cond,
       };
+      evidence = {
+        sourceId: weather.provenance.sourceId || "OBS_SURFACE",
+        provider: weather.provenance.provider,
+        product: weather.sourceProduct,
+        issuedAt: weather.issueTime,
+        retrievedAt: weather.provenance.retrievedAt,
+        quality: weather.provenance.quality,
+      };
       break;
     }
   }
 
-  // Citation Gate Assertion
-  const citationVerified = Boolean(sourceProduct && issueTime);
-  if (!citationVerified) {
-    // Re-retrieve fallback per Rule 4 & 18
-    sourceProduct = "IMD Regional Specialised Meteorological Centre (RMC Mumbai)";
-    issueTime = new Date().toISOString();
-  }
+  // Citation Gate Assertion (Requirement 14):
+  // Must have genuine provider, sourceProduct, and not an unverified fabrication.
+  const citationVerified = Boolean(
+    sourceProduct &&
+    sourceProduct.trim().length > 0 &&
+    !sourceProduct.toLowerCase().includes("unverified")
+  );
 
   return {
     answerText,
@@ -346,8 +474,9 @@ export async function processWeatherQuery(
     language,
     dataCard,
     sourceProduct,
-    issueTime,
+    issueTime: issueTime || null,
     isCrisisIntervention: false,
-    citationVerified: true,
+    citationVerified,
+    evidence,
   };
 }

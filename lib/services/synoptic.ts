@@ -2,6 +2,8 @@
 // Tracks tropical depressions, low pressure areas, cyclonic circulations, and monsoon troughs
 // with geodesic proximity and impact analysis for any Indian district.
 
+import { calculateBearing, haversineDistance } from "../utils/geo";
+
 export type SynopticSystemType =
   | "deep_depression"
   | "depression"
@@ -131,22 +133,6 @@ export const ACTIVE_SYNOPTIC_SYSTEMS: SynopticSystem[] = [
 ];
 
 /**
- * Calculates bearing string from point A to point B
- */
-function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number): string {
-  const y = Math.sin(((lon2 - lon1) * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180);
-  const x =
-    Math.cos((lat1 * Math.PI) / 180) * Math.sin((lat2 * Math.PI) / 180) -
-    Math.sin((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.cos(((lon2 - lon1) * Math.PI) / 180);
-  const deg = (Math.atan2(y, x) * 180) / Math.PI;
-  const compass = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-  const index = Math.round(((deg + 360) % 360) / 22.5) % 16;
-  return compass[index];
-}
-
-/**
  * Computes proximity, bearing, and localized impact of active synoptic depressions for any district coordinates
  */
 export function getDistrictSynopticImpact(
@@ -159,9 +145,7 @@ export function getDistrictSynopticImpact(
   let minDistance = Infinity;
 
   for (const sys of ACTIVE_SYNOPTIC_SYSTEMS) {
-    const dLat = sys.center[1] - userLat;
-    const dLon = (sys.center[0] - userLon) * Math.cos(((userLat + sys.center[1]) / 2) * (Math.PI / 180));
-    const dist = Math.sqrt(dLat * dLat + dLon * dLon) * 111.32;
+    const dist = haversineDistance(userLat, userLon, sys.center[1], sys.center[0]);
     if (dist < minDistance) {
       minDistance = dist;
       nearestSystem = sys;

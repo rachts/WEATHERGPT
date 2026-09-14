@@ -207,6 +207,7 @@ export default function SatelliteView() {
         } catch {}
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update map center when district changes
@@ -238,7 +239,7 @@ export default function SatelliteView() {
   return (
     <div className="space-y-4">
       {/* Location Satellite Banner */}
-      <div className="bg-surface border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
+      <div className="bg-surface border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
         <div className="flex items-center space-x-3">
           <div className="w-9 h-9 rounded-lg bg-primary-light border border-primary/20 flex items-center justify-center text-primary">
             <span className="material-symbols-outlined text-[20px]">satellite_alt</span>
@@ -268,7 +269,7 @@ export default function SatelliteView() {
           onClick={() => setSubMode("gibs_map")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 whitespace-nowrap ${
             subMode === "gibs_map"
-              ? "bg-primary text-white font-medium shadow-xs"
+              ? "bg-primary text-white font-medium shadow-sm"
               : "text-text-secondary hover:text-text-primary"
           }`}
         >
@@ -278,7 +279,7 @@ export default function SatelliteView() {
           onClick={() => setSubMode("imd_insat")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 whitespace-nowrap ${
             subMode === "imd_insat"
-              ? "bg-primary text-white font-medium shadow-xs"
+              ? "bg-primary text-white font-medium shadow-sm"
               : "text-text-secondary hover:text-text-primary"
           }`}
         >
@@ -288,7 +289,7 @@ export default function SatelliteView() {
           onClick={() => setSubMode("depressions_tracker")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 whitespace-nowrap ${
             subMode === "depressions_tracker"
-              ? "bg-primary text-white font-medium shadow-xs"
+              ? "bg-primary text-white font-medium shadow-sm"
               : "text-text-secondary hover:text-text-primary"
           }`}
         >
@@ -324,7 +325,7 @@ export default function SatelliteView() {
         </div>
 
         {/* Map Container */}
-        <div className="relative w-full h-[400px] sm:h-[480px] bg-surface border border-border rounded-xl overflow-hidden shadow-xs">
+        <div className="relative w-full h-[400px] sm:h-[480px] bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
           <div ref={mapContainerRef} className="w-full h-full" />
 
           {/* Location Focus Badge */}
@@ -392,7 +393,7 @@ export default function SatelliteView() {
         </div>
 
         {/* INSAT Image Container with Location Spotlight Reticle */}
-        <div className="relative w-full bg-surface border border-border rounded-xl p-4 flex flex-col items-center justify-center min-h-[420px] shadow-xs">
+        <div className="relative w-full bg-surface border border-border rounded-xl p-4 flex flex-col items-center justify-center min-h-[420px] shadow-sm">
           <div className="w-full flex items-center justify-between text-xs text-text-secondary mb-3 pb-2 border-b border-border">
             <span>
               IMD INSAT-3D / 3DR SATELLITE:{" "}
@@ -437,7 +438,7 @@ export default function SatelliteView() {
             >
               <span className="absolute inset-0 rounded-full bg-emerald-500/40 animate-ping"></span>
               <span className="absolute inset-1.5 rounded-full border-2 border-emerald-400 shadow-md"></span>
-              <span className="absolute inset-3 rounded-full bg-emerald-500 shadow-xs"></span>
+              <span className="absolute inset-3 rounded-full bg-emerald-500 shadow-sm"></span>
               <div className="absolute left-9 top-0 bg-black/85 border border-emerald-500/60 text-white text-[10px] px-2 py-0.5 rounded whitespace-nowrap shadow-lg">
                 📍 {activeLocation.district} ({userLat.toFixed(1)}°N, {userLon.toFixed(1)}°E)
               </div>
@@ -500,7 +501,7 @@ export default function SatelliteView() {
       <div className={subMode === "depressions_tracker" ? "block space-y-4" : "hidden"}>
         {/* Local District Proximity & Advisory Card */}
         {synopticImpact && (
-          <div className="bg-surface border border-border rounded-xl p-4 sm:p-5 space-y-3 shadow-xs">
+          <div className="bg-surface border border-border rounded-xl p-4 sm:p-5 space-y-3 shadow-sm">
             <div className="flex items-center justify-between border-b border-border pb-2">
               <div className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
@@ -554,7 +555,7 @@ export default function SatelliteView() {
             {ACTIVE_SYNOPTIC_SYSTEMS.map((sys) => (
               <div
                 key={sys.id}
-                className="bg-surface border border-border rounded-xl p-4 space-y-3 shadow-xs hover:border-primary/40 transition-colors"
+                className="bg-surface border border-border rounded-xl p-4 space-y-3 shadow-sm hover:border-primary/40 transition-colors"
               >
                 <div className="flex items-center justify-between border-b border-border pb-2">
                   <div className="flex items-center space-x-2">

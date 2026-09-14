@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { formatISTTime } from "@/lib/utils/formatters";
 import { getActiveLocation, LOCATION_CHANGE_EVENT } from "@/lib/utils/location";
 import LocationModal from "@/components/LocationModal";
+import DataStatusBadge from "@/components/DataStatusBadge";
+import type { DataProvenance } from "@/lib/types/provenance";
 
 interface ForecastDay {
   day: string;
@@ -20,22 +22,59 @@ export default function ForecastPage() {
   const [days, setDays] = useState<ForecastDay[]>([]);
   const [issueTime, setIssueTime] = useState("");
   const [sourceProduct, setSourceProduct] = useState("");
+  const [provenance, setProvenance] = useState<DataProvenance | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isOfflineFallback, setIsOfflineFallback] = useState(false);
+  const [offlineError, setOfflineError] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadForecast(district: string) {
       try {
         setLoading(true);
+        setOfflineError(false);
         const res = await fetch(`/api/weather?district=${encodeURIComponent(district)}`);
         if (res.ok) {
-          const data = await res.json();
+          const rawData = await res.json();
+          const data = rawData.data || rawData;
           setDays(data.forecastDaily || []);
           setIssueTime(data.issueTime || "");
           setSourceProduct(data.sourceProduct || "");
+          setProvenance(data.provenance || null);
+          setIsOfflineFallback(false);
+
+          try {
+            // Update district snapshot in localStorage
+            const existingRaw = localStorage.getItem(`wg_cache_${district.toLowerCase()}`);
+            const existing = existingRaw ? JSON.parse(existingRaw) : {};
+            localStorage.setItem(
+              `wg_cache_${district.toLowerCase()}`,
+              JSON.stringify({
+                ...existing,
+                weather: data,
+                savedAt: Date.now(),
+              })
+            );
+          } catch {}
+        } else {
+          throw new Error("Forecast fetch returned non-200");
         }
       } catch (err) {
-        console.error(err);
+        console.warn("Forecast live fetch unavailable, checking cache:", err);
+        try {
+          const cachedRaw = localStorage.getItem(`wg_cache_${district.toLowerCase()}`);
+          if (cachedRaw) {
+            const parsed = JSON.parse(cachedRaw);
+            if (parsed.weather?.forecastDaily) {
+              setDays(parsed.weather.forecastDaily);
+              setIssueTime(parsed.weather.issueTime || "");
+              setSourceProduct(parsed.weather.sourceProduct || "IMD Cached Forecast");
+              setIsOfflineFallback(true);
+              return;
+            }
+          }
+        } catch {}
+        setOfflineError(true);
       } finally {
         setLoading(false);
       }
@@ -85,8 +124,43 @@ export default function ForecastPage() {
     );
   }
 
+  if (offlineError && days.length === 0) {
+    return (
+      <div className="py-12 flex flex-col items-center justify-center text-center px-4">
+        <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mb-3">
+          <span className="material-symbols-outlined text-2xl">wifi_off</span>
+        </div>
+        <h2 className="text-lg font-medium text-text-primary">Offline — No Cached Forecast</h2>
+        <p className="text-xs text-text-secondary mt-1 max-w-sm">
+          No offline forecast is stored for {activeLoc.district}. Please reconnect to fetch latest IMD outlooks.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-primary text-white text-xs rounded-lg font-medium hover:bg-primary/90 transition-colors cursor-pointer"
+        >
+          Retry Connection
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="py-4 space-y-6">
+      {/* Offline Cached Data Notice */}
+      {isOfflineFallback && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-800 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="material-symbols-outlined text-base text-amber-600">cloud_off</span>
+            <span>Showing cached 7-day forecast. Live update currently unavailable.</span>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-[11px] underline font-medium hover:text-amber-950 cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       <LocationModal
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
@@ -106,13 +180,18 @@ export default function ForecastPage() {
               Change
             </button>
           </div>
-          <p className="text-xs text-text-secondary mt-0.5">
-            {activeLoc.district} District, {activeLoc.state} · Issued {formattedIssueTime} IST
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <DataStatusBadge
+              status={isOfflineFallback ? "OFFLINE" : (provenance?.quality || "LIVE")}
+              provider={provenance?.provider || "IMD"}
+              providerName={provenance?.providerName}
+              observedAt={formattedIssueTime}
+            />
+            <span className="text-xs text-text-secondary">
+              {activeLoc.district}, {activeLoc.state} · {formattedIssueTime ? `Issued ${formattedIssueTime} IST` : ""}
+            </span>
+          </div>
         </div>
-        <span className="text-xs text-text-secondary border border-border px-2 py-0.5 rounded self-start sm:self-auto">
-          IMD Bulletin
-        </span>
       </div>
 
       {/* Temperature Trend Line Chart (Design_v2.md: line graph, moss-green 1.5px stroke, no fill under line, no grid) */}

@@ -7,6 +7,8 @@ import { formatISTTime } from "@/lib/utils/formatters";
 import type { CropAdvisoryResult } from "@/lib/services/advisory-rules";
 import { getActiveLocation, findDistrictInfo, LOCATION_CHANGE_EVENT } from "@/lib/utils/location";
 import LocationModal from "@/components/LocationModal";
+import DataStatusBadge from "@/components/DataStatusBadge";
+import type { DataProvenance } from "@/lib/types/provenance";
 
 interface WeatherData {
   district: string;
@@ -14,6 +16,7 @@ interface WeatherData {
   sourceProduct: string;
   issueTime: string;
   isCachedFallback: boolean;
+  provenance?: DataProvenance;
   current: {
     temperature: number;
     tempUnit: string;
@@ -50,27 +53,68 @@ export default function DashboardView() {
   const [advisory, setAdvisory] = useState<CropAdvisoryResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [isOfflineFallback, setIsOfflineFallback] = useState(false);
+  const [offlineError, setOfflineError] = useState(false);
 
-  const loadData = useCallback(async (district: string) => {
+  const loadData = useCallback(async (district: string, state?: string) => {
     try {
       setLoading(true);
-      const districtInfo = findDistrictInfo(district);
+      setOfflineError(false);
+      const districtInfo = findDistrictInfo(district, state);
+      const resolvedState = state || districtInfo?.state || "Maharashtra";
       const primaryCrop = (districtInfo?.crops && districtInfo.crops.length > 0) ? districtInfo.crops[0].toLowerCase() : "paddy";
 
       const [weatherRes, alertsRes, advisoryRes] = await Promise.all([
-        fetch(`/api/weather?district=${encodeURIComponent(district)}`),
-        fetch(`/api/alerts?district=${encodeURIComponent(district)}`),
-        fetch(`/api/advisory?district=${encodeURIComponent(district)}&crop=${encodeURIComponent(primaryCrop)}`),
+        fetch(`/api/weather?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}`),
+        fetch(`/api/alerts?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}`),
+        fetch(`/api/advisory?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}&crop=${encodeURIComponent(primaryCrop)}`),
       ]);
 
-      if (weatherRes.ok) setWeather(await weatherRes.json());
-      if (alertsRes.ok) {
-        const aJson = await alertsRes.json();
-        setAlerts(aJson.alerts || []);
+      if (weatherRes.ok) {
+        const wRaw = await weatherRes.json();
+        const aRaw = alertsRes.ok ? await alertsRes.json() : { alerts: [] };
+        const advRaw = advisoryRes.ok ? await advisoryRes.json() : null;
+
+        const wData = wRaw.data || wRaw;
+        const aData = aRaw.data || aRaw;
+        const advData = advRaw?.data || advRaw;
+
+        setWeather(wData);
+        setAlerts(aData.alerts || []);
+        setAdvisory(advData);
+        setIsOfflineFallback(false);
+
+        // Persist last-good snapshot to localStorage for reliable offline rendering
+        try {
+          localStorage.setItem(
+            `wg_cache_${district.toLowerCase()}`,
+            JSON.stringify({
+              weather: wData,
+              alerts: aData.alerts || [],
+              advisory: advData,
+              savedAt: Date.now(),
+            })
+          );
+        } catch {}
+      } else {
+        throw new Error("Weather service returned non-200 status");
       }
-      if (advisoryRes.ok) setAdvisory(await advisoryRes.json());
     } catch (err) {
-      console.error("Dashboard fetch error:", err);
+      console.warn("Dashboard live fetch unavailable, checking offline cache:", err);
+      try {
+        const cachedRaw = localStorage.getItem(`wg_cache_${district.toLowerCase()}`);
+        if (cachedRaw) {
+          const parsed = JSON.parse(cachedRaw);
+          if (parsed.weather) {
+            setWeather(parsed.weather);
+            setAlerts(parsed.alerts || []);
+            setAdvisory(parsed.advisory || null);
+            setIsOfflineFallback(true);
+            return;
+          }
+        }
+      } catch {}
+      setOfflineError(true);
     } finally {
       setLoading(false);
     }
@@ -79,14 +123,14 @@ export default function DashboardView() {
   useEffect(() => {
     const loc = getActiveLocation();
     setActiveLoc(loc);
-    loadData(loc.district);
+    loadData(loc.district, loc.state);
 
     const handleLocationChange = (e: Event) => {
       const custom = e as CustomEvent<{ district: string; state: string }>;
       const newDistrict = custom.detail ? custom.detail.district : getActiveLocation().district;
       const newState = custom.detail ? custom.detail.state : getActiveLocation().state;
       setActiveLoc({ district: newDistrict, state: newState });
-      loadData(newDistrict);
+      loadData(newDistrict, newState);
     };
 
     window.addEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
@@ -97,9 +141,9 @@ export default function DashboardView() {
     router.push(`/chat?q=${encodeURIComponent(text)}`);
   };
 
-  const districtInfo = findDistrictInfo(activeLoc.district);
+  const districtInfo = findDistrictInfo(activeLoc.district, activeLoc.state);
 
-  if (loading || !weather) {
+  if (loading && !weather) {
     return (
       <div className="py-12 flex flex-col items-center justify-center">
         <div className="top-loading-bar"></div>
@@ -109,6 +153,28 @@ export default function DashboardView() {
       </div>
     );
   }
+
+  if (offlineError && !weather) {
+    return (
+      <div className="py-12 flex flex-col items-center justify-center text-center px-4">
+        <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mb-3">
+          <span className="material-symbols-outlined text-2xl">wifi_off</span>
+        </div>
+        <h2 className="text-lg font-medium text-text-primary">You are currently offline</h2>
+        <p className="text-xs text-text-secondary mt-1 max-w-sm">
+          No offline snapshot is available for {activeLoc.district} yet. Please reconnect to cellular data or Wi-Fi to fetch live IMD forecasts.
+        </p>
+        <button
+          onClick={() => loadData(activeLoc.district)}
+          className="mt-4 px-4 py-2 bg-primary text-white text-xs rounded-lg font-medium hover:bg-primary/90 transition-colors"
+        >
+          Retry Connection
+        </button>
+      </div>
+    );
+  }
+
+  if (!weather) return null;
 
   const formattedIssueTime = formatISTTime(weather.issueTime);
 
@@ -134,14 +200,38 @@ export default function DashboardView() {
               Change
             </button>
           </div>
-          <p className="text-xs text-text-secondary mt-0.5">
-            Issued: {formattedIssueTime} IST · {weather.isCachedFallback ? "Cached Offline" : "IMD Live"}
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <DataStatusBadge
+              status={isOfflineFallback ? "OFFLINE" : (weather.provenance?.quality || (weather.isCachedFallback ? "CACHED" : "LIVE"))}
+              provider={weather.provenance?.provider}
+              providerName={weather.provenance?.providerName}
+              observedAt={formattedIssueTime}
+            />
+            <span className="text-xs text-text-secondary">
+              Issued: {formattedIssueTime} IST
+            </span>
+          </div>
         </div>
         <span className="text-xs px-2.5 py-1 bg-surface border border-border text-primary rounded font-medium self-start sm:self-auto">
           {districtInfo?.station || "IMD Agromet Observatory"}
         </span>
       </div>
+
+      {/* Offline Cached Data Notice */}
+      {isOfflineFallback && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-800 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="material-symbols-outlined text-base text-amber-600">cloud_off</span>
+            <span>Showing cached offline forecast for {weather.district}. Live connection currently unavailable.</span>
+          </div>
+          <button
+            onClick={() => loadData(activeLoc.district)}
+            className="text-[11px] underline font-medium hover:text-amber-950 cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Active Alerts Banner */}
       <div className="space-y-2">
@@ -187,15 +277,15 @@ export default function DashboardView() {
         <div className="flex items-start justify-between">
           <div>
             <div className="text-4xl sm:text-5xl text-text-primary font-medium tracking-tight">
-              {Math.round(weather.current.temperature)}°C
+              {weather.current.temperature !== null ? `${Math.round(weather.current.temperature)}°C` : "N/A"}
             </div>
             <p className="text-sm sm:text-base text-text-secondary mt-1">
               {weather.current.condition}
             </p>
           </div>
           <div className="text-right text-xs text-text-secondary">
-            <p>24h Rain: {weather.current.rainfallLast24h} mm</p>
-            <p className="mt-0.5">Wind: {weather.current.windDirection} {weather.current.windSpeed} km/h</p>
+            <p>24h Rain: {weather.current.rainfallLast24h !== null ? `${weather.current.rainfallLast24h} mm` : "N/A"}</p>
+            <p className="mt-0.5">Wind: {weather.current.windDirection} {weather.current.windSpeed !== null ? `${weather.current.windSpeed} km/h` : "Calm"}</p>
           </div>
         </div>
 
@@ -204,19 +294,19 @@ export default function DashboardView() {
           <div className="p-2 border border-border rounded bg-bg">
             <div className="text-[11px] uppercase tracking-wider text-text-secondary">Humidity</div>
             <div className="text-base text-text-primary font-medium mt-0.5">
-              {weather.current.humidity}%
+              {weather.current.humidity !== null ? `${weather.current.humidity}%` : "N/A"}
             </div>
           </div>
           <div className="p-2 border border-border rounded bg-bg">
             <div className="text-[11px] uppercase tracking-wider text-text-secondary">Wind Speed</div>
             <div className="text-base text-text-primary font-medium mt-0.5">
-              {weather.current.windSpeed} km/h
+              {weather.current.windSpeed !== null ? `${weather.current.windSpeed} km/h` : "N/A"}
             </div>
           </div>
           <div className="p-2 border border-border rounded bg-bg">
             <div className="text-[11px] uppercase tracking-wider text-text-secondary">Precipitation</div>
             <div className="text-base text-text-primary font-medium mt-0.5">
-              {weather.current.rainfallLast24h} mm
+              {weather.current.rainfallLast24h !== null ? `${weather.current.rainfallLast24h} mm` : "N/A"}
             </div>
           </div>
         </div>

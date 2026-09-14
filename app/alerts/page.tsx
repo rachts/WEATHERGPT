@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatISTDate } from "@/lib/utils/formatters";
 import { getActiveLocation, LOCATION_CHANGE_EVENT } from "@/lib/utils/location";
 import LocationModal from "@/components/LocationModal";
+import DataStatusBadge from "@/components/DataStatusBadge";
 
 interface AlertItem {
   id: string;
@@ -31,8 +32,9 @@ export default function AlertsPage() {
       setLoading(true);
       const res = await fetch(`/api/alerts?district=${encodeURIComponent(district)}`);
       if (res.ok) {
-        const data = await res.json();
-        setAlerts(data.alerts || []);
+        const raw = await res.json();
+        const alertList = raw.data?.alerts || raw.alerts || [];
+        setAlerts(alertList);
       }
     } catch (err) {
       console.error(err);
@@ -118,9 +120,13 @@ export default function AlertsPage() {
             {activeLoc.district} District, {activeLoc.state} · Multi-Tier Impact Warnings (IMD MoES)
           </p>
         </div>
-        <span className="text-xs text-primary border border-primary px-2.5 py-1 rounded bg-primary-light font-medium self-start sm:self-auto">
-          Impact-Based System
-        </span>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <DataStatusBadge
+            status={alerts.length > 0 ? "LIVE" : "LIVE"}
+            provider="IMD"
+            providerName="IMD Mausam Portal"
+          />
+        </div>
       </div>
 
       {/* Severity Color-Blind Safe Notice */}

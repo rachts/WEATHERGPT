@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isRateLimited } from "@/lib/utils/rate-limit";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const SATELLITE_PRODUCTS: Record<string, { url: string; mime: string }> = {
   ir1: { url: "https://mausam.imd.gov.in/Satellite/3Dasiasec_ir1.jpg", mime: "image/jpeg" },
@@ -15,22 +17,31 @@ const SATELLITE_PRODUCTS: Record<string, { url: string; mime: string }> = {
 };
 
 export async function GET(request: NextRequest) {
+  const correlationId = crypto.randomUUID();
+  const clientIp = request.headers.get("x-forwarded-for") || "unknown-ip";
+
+  if (isRateLimited(`satellite:${clientIp}`, 60, 60_000)) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded", correlationId },
+      { status: 429 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const product = searchParams.get("product") || "ir1";
-
   const target = SATELLITE_PRODUCTS[product] || SATELLITE_PRODUCTS.ir1;
 
   try {
     const res = await fetch(target.url, {
       signal: AbortSignal.timeout(8000),
       headers: {
-        "User-Agent": "WeatherGPT-IMD-Kisan/1.0 (+https://weathergpt.gov.in)",
+        "User-Agent": "WeatherGPT-OpenData/1.0 (+https://github.com/rachts/WEATHERGPT)",
       },
     });
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: `IMD Satellite Server returned HTTP ${res.status}` },
+        { error: "IMD satellite product currently unavailable", correlationId },
         { status: res.status }
       );
     }
@@ -44,8 +55,9 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err: any) {
+    console.error(`[Satellite Proxy Error - ${correlationId}]`, err);
     return NextResponse.json(
-      { error: "Failed to fetch IMD satellite image", details: err?.message },
+      { error: "Failed to fetch IMD satellite image", correlationId },
       { status: 504 }
     );
   }

@@ -66,7 +66,7 @@ export default function OnboardingPage() {
       localStorage.setItem("weathergpt_lang", language);
       localStorage.setItem("weathergpt_onboarded", "true");
     }
-    router.push("/dashboard");
+    router.push("/");
   };
 
   return (

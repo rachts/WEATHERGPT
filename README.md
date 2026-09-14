@@ -3,9 +3,10 @@
   <h1>WeatherGPT — IMD Kisan Weather</h1>
   <h3>The Institutional-Grade Conversational Weather Intelligence & Agronomic Early Warning System</h3>
   <p><b>Smart India Hackathon 2026 · Problem Statement ID: 26068</b><br/>
-  <b>Ministry of Earth Sciences (MoES) / India Meteorological Department (IMD)</b></p>
+  <b>Public Meteorology & Agriculture Track</b></p>
+  <p><i>Disclaimer: WeatherGPT is an independent weather intelligence platform integrating publicly available meteorological data and services. It is not an official application of the Ministry of Earth Sciences (MoES) or the India Meteorological Department (IMD).</i></p>
   <p>Voice-first conversational weather intelligence, real satellite imagery, Doppler radar, deterministic agromet advisories, and 4-tier impact-based warning escalation — built for Indian farmers, disaster response authorities, and rural citizens.<br/>
-  <b>Zero hallucinated warnings. 100% cited IMD data products. Sub-2s latency on 3G cellular connections.</b></p>
+  <b>Zero fabricated data. Strictly typed provenance. Sub-2s latency on 3G cellular connections.</b></p>
 
   <p>
     <a href="#quickstart">Quickstart</a> ·

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { getActiveLocation, findDistrictInfo } from "@/lib/utils/location";
 import SatelliteView from "@/components/SatelliteView";
+import DataStatusBadge from "@/components/DataStatusBadge";
 
 export interface RadarStation {
   id: string;
@@ -113,7 +114,7 @@ function generateRadarRangeGeoJson(center: [number, number]) {
 }
 
 export default function RadarPage() {
-  const [hubTab, setHubTab] = useState<"satellite" | "radar">("satellite");
+  const [hubTab, setHubTab] = useState<"satellite" | "radar">("radar");
   const [viewMode, setViewMode] = useState<"gis" | "imd_direct">("gis");
   const [imdProduct, setImdProduct] = useState<"caz" | "ppi" | "sri" | "pac" | "mosaic">("caz");
   const [selectedProduct, setSelectedProduct] = useState<"reflectivity" | "rainfall" | "cloud">("reflectivity");
@@ -169,11 +170,10 @@ export default function RadarPage() {
       const tileUrl = `https://tilecache.rainviewer.com${frame.path}/256/{z}/{x}/{y}/2/1_1.png`;
 
       try {
-        if (map.getLayer("radar-tiles-layer")) {
-          map.removeLayer("radar-tiles-layer");
-        }
-        if (map.getSource("radar-tiles")) {
-          map.removeSource("radar-tiles");
+        const existingSource = map.getSource("radar-tiles") as any;
+        if (existingSource && typeof existingSource.setTiles === "function") {
+          existingSource.setTiles([tileUrl]);
+          return;
         }
 
         // minzoom: 0, maxzoom: 7 ensures MapLibre automatically upscales z=7 tiles
@@ -270,15 +270,23 @@ export default function RadarPage() {
       ? "https://mausam.imd.gov.in/Radar/MOSAIC/Converted/mosaic.gif"
       : `https://mausam.imd.gov.in/Radar/${imdProduct}_${activeStation.imdCode}.gif`;
 
-  // Initialize MapLibre GL
+  // Initialize MapLibre GL when Radar tab and GIS mode are active
   useEffect(() => {
+    if (hubTab !== "radar" || viewMode !== "gis") return;
+
+    if (mapInstanceRef.current) {
+      setTimeout(() => mapInstanceRef.current?.resize(), 50);
+      return;
+    }
+
     let isMounted = true;
-    let maplibregl: any;
+    let resizeObs: ResizeObserver | null = null;
+    let mapInstance: any = null;
 
     async function initMap() {
       try {
         const mod = await import("maplibre-gl");
-        maplibregl = mod.default || mod;
+        const maplibregl = mod.default || mod;
 
         if (!isMounted || !mapContainerRef.current) return;
 
@@ -353,6 +361,7 @@ export default function RadarPage() {
           center: initialStation.center,
           zoom: initialStation.zoom,
         });
+        mapInstance = map;
 
         // Add Radar Antenna Marker
         const el = document.createElement("div");
@@ -384,17 +393,14 @@ export default function RadarPage() {
         });
 
         // Keep map container responsive on resize
-        const resizeObs = new ResizeObserver(() => {
-          map.resize();
+        resizeObs = new ResizeObserver(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.resize();
+          }
         });
         if (mapContainerRef.current) {
           resizeObs.observe(mapContainerRef.current);
         }
-
-        return () => {
-          resizeObs.disconnect();
-          map.remove();
-        };
       } catch (err) {
         console.error("MapLibre init error:", err);
       }
@@ -404,13 +410,17 @@ export default function RadarPage() {
 
     return () => {
       isMounted = false;
-      if (mapInstanceRef.current) {
+      if (resizeObs) {
+        resizeObs.disconnect();
+      }
+      if (mapInstance) {
         try {
-          mapInstanceRef.current.remove();
+          mapInstance.remove();
         } catch {}
       }
+      mapInstanceRef.current = null;
     };
-  }, []);
+  }, [hubTab, viewMode, currentTimeIndex, selectedProduct, radarFrames.length, updateRadarLayer]);
 
   return (
     <div className="py-4 space-y-5">
@@ -420,7 +430,7 @@ export default function RadarPage() {
           onClick={() => setHubTab("satellite")}
           className={`px-3.5 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
             hubTab === "satellite"
-              ? "bg-primary text-white font-medium shadow-xs"
+              ? "bg-primary text-white font-medium shadow-sm"
               : "text-text-secondary hover:text-text-primary"
           }`}
         >
@@ -434,7 +444,7 @@ export default function RadarPage() {
           }}
           className={`px-3.5 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
             hubTab === "radar"
-              ? "bg-primary text-white font-medium shadow-xs"
+              ? "bg-primary text-white font-medium shadow-sm"
               : "text-text-secondary hover:text-text-primary"
           }`}
         >
@@ -458,10 +468,11 @@ export default function RadarPage() {
               </p>
             </div>
             <div className="flex items-center space-x-2 self-start sm:self-auto">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="text-xs text-primary font-medium">
-                {isLiveStream ? "LIVE RADAR FEED" : "RADAR ACTIVE"}
-              </span>
+              <DataStatusBadge
+                status={viewMode === "imd_direct" ? "LIVE" : (radarFrames.length > 0 ? "LIVE" : "UNAVAILABLE")}
+                provider={viewMode === "imd_direct" ? "IMD" : "OTHER"}
+                providerName={viewMode === "imd_direct" ? "IMD Radar Network" : "RainViewer Radar Composite"}
+              />
             </div>
           </div>
 
@@ -471,7 +482,7 @@ export default function RadarPage() {
           onClick={() => setViewMode("gis")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
             viewMode === "gis"
-              ? "bg-primary text-white font-medium shadow-xs"
+              ? "bg-primary text-white font-medium shadow-sm"
               : "text-text-secondary hover:text-text-primary"
           }`}
         >
@@ -481,7 +492,7 @@ export default function RadarPage() {
           onClick={() => setViewMode("imd_direct")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
             viewMode === "imd_direct"
-              ? "bg-primary text-white font-medium shadow-xs"
+              ? "bg-primary text-white font-medium shadow-sm"
               : "text-text-secondary hover:text-text-primary"
           }`}
         >
@@ -615,7 +626,7 @@ export default function RadarPage() {
           <img
             src={imdImageUrl}
             alt={`IMD Doppler Radar ${activeStation.name}`}
-            className="max-h-[420px] w-auto object-contain rounded-md shadow-xs"
+            className="max-h-[420px] w-auto object-contain rounded-md shadow-sm"
             onError={(e) => {
               const target = e.currentTarget;
               if (!target.src.includes("/api/imd-radar")) {

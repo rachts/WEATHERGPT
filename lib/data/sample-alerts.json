@@ -1,0 +1,98 @@
+[
+  {
+    "id": "alert_raigad_01",
+    "district": "Raigad",
+    "severity": "Moderate",
+    "headline": "Thunderstorm with lightning and gusty winds",
+    "warningText": "Thunderstorm accompanied with lightning and gusty winds (30-40 kmph) at isolated places very likely over Raigad district. Valid from 13/09/2026 14:00 IST to 14/09/2026 08:30 IST. Farmers are advised to avoid staying in open fields or near tall trees during lightning events.",
+    "sourceProduct": "IMD Impact-Based Warning Bulletin (RMC Mumbai)",
+    "issueTime": "2026-09-13T14:00:00.000Z",
+    "validFrom": "2026-09-13T14:00:00.000Z",
+    "validTo": "2026-09-14T08:30:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "alert_raigad_coastal",
+    "district": "Raigad",
+    "severity": "High",
+    "headline": "Rough Sea & High Swell Waves Warning",
+    "warningText": "Squally weather with wind speed 45-55 kmph gusting to 65 kmph very likely along and off Raigad coast. Sea condition will be rough to very rough. Fishermen are strictly advised not to venture into East Central Arabian Sea along and off Maharashtra coast during next 24 hours.",
+    "sourceProduct": "IMD Coastal Weather Bulletin for Fishermen",
+    "issueTime": "2026-09-13T11:30:00.000Z",
+    "validFrom": "2026-09-13T12:00:00.000Z",
+    "validTo": "2026-09-14T12:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "alert_delhi_01",
+    "district": "New Delhi",
+    "severity": "Moderate",
+    "headline": "Dust storm and gusty surface winds (40-50 kmph)",
+    "warningText": "Gusty winds (speed reaching 40-50 kmph) accompanied with light rain/drizzle very likely at isolated places over Delhi and adjoining NCR. Avoid parking vehicles or standing under unreinforced hoardings or trees.",
+    "sourceProduct": "IMD Regional Meteorological Centre New Delhi",
+    "issueTime": "2026-09-13T13:30:00.000Z",
+    "validFrom": "2026-09-13T14:00:00.000Z",
+    "validTo": "2026-09-14T08:30:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "alert_ludhiana_01",
+    "district": "Ludhiana",
+    "severity": "Low",
+    "headline": "Isolated light showers with breezy conditions",
+    "warningText": "Isolated light to moderate rainfall likely in central Punjab districts including Ludhiana. Farmers are advised to complete paddy field bunding and withhold chemical spraying during windy afternoon hours.",
+    "sourceProduct": "IMD Meteorological Centre Chandigarh",
+    "issueTime": "2026-09-13T12:00:00.000Z",
+    "validFrom": "2026-09-13T12:00:00.000Z",
+    "validTo": "2026-09-14T18:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "alert_guntur_01",
+    "district": "Guntur",
+    "severity": "Moderate",
+    "headline": "Heavy rainfall spell in coastal Andhra Pradesh",
+    "warningText": "Heavy rainfall (7-11 cm) very likely at one or two places over Guntur, Krishna, and Bapatla districts. Ensure proper drainage channels in cotton and chilli nurseries to prevent seedling root rot.",
+    "sourceProduct": "IMD Amaravati / Visakhapatnam Cyclone Warning Centre",
+    "issueTime": "2026-09-13T10:00:00.000Z",
+    "validFrom": "2026-09-13T12:00:00.000Z",
+    "validTo": "2026-09-14T12:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "alert_chennai_01",
+    "district": "Chennai",
+    "severity": "Moderate",
+    "headline": "Squally winds and coastal swell warning",
+    "warningText": "Squally weather with wind speed 40-50 kmph gusting to 60 kmph likely along and off North Tamil Nadu coast. Fishermen are advised to be cautious when venturing into deep sea areas.",
+    "sourceProduct": "IMD Regional Meteorological Centre Chennai",
+    "issueTime": "2026-09-13T11:00:00.000Z",
+    "validFrom": "2026-09-13T12:00:00.000Z",
+    "validTo": "2026-09-14T12:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "alert_dibrugarh_01",
+    "district": "Dibrugarh",
+    "severity": "High",
+    "headline": "Intense rainfall and waterlogging alert in upper Assam",
+    "warningText": "Heavy to very heavy rainfall accompanied with thunderstorm very likely over Dibrugarh and Tinsukia. Tea estate managers are advised to keep trunk drain channels clear to prevent water stagnation in low-lying sections.",
+    "sourceProduct": "IMD Regional Meteorological Centre Guwahati",
+    "issueTime": "2026-09-13T09:30:00.000Z",
+    "validFrom": "2026-09-13T10:00:00.000Z",
+    "validTo": "2026-09-14T18:00:00.000Z",
+    "isActive": true
+  },
+  {
+    "id": "alert_srinagar_01",
+    "district": "Srinagar",
+    "severity": "Low",
+    "headline": "Light mountain rain and sudden drop in night minimum",
+    "warningText": "Light to moderate precipitation with cool gusty winds likely over valley and higher reaches. Orchard growers are advised to secure apple crop crates and wrap young grafts against sudden night chill.",
+    "sourceProduct": "IMD Meteorological Centre Srinagar",
+    "issueTime": "2026-09-13T13:00:00.000Z",
+    "validFrom": "2026-09-13T14:00:00.000Z",
+    "validTo": "2026-09-14T20:00:00.000Z",
+    "isActive": true
+  }
+]

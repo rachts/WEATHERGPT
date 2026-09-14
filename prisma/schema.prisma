@@ -71,31 +71,29 @@ model ForecastCache {
 }
 
 model Alert {
-  id            String   @id @default(uuid())
-  district      String   @default("Raigad")
-  severity      String   // "Low" | "Moderate" | "High" | "Severe"
-  headline      String
-  warningText   String   // Delivered VERBATIM from IMD product - never altered
-  sourceProduct String   // e.g. "IMD Impact-Based Warning Bulletin"
-  issueTime     DateTime
-  validFrom     DateTime
-  validTo       DateTime
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
+  id                 String   @id @default(uuid())
+  alertHash          String?  @unique
+  sourceId           String?
+  districtCode       String?
+  district           String
+  state              String?
+  severity           String   // "Low" | "Moderate" | "High" | "Severe"
+  officialSeverity   String?  // "Red" | "Orange" | "Yellow" | "Green"
+  eventType          String?
+  headline           String
+  warningText        String   // Display warning text
+  rawBulletin        String?  // Verbatim untouched text
+  normalizedBulletin String?  // Cleaned / normalized summary
+  sourceProduct      String   // e.g. "IMD Mausam District Nowcast Portal (MoES)"
+  sourceUrl          String?
+  issueTime          DateTime
+  validFrom          DateTime
+  validTo            DateTime
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
 
-  @@index([district, isActive])
+  @@index([districtCode, validTo])
+  @@index([district, validTo])
+  @@index([validFrom, validTo])
 }
 
-model BulletinEmbedding {
-  id            String   @id @default(uuid())
-  district      String   @default("Raigad")
-  product       String   // e.g. "IMD Agromet Advisory Bulletin (Raigad District)"
-  issueTime     DateTime
-  chunkIndex    Int
-  content       String   // overlapping chunk of bulletin text
-  // Stored vector representation or serialized embedding array
-  embeddingJson Json?
-  createdAt     DateTime @default(now())
-
-  @@index([district, product])
-}

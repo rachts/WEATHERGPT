@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import { I18nProvider } from "@/lib/i18n/context";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,18 +12,18 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "WeatherGPT — IMD Kisan Weather",
-  description: "Rural conversational weather intelligence for farmers by India Meteorological Department (MoES). Supports Hindi, Tamil, and English.",
+  description: "Rural conversational weather intelligence powered by IMD open data (Unofficial Student Prototype). Supports Hindi, Tamil, and English.",
   applicationName: "WeatherGPT",
-  authors: [{ name: "Ministry of Earth Sciences / IMD" }],
-  keywords: ["IMD", "Kisan Weather", "Raigad", "Agromet", "WeatherGPT", "AgriWeather", "Farmers"],
+  authors: [{ name: "WeatherGPT (Unofficial Student Prototype - SIH 2026)" }],
+  keywords: ["IMD", "Kisan Weather", "Agromet", "WeatherGPT", "AgriWeather", "Farmers", "Pan-India"],
   icons: {
     icon: "/favicon.ico",
-    apple: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     type: "website",
     title: "WeatherGPT — IMD Kisan Weather",
-    description: "Official conversational weather intelligence for rural India.",
+    description: "Powered by IMD open data — unofficial rural conversational weather prototype.",
     siteName: "WeatherGPT",
   },
 };
@@ -31,7 +32,6 @@ export const viewport: Viewport = {
   themeColor: "#2D5016",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -51,7 +51,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} min-h-screen bg-bg text-text-primary flex flex-col antialiased`}>
-        <Navigation>{children}</Navigation>
+        <I18nProvider>
+          <Navigation>{children}</Navigation>
+        </I18nProvider>
       </body>
     </html>
   );

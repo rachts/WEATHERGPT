@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 
@@ -13,7 +15,7 @@ export default function NotFound() {
       </p>
       <div className="pt-4">
         <Link
-          href="/dashboard"
+          href="/"
           className="inline-block px-4 py-2 border border-primary text-primary hover:bg-primary-light rounded-lg text-xs font-medium transition-colors"
         >
           Return to Weather Dashboard

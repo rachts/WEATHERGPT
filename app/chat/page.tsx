@@ -19,6 +19,8 @@ interface ChatMessage {
   sourceProduct?: string;
   issueTime?: string;
   timestamp: string;
+  isError?: boolean;
+  retryQuery?: string;
 }
 
 export default function ChatPage() {
@@ -44,6 +46,8 @@ function ChatContent() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const sentRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     // Check Web Speech API support
@@ -69,7 +73,8 @@ function ChatContent() {
 
     window.addEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
 
-    if (initialQuery) {
+    if (initialQuery && !sentRef.current) {
+      sentRef.current = true;
       handleSendMessage(initialQuery);
     }
     return () => window.removeEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
@@ -80,9 +85,23 @@ function ChatContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  const handleCancelRequest = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setLoading(false);
+    }
+  };
+
   const handleSendMessage = async (textToSend?: string) => {
     const queryText = (textToSend || input).trim();
     if (!queryText) return;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     const userMsg: ChatMessage = {
       id: "u_" + Date.now(),
@@ -104,6 +123,7 @@ function ChatContent() {
           district: activeLoc.district,
           language,
         }),
+        signal: abortController.signal,
       });
 
       if (res.ok) {
@@ -118,21 +138,45 @@ function ChatContent() {
           timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
         };
         setMessages((prev) => [...prev, aiMsg]);
+
+        // Auto read-aloud if enabled in settings
+        if (typeof window !== "undefined" && localStorage.getItem("weathergpt_voice") === "true") {
+          handleSpeak(data.answerText, aiMsg.id);
+        }
       } else {
+        const errJson = await res.json().catch(() => ({}));
         const aiErr: ChatMessage = {
           id: "e_" + Date.now(),
           role: "assistant",
-          content: "Could not retrieve weather intelligence. Please check connection.",
+          content: errJson.error || "Could not retrieve weather intelligence. Please check connection.",
+          isError: true,
+          retryQuery: queryText,
           sourceProduct: "WeatherGPT Service Fallback",
           issueTime: new Date().toISOString(),
           timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
         };
         setMessages((prev) => [...prev, aiErr]);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        console.log("Chat query cancelled by user");
+        return;
+      }
+      console.error("Chat network error:", err);
+      const networkErr: ChatMessage = {
+        id: "net_" + Date.now(),
+        role: "assistant",
+        content: "Network connection lost or request timed out. Please check your internet connection.",
+        isError: true,
+        retryQuery: queryText,
+        sourceProduct: "WeatherGPT Network Guard",
+        issueTime: new Date().toISOString(),
+        timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+      };
+      setMessages((prev) => [...prev, networkErr]);
     } finally {
       setLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -387,6 +431,19 @@ function ChatContent() {
                     </div>
                   )}
 
+                  {/* Retry Button on Error */}
+                  {msg.isError && msg.retryQuery && (
+                    <div className="mt-2 pt-1.5 border-t border-border/60">
+                      <button
+                        onClick={() => handleSendMessage(msg.retryQuery)}
+                        className="text-xs text-primary font-medium flex items-center space-x-1.5 border border-primary/40 px-2.5 py-1 rounded-md bg-surface hover:bg-primary-light transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">refresh</span>
+                        <span>Retry Inquiry</span>
+                      </button>
+                    </div>
+                  )}
+
                   {/* Source Citation & Issue Time Line */}
                   {msg.sourceProduct && (
                     <div className="flex items-center justify-between text-[11px] text-text-secondary pt-1 border-t border-border">
@@ -415,10 +472,20 @@ function ChatContent() {
           ))}
 
           {loading && (
-            <div className="flex items-center space-x-1.5 bg-surface-ai p-3 rounded-2xl w-20">
-              <div className="typing-dot"></div>
-              <div className="typing-dot"></div>
-              <div className="typing-dot"></div>
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1.5 bg-surface-ai p-3 rounded-2xl w-20">
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCancelRequest}
+                className="text-xs text-red-600 hover:text-red-700 border border-red-200 px-2 py-1 rounded bg-surface transition-colors"
+                title="Cancel ongoing request"
+              >
+                Cancel
+              </button>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -448,19 +515,31 @@ function ChatContent() {
           <input
             type="text"
             value={input}
+            maxLength={500}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask in Hindi, English, Tamil..."
             className="flex-1 bg-surface border border-border rounded-lg px-3.5 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-primary transition-colors"
           />
 
-          <button
-            type="submit"
-            disabled={!input.trim() || loading}
-            className="p-2.5 rounded-lg border border-primary text-primary hover:bg-primary-light disabled:opacity-40 disabled:hover:bg-transparent transition-colors flex-shrink-0"
-            title="Send query"
-          >
-            <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
-          </button>
+          {loading ? (
+            <button
+              type="button"
+              onClick={handleCancelRequest}
+              className="p-2.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
+              title="Stop request"
+            >
+              <span className="material-symbols-outlined text-[20px]">stop</span>
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              className="p-2.5 rounded-lg border border-primary text-primary hover:bg-primary-light disabled:opacity-40 disabled:hover:bg-transparent transition-colors flex-shrink-0"
+              title="Send query"
+            >
+              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </button>
+          )}
         </form>
       </div>
     </div>

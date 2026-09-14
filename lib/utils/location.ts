@@ -2,9 +2,12 @@
 // Covers all 28 States and 8 Union Territories across India (36 administrative entities, 783 districts)
 
 import indiaDistrictsData from "../data/india-districts.json";
+import { haversineDistance } from "./geo";
 
 export interface DistrictInfo {
   name: string;
+  districtCode: string; // Canonical e.g. "MH-RAIGAD", "UP-HAMIRPUR", "HP-HAMIRPUR"
+  stateCode: string;    // ISO 3166-2:IN e.g. "MH", "UP", "HP"
   headquarters?: string | null;
   lat: number;
   lon: number;
@@ -32,6 +35,45 @@ export interface StateInfo {
 }
 
 const rawData = indiaDistrictsData as StateInfo[];
+
+export const STATE_ISO_CODES: Record<string, string> = {
+  "Andhra Pradesh": "AP",
+  "Arunachal Pradesh": "AR",
+  "Assam": "AS",
+  "Bihar": "BR",
+  "Chhattisgarh": "CG",
+  "Goa": "GA",
+  "Gujarat": "GJ",
+  "Haryana": "HR",
+  "Himachal Pradesh": "HP",
+  "Jharkhand": "JH",
+  "Karnataka": "KA",
+  "Kerala": "KL",
+  "Madhya Pradesh": "MP",
+  "Maharashtra": "MH",
+  "Manipur": "MN",
+  "Meghalaya": "ML",
+  "Mizoram": "MZ",
+  "Nagaland": "NL",
+  "Odisha": "OD",
+  "Punjab": "PB",
+  "Rajasthan": "RJ",
+  "Sikkim": "SK",
+  "Tamil Nadu": "TN",
+  "Telangana": "TS",
+  "Tripura": "TR",
+  "Uttar Pradesh": "UP",
+  "Uttarakhand": "UK",
+  "West Bengal": "WB",
+  "Andaman and Nicobar Islands": "AN",
+  "Chandigarh": "CH",
+  "Dadra and Nagar Haveli and Daman and Diu": "DH",
+  "Delhi": "DL",
+  "Jammu and Kashmir": "JK",
+  "Ladakh": "LA",
+  "Lakshadweep": "LD",
+  "Puducherry": "PY",
+};
 
 // Representative regional agricultural crops by State/UT for fallback
 const STATE_DEFAULT_CROPS: Record<string, string[]> = {
@@ -74,7 +116,7 @@ const STATE_DEFAULT_CROPS: Record<string, string[]> = {
 };
 
 /**
- * Normalizes raw district info, guaranteeing non-empty crops and valid station strings
+ * Normalizes raw district info, guaranteeing canonical codes, non-empty crops, and valid station strings
  */
 function normalizeDistrict(
   d: RawDistrict,
@@ -85,9 +127,14 @@ function normalizeDistrict(
   const fallbackCrops = STATE_DEFAULT_CROPS[state] || ["Paddy", "Wheat", "Pulses"];
   const crops = (Array.isArray(d.crops) && d.crops.length > 0) ? d.crops : fallbackCrops;
   const station = d.station && d.station.trim().length > 0 ? d.station : `${d.name} Agromet Station`;
+  const stateCode = STATE_ISO_CODES[state] || state.slice(0, 2).toUpperCase();
+  const districtSlug = d.name.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  const districtCode = `${stateCode}-${districtSlug}`;
 
   return {
     name: d.name,
+    districtCode,
+    stateCode,
     headquarters: d.headquarters ?? null,
     lat: d.lat,
     lon: d.lon,
@@ -133,12 +180,27 @@ export function getDistrictsByState(stateName: string): DistrictInfo[] {
 }
 
 /**
- * Find district information by name
+ * Find district information by name and optional state
  */
-export function findDistrictInfo(districtName: string): DistrictInfo | null {
+export function findDistrictInfo(districtName: string, stateName?: string): DistrictInfo | null {
   if (!districtName) return null;
   const target = districtName.trim().toLowerCase();
+  const targetState = stateName?.trim().toLowerCase();
 
+  // If state is provided, prioritize exact match on (district, state) pair
+  if (targetState) {
+    for (const s of rawData) {
+      if (s.state.toLowerCase() === targetState) {
+        for (const d of s.districts) {
+          if (d.name.toLowerCase() === target) {
+            return normalizeDistrict(d, s.state, s.type, s.metCentre);
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback to name search across all states if state is omitted or not found
   for (const s of rawData) {
     for (const d of s.districts) {
       if (d.name.toLowerCase() === target) {
@@ -150,20 +212,42 @@ export function findDistrictInfo(districtName: string): DistrictInfo | null {
 }
 
 /**
- * Haversine formula to compute great-circle distance between two coordinates in kilometers
+ * Find district by canonical district code (e.g. "MH-RAIGAD", "UP-HAMIRPUR")
  */
-function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+export function findDistrictByCode(districtCode: string): DistrictInfo | null {
+  if (!districtCode) return null;
+  const clean = districtCode.trim().toUpperCase();
+  for (const s of rawData) {
+    const sCode = STATE_ISO_CODES[s.state] || s.state.slice(0, 2).toUpperCase();
+    for (const d of s.districts) {
+      const dCode = `${sCode}-${d.name.replace(/[^A-Za-z0-9]/g, "").toUpperCase()}`;
+      if (dCode === clean) {
+        return normalizeDistrict(d, s.state, s.type, s.metCentre);
+      }
+    }
+  }
+  return null;
+}
+
+export class UnknownDistrictError extends Error {
+  code: string;
+  constructor(district: string, state?: string) {
+    super(`Unknown agricultural district: "${district}"${state ? ` in state "${state}"` : ""}. Not found in official Indian meteorological directory.`);
+    this.name = "UnknownDistrictError";
+    this.code = "UNKNOWN_DISTRICT";
+  }
+}
+
+/**
+ * Strict resolver: returns DistrictInfo or throws UnknownDistrictError.
+ * Strictly guarantees unknown districts NEVER silently fall back to Raigad or fake coordinates.
+ */
+export function resolveDistrictOrThrow(districtName: string, stateName?: string): DistrictInfo {
+  const found = findDistrictInfo(districtName, stateName);
+  if (!found) {
+    throw new UnknownDistrictError(districtName, stateName);
+  }
+  return found;
 }
 
 /**
@@ -175,7 +259,7 @@ export function getNearestDistrict(latitude: number, longitude: number): Distric
   let minDistance = Infinity;
 
   for (const d of all) {
-    const dist = haversineDistanceKm(latitude, longitude, d.lat, d.lon);
+    const dist = haversineDistance(latitude, longitude, d.lat, d.lon);
     if (dist < minDistance) {
       minDistance = dist;
       nearest = d;
@@ -205,7 +289,7 @@ export function getActiveLocation(): { district: string; state: string } {
 export function setActiveLocation(district: string, state?: string): void {
   if (typeof window === "undefined") return;
 
-  const info = findDistrictInfo(district);
+  const info = findDistrictInfo(district, state);
   const finalState = state || (info ? info.state : "Maharashtra");
 
   localStorage.setItem("weathergpt_district", district);

@@ -224,7 +224,7 @@ export default function LocationModal({ isOpen, onClose }: LocationModalProps) {
                         </span>
                       )}
                       {isSelected && (
-                        <span className="text-[10px] text-primary border border-primary px-1.5 py-0.2 rounded font-medium">
+                        <span className="text-[10px] text-primary border border-primary px-1.5 py-0.5 rounded font-medium">
                           Active
                         </span>
                       )}

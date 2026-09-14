@@ -22,10 +22,20 @@ export interface GroundedAnswer {
   retryCount: number;
 }
 
-const INSUFFICIENT_DATA_STRINGS = {
-  "en-IN": "Official IMD bulletin data is currently insufficient for this specific inquiry in Raigad district. Please check the latest 24-hour nowcast or consult local agromet advisories.",
-  "hi-IN": "रायगढ़ जिले के लिए इस विशिष्ट प्रश्न पर आधिकारिक आईएमडी बुलेटिन में पर्याप्त जानकारी उपलब्ध नहीं है। कृपया नवीनतम मौसम पूर्वानुमान देखें।",
-  "ta-IN": "ராய்கட் மாவட்டத்திற்கான இந்த குறிப்பிட்ட கேள்விக்கு அதிகாரப்பூர்வ வானிலை அறிக்கையில் போதிய விவரங்கள் இல்லை. அண்மைய அறிவிப்பை பார்க்கவும்."
+export function getInsufficientDataString(district: string = "Raigad", language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"): string {
+  if (language === "hi-IN") {
+    return `${district} जिले के लिए इस विशिष्ट प्रश्न पर आधिकारिक आईएमडी बुलेटिन में पर्याप्त जानकारी उपलब्ध नहीं है। कृपया नवीनतम मौसम पूर्वानुमान देखें।`;
+  }
+  if (language === "ta-IN") {
+    return `${district} மாவட்டத்திற்கான இந்த குறிப்பிட்ட கேள்விக்கு அதிகாரப்பூர்வ வானிலை அறிக்கையில் போதிய விவரங்கள் இல்லை. அண்மைய அறிவிப்பை பார்க்கவும்.`;
+  }
+  return `Official IMD bulletin data is currently insufficient for this specific inquiry in ${district} district. Please check the latest 24-hour nowcast or consult local agromet advisories.`;
+}
+
+export const INSUFFICIENT_DATA_STRINGS = {
+  "en-IN": getInsufficientDataString("Raigad", "en-IN"),
+  "hi-IN": getInsufficientDataString("Raigad", "hi-IN"),
+  "ta-IN": getInsufficientDataString("Raigad", "ta-IN"),
 };
 
 /**
@@ -86,8 +96,8 @@ export async function generateGroundedResponse(
     if (passages.length === 0) {
       // Out of corpus / insufficient data
       return {
-        text: INSUFFICIENT_DATA_STRINGS[language] || INSUFFICIENT_DATA_STRINGS["en-IN"],
-        sourceProduct: "IMD Raigad Meteorological Center",
+        text: getInsufficientDataString(district, language),
+        sourceProduct: `IMD ${district} Agromet Information Service`,
         issueTime: new Date().toISOString(),
         citedPassages: [],
         isInsufficient: true,
@@ -131,8 +141,8 @@ export async function generateGroundedResponse(
 
   // Fallback after retries
   return {
-    text: INSUFFICIENT_DATA_STRINGS[language] || INSUFFICIENT_DATA_STRINGS["en-IN"],
-    sourceProduct: "IMD Agromet Advisory Bulletin",
+    text: getInsufficientDataString(district, language),
+    sourceProduct: `IMD ${district} Agromet Advisory Bulletin (Retransmitted)`,
     issueTime: new Date().toISOString(),
     citedPassages: [],
     isInsufficient: true,

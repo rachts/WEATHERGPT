@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { getActiveLocation, LOCATION_CHANGE_EVENT } from "@/lib/utils/location";
 import LocationModal from "@/components/LocationModal";
+import { useTranslation } from "@/lib/i18n/context";
 
 export default function SettingsPage() {
+  const { t, lang, setLanguage } = useTranslation();
   const [activeLoc, setActiveLoc] = useState(() => getActiveLocation());
-  const [language, setLanguage] = useState<"hi-IN" | "ta-IN" | "en-IN">("hi-IN");
   const [voiceOutput, setVoiceOutput] = useState(true);
   const [smsForecast, setSmsForecast] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(true);
@@ -16,8 +17,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("weathergpt_lang") as any;
-      if (stored) setLanguage(stored);
       const voice = localStorage.getItem("weathergpt_voice");
       if (voice !== null) setVoiceOutput(voice === "true");
     }
@@ -39,9 +38,8 @@ export default function SettingsPage() {
     return () => window.removeEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
   }, []);
 
-  const handleLanguageChange = (lang: "hi-IN" | "ta-IN" | "en-IN") => {
-    setLanguage(lang);
-    localStorage.setItem("weathergpt_lang", lang);
+  const handleLanguageChange = (newLang: "hi-IN" | "ta-IN" | "en-IN") => {
+    setLanguage(newLang);
     showToast();
   };
 
@@ -66,7 +64,7 @@ export default function SettingsPage() {
 
       {savedToast && (
         <div className="fixed top-16 right-4 bg-primary text-white text-xs px-3 py-1.5 rounded shadow-none z-50">
-          Preferences saved
+          {t.actions.save}
         </div>
       )}
 
@@ -74,10 +72,10 @@ export default function SettingsPage() {
       <div className="border-b border-border pb-3 flex items-center justify-between">
         <div>
           <h1 className="text-xl sm:text-2xl text-text-primary font-medium tracking-tight">
-            Settings & Preferences
+            {t.settings.title}
           </h1>
           <p className="text-xs text-text-secondary mt-0.5">
-            Regional dialect, notifications, and telemetry
+            {t.settings.subtitle}
           </p>
         </div>
         <span className="text-xs text-text-secondary border border-border px-2 py-0.5 rounded">
@@ -90,13 +88,13 @@ export default function SettingsPage() {
         {/* Language Selector */}
         <div className="p-4 flex items-center justify-between">
           <div>
-            <div className="text-sm font-medium text-text-primary">Response Language</div>
+            <div className="text-sm font-medium text-text-primary">{t.settings.languageTitle}</div>
             <div className="text-xs text-text-secondary mt-0.5">
-              Natural language speech and text phrasing
+              {t.settings.languageDesc}
             </div>
           </div>
           <select
-            value={language}
+            value={lang}
             onChange={(e) => handleLanguageChange(e.target.value as any)}
             className="text-xs p-1.5 border border-border rounded bg-bg text-text-primary focus:outline-none focus:border-primary font-medium"
           >
@@ -127,9 +125,9 @@ export default function SettingsPage() {
         {/* Voice Read-Aloud Toggle */}
         <div className="p-4 flex items-center justify-between">
           <div>
-            <div className="text-sm font-medium text-text-primary">Voice Output (TTS)</div>
+            <div className="text-sm font-medium text-text-primary">{t.settings.voiceTitle}</div>
             <div className="text-xs text-text-secondary mt-0.5">
-              Speak answers aloud on device using local Web Speech synthesis
+              {t.settings.voiceDesc}
             </div>
           </div>
           {/* 1px bordered switch, moss-green ON per Design_v2.md */}
@@ -155,9 +153,14 @@ export default function SettingsPage() {
         {/* Web Push Notifications */}
         <div className="p-4 flex items-center justify-between">
           <div>
-            <div className="text-sm font-medium text-text-primary">In-App & Push Warnings</div>
+            <div className="text-sm font-medium text-text-primary flex items-center gap-2">
+              <span>{t.settings.pushTitle}</span>
+              <span className="text-[10px] text-text-secondary border border-border px-1.5 py-0.5 rounded">
+                Coming soon (VAPID key pending)
+              </span>
+            </div>
             <div className="text-xs text-text-secondary mt-0.5">
-              Receive immediate notifications for Moderate, High, and Severe weather alerts
+              {t.settings.pushDesc}
             </div>
           </div>
           <button
@@ -186,13 +189,13 @@ export default function SettingsPage() {
         <div className="p-4 flex items-center justify-between opacity-80">
           <div>
             <div className="text-sm font-medium text-text-primary flex items-center gap-2">
-              <span>Daily SMS Digest</span>
-              <span className="text-[10px] text-text-secondary border border-border px-1.5 py-0.2 rounded">
-                Production Target (Stub)
+              <span>{t.settings.smsTitle}</span>
+              <span className="text-[10px] text-text-secondary border border-border px-1.5 py-0.5 rounded">
+                Coming soon (Requires C-DOT Gateway)
               </span>
             </div>
             <div className="text-xs text-text-secondary mt-0.5">
-              SMS gateway requires paid telecom carrier integration (C-DOT / CDAC)
+              {t.settings.smsDesc}
             </div>
           </div>
           <button
@@ -225,13 +228,14 @@ export default function SettingsPage() {
         </h2>
         <div className="bg-surface border border-border rounded-xl p-4 space-y-2.5 text-xs text-text-secondary leading-relaxed">
           <p>
-            <strong>Official IMD Data Source:</strong> Weather observations, nowcasts, and bulletins
-            are ingested from the India Meteorological Department (MoES, Government of India).
+            <strong>IMD Open Data Attribution:</strong> Weather observations, nowcasts, and bulletins
+            are sourced from India Meteorological Department (IMD) open data layers. WeatherGPT is an
+            independent, unofficial student prototype developed for Smart India Hackathon (SIH 2026, PS 26068).
           </p>
           <p>
-            <strong>AI-Usage Disclosure:</strong> Responses are phrased by an AI language model over
-            verified IMD meteorological data. Forecast numbers, temperatures, rain metrics, and
-            warning text are <em>never authored or hallucinated by the AI</em>.
+            <strong>Deterministic Engine Disclosure:</strong> Responses are generated by a deterministic,
+            rule-based agronomic query engine over verified meteorological observations. Forecast numbers,
+            temperatures, rain metrics, and warning text are <em>strictly retrieved from data feeds and never hallucinated</em>.
           </p>
           <p>
             <strong>Offline Operation:</strong> When disconnected from cellular network, WeatherGPT
@@ -242,10 +246,12 @@ export default function SettingsPage() {
               Privacy Policy
             </Link>
             <a
-              href="mailto:imd-kisan@imd.gov.in"
+              href="https://github.com/rachts/WEATHERGPT/issues"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-text-secondary hover:text-text-primary"
             >
-              Contact Support: imd-kisan@imd.gov.in
+              Report Feedback (GitHub)
             </a>
           </div>
         </div>
@@ -260,25 +266,24 @@ export default function SettingsPage() {
           <div className="p-4 space-y-1">
             <h3 className="font-medium text-text-primary">1. Where does the weather data originate?</h3>
             <p className="text-text-secondary leading-relaxed">
-              All forecasts, Doppler radar scans, and bulletins originate from the India Meteorological
-              Department (MoES) Regional Meteorological Centre Mumbai and data.gov.in APIs, with
-              Open-Meteo as a documented secondary fallback.
+              Surface observations originate from IMD observatory stations across India. When an observatory
+              is temporarily offline, numerical agromet model forecasts from Open-Meteo serve as calibrated
+              secondary fallback, clearly labeled as such.
             </p>
           </div>
           <div className="p-4 space-y-1">
-            <h3 className="font-medium text-text-primary">2. Why is only Raigad district available?</h3>
+            <h3 className="font-medium text-text-primary">2. How does the offline mode work?</h3>
             <p className="text-text-secondary leading-relaxed">
-              For the SIH 2026 prototype (PS ID 26068), Raigad district was selected due to its
-              vulnerability to cyclone landfalls and high rural agricultural density. Full national
-              coverage is planned for the production phase.
+              Every successfully retrieved forecast is written to local browser cache. If your
+              mobile connection drops in the field, WeatherGPT automatically serves your district&apos;s latest
+              cached snapshot with an explicit timestamp.
             </p>
           </div>
           <div className="p-4 space-y-1">
-            <h3 className="font-medium text-text-primary">3. How does WeatherGPT work offline?</h3>
+            <h3 className="font-medium text-text-primary">3. Is my location data shared with third parties?</h3>
             <p className="text-text-secondary leading-relaxed">
-              The application is a progressive web app (PWA) with a local service worker cache. If
-              network drops, WeatherGPT serves the last known forecast with its exact original issue
-              time clearly displayed.
+              No. GPS coordinates are converted locally in your browser to your nearest district using
+              pre-bundled district geometries. Coordinates are never sold, tracked, or sent to ad brokers.
             </p>
           </div>
           <div className="p-4 space-y-1">
@@ -303,7 +308,7 @@ export default function SettingsPage() {
       {/* Emergency Crisis Helpline Footer */}
       <footer className="text-center py-4 border-t border-border space-y-1 text-xs text-text-secondary">
         <p>National Tele Mental Health Programme: Tele MANAS toll-free 14416 (24/7)</p>
-        <p>© 2026 India Meteorological Department, Ministry of Earth Sciences</p>
+        <p>© 2026 WeatherGPT · Powered by IMD open data (Unofficial Student Prototype)</p>
       </footer>
     </div>
   );

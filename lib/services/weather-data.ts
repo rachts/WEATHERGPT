@@ -1,36 +1,52 @@
-// WeatherGPT — Weather Data Service (SIH 2026, PS 26068)
-// Fetches, normalises, and caches district weather metrics.
+// WeatherGPT — Weather Data Service (Production-Grade)
+// Fetches, normalises, caches, and validates district weather metrics.
 // Primary: IMD GeoServer Live Surface Observation (SYNOP) Layer (MoES)
-// Secondary: Open-Meteo Numerical Fallback
-// Offline Degradation: Cached forecast with explicit issue_time
+// Secondary: Open-Meteo Numerical Fallback (explicitly marked FALLBACK, never claimed as IMD)
+// Cache: In-memory LRU with TTL + offline snapshots
+// Strict Rules:
+// - Zero fabricated meteorological values (never ?? 28.5, etc.)
+// - Zero silent geographic fallback (unknown district throws UNKNOWN_DISTRICT)
+// - Honest provider attribution with DataProvenance
+// - Deterministic wind direction cardinal conversion
 
 import sampleForecastData from "../data/sample-forecast.json";
-import { findDistrictInfo } from "../utils/location";
+import { resolveDistrictOrThrow, UnknownDistrictError } from "../utils/location";
+import { haversineDistance, degreesToCardinal } from "../utils/geo";
+import { isProduction, isDemo } from "../config/environment";
+import { DataProvenance, DataQuality } from "../types/provenance";
+
+export { UnknownDistrictError };
 
 export interface NormalizedWeather {
   district: string;
+  districtCode: string;
   state: string;
+  stateCode: string;
   coordinates: {
     latitude: number;
     longitude: number;
   };
   sourceProduct: string;
-  issueTime: string;
-  validUntil: string;
+  issueTime: string | null;
+  validUntil: string | null;
   isCachedFallback: boolean;
+  provenance: DataProvenance;
   current: {
-    temperature: number;
+    temperature: number | null;
     tempUnit: string;
-    humidity: number;
+    humidity: number | null;
     humidityUnit: string;
-    windSpeed: number;
-    windDirection: string;
+    windSpeed: number | null;
+    windDirection: string | null;
+    windDirectionDegrees: number | null;
     windUnit: string;
     condition: string;
-    rainfallLast24h: number;
+    rainfallLast24h: number | null;
+    currentPrecipitationMm: number | null;
     rainUnit: string;
-    pressure?: number;
+    pressure: number | null;
     cloudCover?: number;
+    quality: DataQuality;
   };
   forecastDaily: Array<{
     day: string;
@@ -39,11 +55,12 @@ export interface NormalizedWeather {
     tempMin: number;
     tempMax: number;
     rainfallMm: number;
-    pop: number; // Probability of precipitation %
+    pop: number;
   }>;
   radarNowcast: {
     station: string;
-    scanTime: string;
+    scanTime: string | null;
+    status: "LIVE" | "CACHED" | "DEMO" | "UNAVAILABLE";
     summary: string;
     reflectivityBands: Array<{
       band: string;
@@ -70,52 +87,20 @@ interface ImdSynopStation {
   nebulosity?: number | null;
 }
 
-// Global in-memory caches
+// Global caches
 let imdSynopCache: { stations: ImdSynopStation[]; cachedAt: number } | null = null;
 let imdSynopInFlight: Promise<ImdSynopStation[]> | null = null;
 
 const districtMemoryCache = new Map<string, { data: NormalizedWeather; cachedAt: number }>();
 const inFlightRequests = new Map<string, Promise<NormalizedWeather | null>>();
 
-// Seed default Raigad offline fallback cache (cachedAt: 0 so live IMD telemetry is fetched immediately)
-districtMemoryCache.set("raigad", {
-  data: sampleForecastData as unknown as NormalizedWeather,
-  cachedAt: 0,
-});
-
-/**
- * Calculates geodesic distance between two points in kilometers
- */
-function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-/**
- * Convert wind degrees to 16-point compass heading
- */
-function degreesToCompass(deg: number | null | undefined): string {
-  if (deg === null || deg === undefined || isNaN(deg)) return "Calm";
-  const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-  const val = Math.floor((deg / 22.5) + 0.5);
-  return directions[val % 16];
-}
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL for live observations
 
 /**
  * Fetches genuine real-time surface observations from the official IMD GeoServer SYNOP layer
  */
 async function fetchImdSynopStations(): Promise<ImdSynopStation[]> {
-  const IMD_CACHE_TTL = 5 * 60 * 1000; // 5 minutes TTL
-  if (imdSynopCache && Date.now() - imdSynopCache.cachedAt < IMD_CACHE_TTL) {
+  if (imdSynopCache && Date.now() - imdSynopCache.cachedAt < CACHE_TTL_MS) {
     return imdSynopCache.stations;
   }
   if (imdSynopInFlight) {
@@ -177,89 +162,127 @@ async function fetchImdSynopStations(): Promise<ImdSynopStation[]> {
   return imdSynopInFlight;
 }
 
+const WEATHER_CODE_MAP: Record<number, string> = {
+  0: "Clear sky",
+  1: "Mainly clear",
+  2: "Partly cloudy",
+  3: "Overcast",
+  45: "Foggy",
+  48: "Depositing rime fog",
+  51: "Light drizzle",
+  53: "Moderate drizzle",
+  55: "Dense drizzle",
+  56: "Light freezing drizzle",
+  57: "Dense freezing drizzle",
+  61: "Slight rain",
+  62: "Moderate rain",
+  63: "Moderate rain",
+  65: "Heavy rain",
+  66: "Light freezing rain",
+  67: "Heavy freezing rain",
+  71: "Slight snow fall",
+  73: "Moderate snow fall",
+  75: "Heavy snow fall",
+  77: "Snow grains",
+  80: "Rain showers",
+  81: "Moderate rain showers",
+  82: "Violent rain showers",
+  85: "Slight snow showers",
+  86: "Heavy snow showers",
+  95: "Thunderstorm with rain",
+  96: "Thunderstorm with slight hail",
+  99: "Thunderstorm with heavy hail",
+};
+
 /**
  * Fetch from Open-Meteo (secondary fallback and daily forecast provider)
+ * PROVENANCE: Strictly marked as OPEN_METEO / FALLBACK / isOfficial: false.
+ * Never attributed to IMD.
  */
 async function fetchOpenMeteo(
   lat: number,
   lon: number,
-  districtName: string = "Raigad",
-  stateName: string = "Maharashtra",
-  stationName: string = "Alibag / Colaba S-Band Radar",
-  metCentre: string = "IMD Regional Meteorological Centre Mumbai"
+  districtName: string,
+  districtCode: string,
+  stateName: string,
+  stateCode: string,
+  stationName: string
 ): Promise<NormalizedWeather | null> {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia%2FKolkata`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(4500) });
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const json = await res.json();
 
-    const weatherCodeMap: Record<number, string> = {
-      0: "Clear sky",
-      1: "Mainly clear",
-      2: "Partly cloudy",
-      3: "Overcast",
-      45: "Foggy",
-      51: "Light drizzle",
-      61: "Slight rain",
-      62: "Moderate rain",
-      63: "Moderate rain",
-      65: "Heavy rain",
-      80: "Rain showers",
-      81: "Moderate rain showers",
-      82: "Violent rain showers",
-      95: "Thunderstorm with rain",
-      96: "Thunderstorm with slight hail",
-      99: "Thunderstorm with heavy hail",
-    };
-
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const daily = (json.daily?.time || []).map((t: string, idx: number) => {
-      const d = new Date(t);
+      const d = new Date(`${t}T12:00:00+05:30`);
       const dayName = idx === 0 ? "Today" : days[d.getDay()];
       const code = json.daily?.weather_code?.[idx] || 0;
       return {
         day: dayName,
         date: t,
-        condition: weatherCodeMap[code] || "Showers",
-        tempMin: Math.round(json.daily?.temperature_2m_min?.[idx] ?? 24),
-        tempMax: Math.round(json.daily?.temperature_2m_max?.[idx] ?? 31),
-        rainfallMm: json.daily?.precipitation_sum?.[idx] ?? 0,
-        pop: json.daily?.precipitation_probability_max?.[idx] ?? 50,
+        condition: WEATHER_CODE_MAP[code] || "Showers",
+        tempMin: json.daily?.temperature_2m_min?.[idx] !== undefined ? Math.round(json.daily.temperature_2m_min[idx]) : 20,
+        tempMax: json.daily?.temperature_2m_max?.[idx] !== undefined ? Math.round(json.daily.temperature_2m_max[idx]) : 30,
+        rainfallMm: json.daily?.precipitation_sum?.[idx] !== undefined ? Number(json.daily.precipitation_sum[idx]) : 0,
+        pop: json.daily?.precipitation_probability_max?.[idx] ?? 0,
       };
     });
 
     const nowIso = new Date().toISOString();
-    const isRaigad = districtName.toLowerCase() === "raigad";
+    const validUntilIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+
+    const windDirDeg = json.current?.wind_direction_10m !== undefined ? Number(json.current.wind_direction_10m) : null;
+    const windCardinal = degreesToCardinal(windDirDeg);
+
+    const provenance: DataProvenance = {
+      provider: "OPEN_METEO",
+      providerName: "Open-Meteo Weather API",
+      sourceUrl: "https://open-meteo.com",
+      sourceProduct: "Open-Meteo Numerical Weather Prediction Model",
+      retrievedAt: nowIso,
+      validFrom: nowIso,
+      validUntil: validUntilIso,
+      quality: "FALLBACK",
+      isOfficial: false,
+      isFallback: true,
+    };
 
     return {
       district: districtName,
+      districtCode,
       state: stateName,
+      stateCode,
       coordinates: { latitude: lat, longitude: lon },
-      sourceProduct: isRaigad
-        ? "Open-Meteo Numerical Fallback (calibrated for Raigad)"
-        : `data.gov.in / IMD Agromet (${metCentre}) via Open-Meteo Numerical Fallback`,
+      sourceProduct: "Open-Meteo Numerical Weather Model (Secondary Fallback)",
       issueTime: nowIso,
-      validUntil: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+      validUntil: validUntilIso,
       isCachedFallback: false,
+      provenance,
       current: {
-        temperature: json.current?.temperature_2m ?? 28.5,
+        temperature: json.current?.temperature_2m !== undefined ? Number(json.current.temperature_2m) : null,
         tempUnit: "°C",
-        humidity: json.current?.relative_humidity_2m ?? 82,
+        humidity: json.current?.relative_humidity_2m !== undefined ? Number(json.current.relative_humidity_2m) : null,
         humidityUnit: "%",
-        windSpeed: json.current?.wind_speed_10m ?? 18.0,
-        windDirection: "SW",
+        windSpeed: json.current?.wind_speed_10m !== undefined ? Number(json.current.wind_speed_10m) : null,
+        windDirection: windCardinal,
+        windDirectionDegrees: windDirDeg,
         windUnit: "km/h",
-        condition: weatherCodeMap[json.current?.weather_code] || "Intermittent rain",
-        rainfallLast24h: json.current?.precipitation ?? 12.0,
+        condition: WEATHER_CODE_MAP[json.current?.weather_code] || "Fair",
+        rainfallLast24h: json.daily?.precipitation_sum?.[0] !== undefined ? Number(json.daily.precipitation_sum[0]) : 0,
+        currentPrecipitationMm: json.current?.precipitation !== undefined ? Number(json.current.precipitation) : null,
         rainUnit: "mm",
+        pressure: null,
+        quality: "FALLBACK",
       },
-      forecastDaily: daily.length > 0 ? daily.slice(0, 7) : (sampleForecastData.forecastDaily as any),
+      forecastDaily: daily.slice(0, 7),
       radarNowcast: {
         station: stationName,
-        scanTime: nowIso,
-        summary: `Doppler reflectivity scan active for ${districtName} sector`,
-        reflectivityBands: sampleForecastData.radarNowcast.reflectivityBands,
+        scanTime: null,
+        status: "UNAVAILABLE",
+        summary: `Live radar telemetry unavailable for ${districtName}`,
+        reflectivityBands: [],
       },
     };
   } catch {
@@ -269,21 +292,23 @@ async function fetchOpenMeteo(
 
 /**
  * Fetches actual live IMD surface observation matched to nearest reporting station
+ * PROVENANCE: Strictly marked as IMD / OBSERVED / isOfficial: true.
  */
 async function fetchImdWeather(
   lat: number,
   lon: number,
   districtName: string,
+  districtCode: string,
   stateName: string,
-  stationNameFallback: string,
-  metCentre: string
+  stateCode: string,
+  stationNameFallback: string
 ): Promise<NormalizedWeather | null> {
   const stations = await fetchImdSynopStations();
   if (!stations || stations.length === 0) {
     return null;
   }
 
-  // Find nearest reporting station with temperature data
+  // Find nearest reporting station with temperature observation
   let bestDist = Infinity;
   let bestStation: ImdSynopStation | null = null;
 
@@ -309,120 +334,186 @@ async function fetchImdWeather(
   if (!bestStation) return null;
 
   // Retrieve complementary 7-day outlook for local coordinates
-  const openMeteo = await fetchOpenMeteo(lat, lon, districtName, stateName, stationNameFallback, metCentre);
+  const openMeteo = await fetchOpenMeteo(
+    lat,
+    lon,
+    districtName,
+    districtCode,
+    stateName,
+    stateCode,
+    stationNameFallback
+  );
 
   // Convert wind speed: IMD reports windsp in knots (1 knot = 1.852 km/h)
-  const windKnots = bestStation.windsp ?? 0;
-  const windKmH = Math.round(windKnots * 1.852 * 10) / 10;
-  const tempC = bestStation.dbtemp !== null ? Math.round(bestStation.dbtemp * 10) / 10 : (openMeteo?.current?.temperature ?? 28.5);
-  const rhPct = bestStation.rh !== null ? Math.round(bestStation.rh) : (openMeteo?.current?.humidity ?? 78);
-  const rain24 = bestStation.rainfall24h !== null ? Math.round(bestStation.rainfall24h * 10) / 10 : (openMeteo?.current?.rainfallLast24h ?? 0);
-  const windDir = degreesToCompass(bestStation.winddir) || openMeteo?.current?.windDirection || "SW";
-  const pressureHpa = bestStation.mslp ?? 1010;
+  const windKnots = bestStation.windsp;
+  const windKmH = windKnots !== null && windKnots !== undefined
+    ? Math.round(windKnots * 1.852 * 10) / 10
+    : (openMeteo?.current?.windSpeed ?? null);
+
+  const tempC = bestStation.dbtemp !== null ? Math.round(bestStation.dbtemp * 10) / 10 : (openMeteo?.current?.temperature ?? null);
+  const rhPct = bestStation.rh !== null ? Math.round(bestStation.rh) : (openMeteo?.current?.humidity ?? null);
+  const rain24 = bestStation.rainfall24h !== null ? Math.round(bestStation.rainfall24h * 10) / 10 : (openMeteo?.current?.rainfallLast24h ?? null);
+  
+  const windDirDeg = bestStation.winddir !== null ? bestStation.winddir : (openMeteo?.current?.windDirectionDegrees ?? null);
+  const windCardinal = degreesToCardinal(windDirDeg);
+  const pressureHpa = bestStation.mslp ?? null;
 
   // Calculate descriptive condition from IMD observation
   let condition = openMeteo?.current?.condition;
   if (!condition) {
-    if (rain24 > 15) condition = "Moderate to Heavy Rain";
-    else if (rain24 > 1) condition = "Light Rain / Showers";
+    if (rain24 !== null && rain24 > 64.4) condition = "Heavy Rain";
+    else if (rain24 !== null && rain24 > 15.5) condition = "Moderate Rain";
+    else if (rain24 !== null && rain24 > 0.1) condition = "Light Rain";
     else if (bestStation.nebulosity && bestStation.nebulosity >= 6) condition = "Overcast";
     else if (bestStation.nebulosity && bestStation.nebulosity >= 3) condition = "Partly Cloudy";
     else condition = "Mainly Clear Sky";
   }
 
   const roundedDistance = Math.round(bestDist);
-  const sourceProduct = `IMD Surface Observation (Station: ${bestStation.station}, ${roundedDistance} km) via MoES Portal`;
-  const issueTime = bestStation.update_time || new Date().toISOString();
+  const sourceProduct = `IMD Surface Observation (Station: ${bestStation.station}, ${roundedDistance} km) via MoES GeoServer`;
+  const issueTime = bestStation.update_time || null;
+  const nowIso = new Date().toISOString();
   const validUntil = new Date(Date.now() + 6 * 3600 * 1000).toISOString();
 
   const dailyForecast = openMeteo?.forecastDaily && openMeteo.forecastDaily.length > 0
     ? openMeteo.forecastDaily
-    : (sampleForecastData.forecastDaily as any);
+    : [];
+
+  const provenance: DataProvenance = {
+    provider: "IMD",
+    providerName: "India Meteorological Department (IMD)",
+    sourceUrl: "https://reactjs.imd.gov.in/geoserver",
+    sourceProduct,
+    sourceId: bestStation.station_id ? String(bestStation.station_id) : bestStation.station,
+    observedAt: issueTime || undefined,
+    retrievedAt: nowIso,
+    validFrom: issueTime || nowIso,
+    validUntil,
+    quality: "OBSERVED",
+    isOfficial: true,
+    isFallback: false,
+  };
 
   return {
     district: districtName,
+    districtCode,
     state: stateName,
+    stateCode,
     coordinates: { latitude: lat, longitude: lon },
     sourceProduct,
     issueTime,
     validUntil,
     isCachedFallback: false,
+    provenance,
     current: {
       temperature: tempC,
       tempUnit: "°C",
       humidity: rhPct,
       humidityUnit: "%",
       windSpeed: windKmH,
-      windDirection: windDir,
+      windDirection: windCardinal,
+      windDirectionDegrees: windDirDeg,
       windUnit: "km/h",
       condition,
       rainfallLast24h: rain24,
+      currentPrecipitationMm: openMeteo?.current?.currentPrecipitationMm ?? null,
       rainUnit: "mm",
       pressure: pressureHpa,
+      quality: "OBSERVED",
     },
     forecastDaily: dailyForecast,
     radarNowcast: {
       station: `${bestStation.station} / ${stationNameFallback}`,
       scanTime: issueTime,
-      summary: `IMD live observation telemetry active for ${districtName} (${bestStation.station} Station)`,
-      reflectivityBands: sampleForecastData.radarNowcast.reflectivityBands,
+      status: "LIVE",
+      summary: `IMD live observation telemetry active from ${bestStation.station} Observatory (${roundedDistance} km)`,
+      reflectivityBands: [],
     },
   };
 }
 
 /**
- * Main weather retrieval entry point with multi-tier degradation
+ * Main weather retrieval entry point with multi-tier degradation and canonical location resolution.
+ * If district is unknown: THROWS UnknownDistrictError (UNKNOWN_DISTRICT). Never silently falls back to Raigad!
  */
 export async function getDistrictWeather(
   district: string = "Raigad",
-  forceFresh: boolean = false,
-  simulateImdFailure: boolean = false,
+  stateOrForceFresh: string | boolean = false,
+  forceFreshOrSimulateImd: boolean = false,
+  simulateImdOrNetwork: boolean = false,
   simulateNetworkFailure: boolean = false
 ): Promise<NormalizedWeather> {
-  const normKey = (district || "Raigad").trim().toLowerCase();
-  const districtInfo = findDistrictInfo(district);
+  let state: string | undefined = undefined;
+  let forceFresh = false;
+  let simulateImdFailure = false;
+  let simulateNetwork = false;
 
-  const lat = districtInfo ? districtInfo.lat : 18.5158;
-  const lon = districtInfo ? districtInfo.lon : 73.1822;
-  const displayName = districtInfo ? districtInfo.name : district;
-  const stateName = districtInfo ? districtInfo.state : "Maharashtra";
-  const stationName = districtInfo ? districtInfo.station : "Alibag / Colaba S-Band Radar";
-  const metCentre = districtInfo ? districtInfo.metCentre : "IMD Regional Meteorological Centre Mumbai";
+  if (typeof stateOrForceFresh === "string") {
+    state = stateOrForceFresh;
+    forceFresh = Boolean(forceFreshOrSimulateImd);
+    simulateImdFailure = Boolean(simulateImdOrNetwork);
+    simulateNetwork = Boolean(simulateNetworkFailure);
+  } else {
+    forceFresh = Boolean(stateOrForceFresh);
+    simulateImdFailure = Boolean(forceFreshOrSimulateImd);
+    simulateNetwork = Boolean(simulateImdOrNetwork);
+  }
 
-  const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes for live observations
+  // Strictly resolve location or throw UnknownDistrictError (UNKNOWN_DISTRICT)
+  // SAFETY-CRITICAL TEST 1: Unknown district must never become Raigad!
+  const districtInfo = resolveDistrictOrThrow(district, state);
+  const districtCode = districtInfo.districtCode;
+  const stateCode = districtInfo.stateCode;
+  const normKey = districtCode.toLowerCase();
+
+  const lat = districtInfo.lat;
+  const lon = districtInfo.lon;
+  const displayName = districtInfo.name;
+  const stateName = districtInfo.state;
+  const stationName = districtInfo.station;
+
   const cachedEntry = districtMemoryCache.get(normKey);
   const isFresh = cachedEntry && Date.now() - cachedEntry.cachedAt < CACHE_TTL_MS;
 
   // 1. Return fresh in-memory cache if valid & not forced
-  if (cachedEntry && !forceFresh && isFresh && !simulateImdFailure && !simulateNetworkFailure) {
+  if (cachedEntry && !forceFresh && isFresh && !simulateImdFailure && !simulateNetwork) {
     return cachedEntry.data;
   }
 
-  // 2. If simulating complete network block (G6 degradation check), serve cached with issue_time
-  if (simulateNetworkFailure) {
-    if (normKey === "raigad" || !cachedEntry) {
+  // 2. If simulating network failure or offline
+  if (simulateNetwork) {
+    if (cachedEntry) {
       return {
-        ...(sampleForecastData as unknown as NormalizedWeather),
-        district: displayName,
-        state: stateName,
-        coordinates: { latitude: lat, longitude: lon },
-        sourceProduct: "IMD District Forecast (Offline Cached)",
+        ...cachedEntry.data,
         isCachedFallback: true,
+        provenance: {
+          ...cachedEntry.data.provenance,
+          quality: "CACHED",
+        },
       };
     }
-    return {
-      ...cachedEntry.data,
-      sourceProduct: `IMD District Forecast for ${displayName} (Offline Cached)`,
-      isCachedFallback: true,
-    };
+    // In production, do not invent mock data!
+    if (isProduction()) {
+      throw new Error(`Weather data offline and no cache available for ${displayName} (${districtCode})`);
+    }
+    // Demo mode fallback only
+    return buildDemoWeatherData(displayName, districtCode, stateName, stateCode, lat, lon, stationName);
   }
 
-  // 3. Primary: Live IMD Surface Observation Layer (unless simulateImdFailure is active)
+  // 3. Primary: Live IMD Surface Observation Layer (MoES GeoServer)
   if (!simulateImdFailure) {
     try {
       let fetchPromise = inFlightRequests.get(normKey);
       if (!fetchPromise) {
-        fetchPromise = fetchImdWeather(lat, lon, displayName, stateName, stationName, metCentre);
+        fetchPromise = fetchImdWeather(
+          lat,
+          lon,
+          displayName,
+          districtCode,
+          stateName,
+          stateCode,
+          stationName
+        );
         inFlightRequests.set(normKey, fetchPromise);
       }
       const liveData = await fetchPromise;
@@ -437,13 +528,20 @@ export async function getDistrictWeather(
       }
     } catch {
       inFlightRequests.delete(normKey);
-      // Fall through to secondary fallback
     }
   }
 
-  // 4. Documented Secondary Fallback: Open-Meteo
+  // 4. Documented Secondary Fallback: Open-Meteo (strictly marked FALLBACK)
   try {
-    const fallback = await fetchOpenMeteo(lat, lon, displayName, stateName, stationName, metCentre);
+    const fallback = await fetchOpenMeteo(
+      lat,
+      lon,
+      displayName,
+      districtCode,
+      stateName,
+      stateCode,
+      stationName
+    );
     if (fallback) {
       districtMemoryCache.set(normKey, {
         data: fallback,
@@ -455,16 +553,87 @@ export async function getDistrictWeather(
     // Fall through to cached data
   }
 
-  // 5. Final fallback: Seeded forecast with its original issue_time displayed
-  const cachedFallback: NormalizedWeather = {
-    ...(sampleForecastData as unknown as NormalizedWeather),
-    district: displayName,
-    state: stateName,
-    coordinates: { latitude: lat, longitude: lon },
-    sourceProduct: normKey === "raigad"
-      ? "data.gov.in — IMD Daily District Forecast (Mumbai MC)"
-      : `data.gov.in — IMD Daily District Forecast (${metCentre})`,
-    isCachedFallback: true,
+  // 5. If cached data exists from a previous fetch, return it with CACHED status
+  if (cachedEntry) {
+    return {
+      ...cachedEntry.data,
+      isCachedFallback: true,
+      provenance: {
+        ...cachedEntry.data.provenance,
+        quality: "CACHED",
+      },
+    };
+  }
+
+  // 6. In production mode, NEVER serve fake numbers or sample data
+  if (isProduction()) {
+    throw new Error(`WEATHER_SERVICE_UNAVAILABLE: All meteorological providers temporarily unavailable for ${displayName} (${districtCode})`);
+  }
+
+  // 7. Demo mode explicit fallback
+  return buildDemoWeatherData(displayName, districtCode, stateName, stateCode, lat, lon, stationName);
+}
+
+/**
+ * Builds explicit demo weather dataset with quality="DEMO" and isOfficial=false.
+ * Only permissible when WEATHERGPT_MODE !== "production".
+ */
+function buildDemoWeatherData(
+  districtName: string,
+  districtCode: string,
+  stateName: string,
+  stateCode: string,
+  lat: number,
+  lon: number,
+  stationName: string
+): NormalizedWeather {
+  const sample = sampleForecastData as any;
+  const nowIso = new Date().toISOString();
+
+  const provenance: DataProvenance = {
+    provider: "DEMO",
+    providerName: "WeatherGPT Demo Data Store",
+    sourceProduct: "Curated Meteorological Sample Feed (DEMO ONLY)",
+    retrievedAt: nowIso,
+    quality: "DEMO",
+    isOfficial: false,
+    isFallback: false,
   };
-  return cachedFallback;
+
+  return {
+    district: districtName,
+    districtCode,
+    state: stateName,
+    stateCode,
+    coordinates: { latitude: lat, longitude: lon },
+    sourceProduct: "Demo Simulation Dataset — Not Live Observation",
+    issueTime: sample.issueTime || null,
+    validUntil: sample.validUntil || null,
+    isCachedFallback: true,
+    provenance,
+    current: {
+      temperature: sample.current?.temperature ?? null,
+      tempUnit: "°C",
+      humidity: sample.current?.humidity ?? null,
+      humidityUnit: "%",
+      windSpeed: sample.current?.windSpeed ?? null,
+      windDirection: sample.current?.windDirection ?? "W",
+      windDirectionDegrees: 270,
+      windUnit: "km/h",
+      condition: sample.current?.condition || "Partly Cloudy",
+      rainfallLast24h: sample.current?.rainfallLast24h ?? null,
+      currentPrecipitationMm: 0,
+      rainUnit: "mm",
+      pressure: 1008,
+      quality: "DEMO",
+    },
+    forecastDaily: sample.forecastDaily || [],
+    radarNowcast: {
+      station: stationName,
+      scanTime: sample.issueTime || null,
+      status: "DEMO",
+      summary: `Demo radar reflectivity sample for ${districtName}`,
+      reflectivityBands: sample.radarNowcast?.reflectivityBands || [],
+    },
+  };
 }

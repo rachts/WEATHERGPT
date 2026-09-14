@@ -13,11 +13,12 @@ export default function PrivacyPage() {
 
       <div className="bg-surface border border-border rounded-xl p-6 space-y-5 text-sm text-text-primary leading-relaxed">
         <section className="space-y-2">
-          <h2 className="text-base font-medium text-text-primary">1. Overview & Institutional Mandate</h2>
+          <h2 className="text-base font-medium text-text-primary">1. Overview & Project Mandate</h2>
           <p className="text-text-secondary text-xs">
-            WeatherGPT is an open agricultural intelligence initiative developed for the India
-            Meteorological Department (IMD), Ministry of Earth Sciences (MoES), under Smart India
-            Hackathon 2026 (Problem Statement 26068). We prioritize data minimization and farmer privacy.
+            WeatherGPT is an open agricultural intelligence student prototype developed under Smart India
+            Hackathon 2026 (Problem Statement 26068) using open data feeds published by the India
+            Meteorological Department (IMD). It is an independent student prototype and not an official
+            portal of the Ministry of Earth Sciences. We prioritize data minimization and farmer privacy.
           </p>
         </section>
 
@@ -25,13 +26,13 @@ export default function PrivacyPage() {
           <h2 className="text-base font-medium text-text-primary">2. What Information We Collect & Why</h2>
           <ul className="text-xs text-text-secondary space-y-2 list-disc pl-5">
             <li>
-              <strong>Geographical District (e.g. Raigad, Maharashtra):</strong> Collected solely to
+              <strong>Geographical District:</strong> Processed solely to
               deliver hyperlocal agromet advisories, precipitation forecasts, and Doppler radar sweeps.
-              GPS coordinates are processed on your device and are never sold or shared with third parties.
+              GPS coordinates are processed on your device and are never sold, tracked, or shared with third parties.
             </li>
             <li>
               <strong>Preferred Language (Hindi, Tamil, or English):</strong> Stored locally on your
-              device via browser storage to phrase weather advisories in your dialect.
+              device via browser storage to phrase weather advisories in your selected language.
             </li>
             <li>
               <strong>Conversational Queries:</strong> Processed in real time for meteorological intent
@@ -46,12 +47,12 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-medium text-text-primary">3. AI & Meteorological Data Integrity</h2>
+          <h2 className="text-base font-medium text-text-primary">3. Deterministic Meteorological Data Integrity</h2>
           <p className="text-xs text-text-secondary">
-            WeatherGPT operates a strict citation gate. Artificial Intelligence is used strictly for
-            language phrasing and entity extraction over official IMD bulletins. Live numerical values
-            (temperature, rainfall, wind) and emergency warning text are never hallucinated by an AI
-            model.
+            WeatherGPT operates a strict citation gate. All calculations are evaluated by a deterministic,
+            rule-based agronomic query engine over official IMD open bulletins and surface observations.
+            Live numerical values (temperature, rainfall, wind) and emergency warning text are strictly
+            retrieved from verifiable meteorological feeds and never hallucinated.
           </p>
         </section>
 
@@ -64,20 +65,23 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-medium text-text-primary">5. Contact & Institutional Inquiries</h2>
+          <h2 className="text-base font-medium text-text-primary">5. Contact & Feedback</h2>
           <p className="text-xs text-text-secondary">
-            For questions regarding this privacy policy or IMD data governance, please reach out to the
-            Agromet Advisory Services Division at{" "}
-            <a href="mailto:imd-kisan@imd.gov.in" className="text-primary underline">
-              imd-kisan@imd.gov.in
-            </a>{" "}
-            or call toll-free weather inquiry lines.
+            For questions or feedback regarding this prototype, please open an issue on our public project repository:{" "}
+            <a
+              href="https://github.com/rachts/WEATHERGPT/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              github.com/rachts/WEATHERGPT
+            </a>.
           </p>
         </section>
       </div>
 
       <footer className="text-xs text-text-secondary text-center">
-        Last updated: September 2026 · India Meteorological Department (MoES)
+        Last updated: September 2026 · WeatherGPT Open Data Student Prototype (SIH 2026)
       </footer>
     </div>
   );
