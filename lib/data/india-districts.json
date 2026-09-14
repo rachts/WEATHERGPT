@@ -1,0 +1,6833 @@
+[
+  {
+    "state": "Andhra Pradesh",
+    "type": "State",
+    "metCentre": "IMD Amaravati / Visakhapatnam Cyclone Warning Centre",
+    "districts": [
+      {
+        "name": "Alluri Sitharama Raju",
+        "headquarters": "Paderu",
+        "lat": 18.05,
+        "lon": 82.85,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Anakapalli",
+        "headquarters": "Anakapalli",
+        "lat": 17.691,
+        "lon": 83.0037,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ananthapuramu",
+        "headquarters": "Ananthapuramu",
+        "lat": 14.6819,
+        "lon": 77.6006,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Annamayya",
+        "headquarters": "Madanapalle",
+        "lat": 13.5503,
+        "lon": 78.503,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bapatla",
+        "headquarters": "Bapatla",
+        "lat": 15.9047,
+        "lon": 80.468,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chittoor",
+        "headquarters": "Chittoor",
+        "lat": 13.2172,
+        "lon": 79.1003,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dr. B.R. Ambedkar Konaseema",
+        "headquarters": "Amalapuram",
+        "lat": 16.5786,
+        "lon": 82.0086,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "East Godavari",
+        "lat": 17.0005,
+        "lon": 82.2384,
+        "crops": [
+          "Paddy",
+          "Coconut",
+          "Banana"
+        ],
+        "station": "Kakinada Observatory"
+      },
+      {
+        "name": "Eluru",
+        "headquarters": "Eluru",
+        "lat": 16.7107,
+        "lon": 81.0952,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Guntur",
+        "lat": 16.3067,
+        "lon": 80.4365,
+        "crops": [
+          "Cotton",
+          "Chilli",
+          "Paddy"
+        ],
+        "station": "Guntur Agromet Observatory"
+      },
+      {
+        "name": "Kakinada",
+        "headquarters": "Kakinada",
+        "lat": 16.9891,
+        "lon": 82.2475,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Krishna",
+        "headquarters": "Machilipatnam",
+        "lat": 16.1875,
+        "lon": 81.1389,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kurnool",
+        "lat": 15.8281,
+        "lon": 78.0373,
+        "crops": [
+          "Cotton",
+          "Groundnut",
+          "Sunflower"
+        ],
+        "station": "Kurnool Met Office"
+      },
+      {
+        "name": "Nandyal",
+        "headquarters": "Nandyal",
+        "lat": 15.4786,
+        "lon": 78.4983,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nellore",
+        "headquarters": "Nellore",
+        "lat": 14.4426,
+        "lon": 79.9865,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "NTR",
+        "headquarters": "Vijayawada",
+        "lat": 16.5062,
+        "lon": 80.648,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Palnadu",
+        "headquarters": "Narasaraopet",
+        "lat": 16.2358,
+        "lon": 80.0499,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Parvathipuram Manyam",
+        "headquarters": "Parvathipuram",
+        "lat": 18.7833,
+        "lon": 83.4167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Prakasam",
+        "headquarters": "Ongole",
+        "lat": 15.5057,
+        "lon": 80.0499,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Srikakulam",
+        "headquarters": "Srikakulam",
+        "lat": 18.2949,
+        "lon": 83.8938,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sri Sathya Sai",
+        "headquarters": "Puttaparthi",
+        "lat": 14.1621,
+        "lon": 77.8121,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tirupati",
+        "lat": 13.6288,
+        "lon": 79.4192,
+        "crops": [
+          "Groundnut",
+          "Sugarcane",
+          "Mango"
+        ],
+        "station": "Tirupati Observatory"
+      },
+      {
+        "name": "Visakhapatnam",
+        "lat": 17.6868,
+        "lon": 83.2185,
+        "crops": [
+          "Paddy",
+          "Sugarcane",
+          "Groundnut"
+        ],
+        "station": "Visakhapatnam CWC"
+      },
+      {
+        "name": "Vizianagaram",
+        "headquarters": "Vizianagaram",
+        "lat": 18.1066,
+        "lon": 83.3955,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Godavari",
+        "headquarters": "Bhimavaram",
+        "lat": 16.5449,
+        "lon": 81.5212,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "YSR Kadapa",
+        "headquarters": "Kadapa",
+        "lat": 14.4673,
+        "lon": 78.8242,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Polavaram",
+        "headquarters": "Rampachodavaram",
+        "lat": 17.4425,
+        "lon": 81.7736,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Markapuram",
+        "headquarters": "Markapuram",
+        "lat": 15.7333,
+        "lon": 79.2667,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Arunachal Pradesh",
+    "type": "State",
+    "metCentre": "IMD Itanagar MC",
+    "districts": [
+      {
+        "name": "Anjaw",
+        "headquarters": "Hawai",
+        "lat": 28.1667,
+        "lon": 96.85,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Changlang",
+        "headquarters": "Changlang",
+        "lat": 27.1333,
+        "lon": 95.7,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "East Kameng",
+        "headquarters": "Seppa",
+        "lat": 27.2833,
+        "lon": 92.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "East Siang",
+        "lat": 28.0664,
+        "lon": 95.3262,
+        "crops": [
+          "Paddy",
+          "Mustard",
+          "Orange"
+        ],
+        "station": "Pasighat Observatory"
+      },
+      {
+        "name": "Kamle",
+        "headquarters": "Raga",
+        "lat": 28.35,
+        "lon": 94.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kra Daadi",
+        "headquarters": "Palin",
+        "lat": 27.85,
+        "lon": 93.35,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kurung Kumey",
+        "headquarters": "Koloriang",
+        "lat": 27.9,
+        "lon": 93.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lepa Rada",
+        "headquarters": "Basar",
+        "lat": 28.15,
+        "lon": 94.7,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lohit",
+        "headquarters": "Tezu",
+        "lat": 27.9167,
+        "lon": 96.1667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Longding",
+        "headquarters": "Longding",
+        "lat": 27.25,
+        "lon": 95.1,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lower Dibang Valley",
+        "headquarters": "Roing",
+        "lat": 28.1333,
+        "lon": 95.8333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lower Siang",
+        "headquarters": "Likabali",
+        "lat": 27.85,
+        "lon": 94.5,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lower Subansiri",
+        "headquarters": "Ziro",
+        "lat": 27.5833,
+        "lon": 93.8333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Namsai",
+        "headquarters": "Namsai",
+        "lat": 27.6,
+        "lon": 95.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pakke-Kessang",
+        "headquarters": "Lemmi",
+        "lat": 27.1,
+        "lon": 92.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Papum Pare",
+        "lat": 27.1264,
+        "lon": 93.63,
+        "crops": [
+          "Paddy",
+          "Maize",
+          "Ginger"
+        ],
+        "station": "Itanagar Observatory"
+      },
+      {
+        "name": "Shi Yomi",
+        "headquarters": "Tato",
+        "lat": 28.7,
+        "lon": 94.7,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Siang",
+        "headquarters": "Boleng",
+        "lat": 28.3,
+        "lon": 94.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tawang",
+        "lat": 27.586,
+        "lon": 91.867,
+        "crops": [
+          "Maize",
+          "Apple",
+          "Barley"
+        ],
+        "station": "Tawang Mountain Met"
+      },
+      {
+        "name": "Tirap",
+        "headquarters": "Khonsa",
+        "lat": 27.0167,
+        "lon": 95.5833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Upper Dibang Valley",
+        "headquarters": "Anini",
+        "lat": 28.8,
+        "lon": 95.9,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Upper Siang",
+        "headquarters": "Yingkiong",
+        "lat": 28.65,
+        "lon": 95.05,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Upper Subansiri",
+        "headquarters": "Daporijo",
+        "lat": 27.9833,
+        "lon": 94.05,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Kameng",
+        "headquarters": "Bomdila",
+        "lat": 27.2667,
+        "lon": 92.4167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Siang",
+        "headquarters": "Aalo",
+        "lat": 28.1667,
+        "lon": 94.8,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Keyi Panyor",
+        "headquarters": "Yachuli",
+        "lat": 27.6,
+        "lon": 93.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bichom",
+        "headquarters": "Napangphung",
+        "lat": 27.35,
+        "lon": 92.6,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Assam",
+    "type": "State",
+    "metCentre": "IMD Regional Meteorological Centre Guwahati (Borjhar)",
+    "districts": [
+      {
+        "name": "Baksa",
+        "headquarters": "Mushalpur",
+        "lat": 26.7333,
+        "lon": 91.25,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bajali",
+        "headquarters": "Pathsala",
+        "lat": 26.4833,
+        "lon": 91.0,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Barpeta",
+        "headquarters": "Barpeta",
+        "lat": 26.3225,
+        "lon": 91.0058,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Biswanath",
+        "headquarters": "Biswanath Chariali",
+        "lat": 26.7333,
+        "lon": 93.15,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bongaigaon",
+        "headquarters": "Bongaigaon",
+        "lat": 26.4667,
+        "lon": 90.5667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Cachar",
+        "lat": 24.8333,
+        "lon": 92.8,
+        "crops": [
+          "Paddy",
+          "Tea",
+          "Sugarcane"
+        ],
+        "station": "Silchar Kumbhirgram"
+      },
+      {
+        "name": "Charaideo",
+        "headquarters": "Sonari",
+        "lat": 26.9333,
+        "lon": 94.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chirang",
+        "headquarters": "Kajalgaon",
+        "lat": 26.4667,
+        "lon": 90.6667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Darrang",
+        "headquarters": "Mangaldoi",
+        "lat": 26.4333,
+        "lon": 92.0333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dhemaji",
+        "headquarters": "Dhemaji",
+        "lat": 27.4833,
+        "lon": 94.5833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dhubri",
+        "headquarters": "Dhubri",
+        "lat": 26.0167,
+        "lon": 89.9833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dibrugarh",
+        "lat": 27.4728,
+        "lon": 94.912,
+        "crops": [
+          "Tea",
+          "Paddy",
+          "Mustard"
+        ],
+        "station": "Dibrugarh Mohanbari"
+      },
+      {
+        "name": "Dima Hasao",
+        "headquarters": "Haflong",
+        "lat": 25.1667,
+        "lon": 93.0167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Goalpara",
+        "headquarters": "Goalpara",
+        "lat": 26.1667,
+        "lon": 90.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Golaghat",
+        "headquarters": "Golaghat",
+        "lat": 26.5167,
+        "lon": 93.9667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hailakandi",
+        "headquarters": "Hailakandi",
+        "lat": 24.6833,
+        "lon": 92.5667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hojai",
+        "headquarters": "Sankardev Nagar",
+        "lat": 26.0,
+        "lon": 92.8667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jorhat",
+        "lat": 26.7509,
+        "lon": 94.2037,
+        "crops": [
+          "Tea",
+          "Paddy",
+          "Pulses"
+        ],
+        "station": "Jorhat Agromet Centre"
+      },
+      {
+        "name": "Kamrup",
+        "lat": 26.1445,
+        "lon": 91.7362,
+        "crops": [
+          "Paddy",
+          "Jute",
+          "Mustard"
+        ],
+        "station": "Guwahati Borjhar RMC"
+      },
+      {
+        "name": "Kamrup Metropolitan",
+        "headquarters": "Guwahati",
+        "lat": 26.1445,
+        "lon": 91.7362,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Karbi Anglong",
+        "headquarters": "Diphu",
+        "lat": 25.8333,
+        "lon": 93.4333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Karimganj",
+        "headquarters": "Karimganj",
+        "lat": 24.8667,
+        "lon": 92.35,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kokrajhar",
+        "headquarters": "Kokrajhar",
+        "lat": 26.4,
+        "lon": 90.2667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lakhimpur",
+        "headquarters": "North Lakhimpur",
+        "lat": 27.2333,
+        "lon": 94.1,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Majuli",
+        "headquarters": "Garamur",
+        "lat": 26.95,
+        "lon": 94.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Morigaon",
+        "headquarters": "Marigaon",
+        "lat": 26.2529,
+        "lon": 92.337,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nagaon",
+        "headquarters": "Nagaon",
+        "lat": 26.35,
+        "lon": 92.6833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nalbari",
+        "headquarters": "Nalbari",
+        "lat": 26.4333,
+        "lon": 91.4333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sivasagar",
+        "headquarters": "Sibsagar",
+        "lat": 26.9833,
+        "lon": 94.6333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sonitpur",
+        "headquarters": "Tezpur",
+        "lat": 26.6339,
+        "lon": 92.7936,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South Salmara-Mankachar",
+        "headquarters": "Hatsingimari",
+        "lat": 25.9333,
+        "lon": 89.7667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tamulpur",
+        "headquarters": "Tamulpur",
+        "lat": 26.6667,
+        "lon": 91.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tinsukia",
+        "headquarters": "Tinsukia",
+        "lat": 27.4833,
+        "lon": 95.3667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Udalguri",
+        "headquarters": "Udalguri",
+        "lat": 26.75,
+        "lon": 92.1,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Karbi Anglong",
+        "headquarters": "Hamren",
+        "lat": 25.9333,
+        "lon": 92.7167,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Bihar",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Patna",
+    "districts": [
+      {
+        "name": "Araria",
+        "headquarters": "Araria",
+        "lat": 26.15,
+        "lon": 87.5167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Arwal",
+        "headquarters": "Arwal",
+        "lat": 25.244,
+        "lon": 84.6662,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Aurangabad",
+        "headquarters": "Aurangabad",
+        "lat": 24.75,
+        "lon": 84.3667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Banka",
+        "headquarters": "Banka",
+        "lat": 24.8833,
+        "lon": 86.9167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Begusarai",
+        "headquarters": "Begusarai",
+        "lat": 25.4167,
+        "lon": 86.1333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhagalpur",
+        "lat": 25.2425,
+        "lon": 87.0143,
+        "crops": [
+          "Silk",
+          "Paddy",
+          "Wheat"
+        ],
+        "station": "Sabour Agromet Station"
+      },
+      {
+        "name": "Bhojpur",
+        "headquarters": "Arrah",
+        "lat": 25.5541,
+        "lon": 84.6614,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Buxar",
+        "headquarters": "Buxar",
+        "lat": 25.5647,
+        "lon": 83.9777,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Darbhanga",
+        "headquarters": "Darbhanga",
+        "lat": 26.1667,
+        "lon": 85.9,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "East Champaran",
+        "headquarters": "Motihari",
+        "lat": 26.65,
+        "lon": 84.9167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gaya",
+        "lat": 24.7914,
+        "lon": 85.0002,
+        "crops": [
+          "Paddy",
+          "Wheat",
+          "Pulses"
+        ],
+        "station": "Gaya Met Observatory"
+      },
+      {
+        "name": "Gopalganj",
+        "headquarters": "Gopalganj",
+        "lat": 26.4678,
+        "lon": 84.4432,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jamui",
+        "headquarters": "Jamui",
+        "lat": 24.9167,
+        "lon": 86.2167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jehanabad",
+        "headquarters": "Jehanabad",
+        "lat": 25.2167,
+        "lon": 84.9833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kaimur",
+        "headquarters": "Bhabua",
+        "lat": 25.05,
+        "lon": 83.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Katihar",
+        "headquarters": "Katihar",
+        "lat": 25.5339,
+        "lon": 87.556,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khagaria",
+        "headquarters": "Khagaria",
+        "lat": 25.5,
+        "lon": 86.4667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kishanganj",
+        "headquarters": "Kishanganj",
+        "lat": 26.1,
+        "lon": 87.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lakhisarai",
+        "headquarters": "Lakhisarai",
+        "lat": 25.1674,
+        "lon": 86.0988,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Madhepura",
+        "headquarters": "Madhepura",
+        "lat": 25.9169,
+        "lon": 86.7786,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Madhubani",
+        "headquarters": "Madhubani",
+        "lat": 26.35,
+        "lon": 86.0833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Munger",
+        "headquarters": "Munger",
+        "lat": 25.3833,
+        "lon": 86.4667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Muzaffarpur",
+        "lat": 26.1209,
+        "lon": 85.3647,
+        "crops": [
+          "Litchi",
+          "Maize",
+          "Paddy"
+        ],
+        "station": "Muzaffarpur Agromet"
+      },
+      {
+        "name": "Nalanda",
+        "headquarters": "Bihar Sharif",
+        "lat": 25.1833,
+        "lon": 85.5167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nawada",
+        "headquarters": "Nawada",
+        "lat": 24.8833,
+        "lon": 85.5333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Patna",
+        "lat": 25.5941,
+        "lon": 85.1376,
+        "crops": [
+          "Paddy",
+          "Wheat",
+          "Maize"
+        ],
+        "station": "Patna Airport Doppler Radar"
+      },
+      {
+        "name": "Purnia",
+        "headquarters": "Purnia",
+        "lat": 25.7771,
+        "lon": 87.4753,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rohtas",
+        "headquarters": "Sasaram",
+        "lat": 24.95,
+        "lon": 84.0167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Saharsa",
+        "headquarters": "Saharsa",
+        "lat": 25.8833,
+        "lon": 86.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Samastipur",
+        "headquarters": "Samastipur",
+        "lat": 25.863,
+        "lon": 85.781,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Saran",
+        "headquarters": "Chhapra",
+        "lat": 25.7833,
+        "lon": 84.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sheikhpura",
+        "headquarters": "Sheikhpura",
+        "lat": 25.1333,
+        "lon": 85.85,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sheohar",
+        "headquarters": "Sheohar",
+        "lat": 26.5167,
+        "lon": 85.3,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sitamarhi",
+        "headquarters": "Sitamarhi",
+        "lat": 26.6,
+        "lon": 85.4833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Siwan",
+        "headquarters": "Siwan",
+        "lat": 26.2167,
+        "lon": 84.35,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Supaul",
+        "headquarters": "Supaul",
+        "lat": 26.1167,
+        "lon": 86.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Vaishali",
+        "headquarters": "Hajipur",
+        "lat": 25.6833,
+        "lon": 85.2167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Champaran",
+        "headquarters": "Bettiah",
+        "lat": 26.8,
+        "lon": 84.5,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Chhattisgarh",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Raipur",
+    "districts": [
+      {
+        "name": "Balod",
+        "headquarters": "Balod",
+        "lat": 20.73,
+        "lon": 81.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Baloda Bazar",
+        "headquarters": "Baloda Bazar",
+        "lat": 21.65,
+        "lon": 82.1667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Balrampur-Ramanujganj",
+        "headquarters": "Balrampur",
+        "lat": 23.6,
+        "lon": 83.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bastar",
+        "lat": 19.0739,
+        "lon": 82.0298,
+        "crops": [
+          "Paddy",
+          "Minor Millets",
+          "Maize"
+        ],
+        "station": "Jagdalpur Agromet"
+      },
+      {
+        "name": "Bemetara",
+        "headquarters": "Bemetara",
+        "lat": 21.7167,
+        "lon": 81.5333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bijapur",
+        "headquarters": "Bijapur",
+        "lat": 18.9,
+        "lon": 80.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bilaspur",
+        "lat": 22.0797,
+        "lon": 82.1391,
+        "crops": [
+          "Paddy",
+          "Wheat",
+          "Gram"
+        ],
+        "station": "Bilaspur Observatory"
+      },
+      {
+        "name": "Dantewada",
+        "headquarters": "Dantewada",
+        "lat": 18.9,
+        "lon": 81.35,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dhamtari",
+        "headquarters": "Dhamtari",
+        "lat": 20.7072,
+        "lon": 81.5497,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Durg",
+        "headquarters": "Durg",
+        "lat": 21.1833,
+        "lon": 81.2833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gariaband",
+        "headquarters": "Gariaband",
+        "lat": 20.6333,
+        "lon": 82.0667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gaurela-Pendra-Marwahi",
+        "headquarters": "Gaurela",
+        "lat": 22.6167,
+        "lon": 81.9,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Janjgir-Champa",
+        "headquarters": "Janjgir",
+        "lat": 21.9667,
+        "lon": 82.5833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jashpur",
+        "headquarters": "Jashpur Nagar",
+        "lat": 22.8833,
+        "lon": 84.1333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kabirdham",
+        "headquarters": "Kawardha",
+        "lat": 22.0,
+        "lon": 81.2333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kanker",
+        "headquarters": "Kanker",
+        "lat": 20.2667,
+        "lon": 81.4833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khairagarh-Chhuikhadan-Gandai",
+        "headquarters": "Khairagarh",
+        "lat": 21.4167,
+        "lon": 80.9667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kondagaon",
+        "headquarters": "Kondagaon",
+        "lat": 19.6,
+        "lon": 81.6667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Korba",
+        "headquarters": "Korba",
+        "lat": 22.35,
+        "lon": 82.6833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Korea",
+        "headquarters": "Baikunthpur",
+        "lat": 23.25,
+        "lon": 82.55,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mahasamund",
+        "headquarters": "Mahasamund",
+        "lat": 21.1091,
+        "lon": 82.0979,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Manendragarh-Chirmiri-Bharatpur",
+        "headquarters": "Manendragarh",
+        "lat": 23.2,
+        "lon": 82.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mohla-Manpur-Ambagarh Chowki",
+        "headquarters": "Mohla",
+        "lat": 20.9,
+        "lon": 80.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mungeli",
+        "headquarters": "Mungeli",
+        "lat": 22.0667,
+        "lon": 81.6833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Narayanpur",
+        "headquarters": "Narayanpur",
+        "lat": 19.7235,
+        "lon": 81.2424,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Raigarh",
+        "headquarters": "Raigarh",
+        "lat": 21.9,
+        "lon": 83.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Raipur",
+        "lat": 21.2514,
+        "lon": 81.6296,
+        "crops": [
+          "Paddy",
+          "Pulses",
+          "Soybean"
+        ],
+        "station": "Raipur Mana Airport"
+      },
+      {
+        "name": "Rajnandgaon",
+        "headquarters": "Rajnandgaon",
+        "lat": 21.1,
+        "lon": 81.0333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sarangarh-Bilaigarh",
+        "headquarters": "Sarangarh",
+        "lat": 21.6167,
+        "lon": 83.0833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sakti",
+        "headquarters": "Sakti",
+        "lat": 22.0333,
+        "lon": 82.9667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sukma",
+        "headquarters": "Sukma",
+        "lat": 18.4,
+        "lon": 81.6667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Surajpur",
+        "headquarters": "Surajpur",
+        "lat": 23.2167,
+        "lon": 82.8667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Surguja",
+        "headquarters": "Ambikapur",
+        "lat": 23.1167,
+        "lon": 83.2,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Goa",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Panaji (Altinho)",
+    "districts": [
+      {
+        "name": "North Goa",
+        "lat": 15.4989,
+        "lon": 73.8278,
+        "crops": [
+          "Paddy",
+          "Cashew",
+          "Coconut"
+        ],
+        "station": "Panaji Altinho Observatory"
+      },
+      {
+        "name": "South Goa",
+        "lat": 15.2736,
+        "lon": 73.958,
+        "crops": [
+          "Paddy",
+          "Spices",
+          "Mango"
+        ],
+        "station": "Mormugao Coastal Station"
+      },
+      {
+        "name": "Kushavati",
+        "headquarters": "Quepem",
+        "lat": 15.2167,
+        "lon": 74.0833,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Gujarat",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Ahmedabad",
+    "districts": [
+      {
+        "name": "Ahmedabad",
+        "lat": 23.0225,
+        "lon": 72.5714,
+        "crops": [
+          "Cotton",
+          "Wheat",
+          "Castor"
+        ],
+        "station": "Ahmedabad Airport MC"
+      },
+      {
+        "name": "Amreli",
+        "headquarters": "Amreli",
+        "lat": 21.6167,
+        "lon": 71.2333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Anand",
+        "headquarters": "Anand",
+        "lat": 22.5667,
+        "lon": 72.9333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Aravalli",
+        "headquarters": "Modasa",
+        "lat": 23.4667,
+        "lon": 73.3,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Banaskantha",
+        "headquarters": "Palanpur",
+        "lat": 24.1717,
+        "lon": 72.4383,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bharuch",
+        "headquarters": "Bharuch",
+        "lat": 21.7051,
+        "lon": 72.9959,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhavnagar",
+        "headquarters": "Bhavnagar",
+        "lat": 21.7645,
+        "lon": 72.1519,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Botad",
+        "headquarters": "Botad",
+        "lat": 22.1667,
+        "lon": 71.6667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chhota Udaipur",
+        "headquarters": "Chhota Udaipur",
+        "lat": 22.3167,
+        "lon": 74.0167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dahod",
+        "headquarters": "Dahod",
+        "lat": 22.8333,
+        "lon": 74.2667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dang",
+        "headquarters": "Ahwa",
+        "lat": 20.75,
+        "lon": 73.6833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Devbhumi Dwarka",
+        "headquarters": "Khambhalia",
+        "lat": 22.2,
+        "lon": 69.6667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gandhinagar",
+        "headquarters": "Gandhinagar",
+        "lat": 23.2156,
+        "lon": 72.6369,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gir Somnath",
+        "headquarters": "Veraval",
+        "lat": 20.9,
+        "lon": 70.3667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jamnagar",
+        "headquarters": "Jamnagar",
+        "lat": 22.4707,
+        "lon": 70.0577,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Junagadh",
+        "headquarters": "Junagadh",
+        "lat": 21.5222,
+        "lon": 70.4579,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kheda",
+        "headquarters": "Nadiad",
+        "lat": 22.6939,
+        "lon": 72.8615,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kutch",
+        "lat": 23.7337,
+        "lon": 69.8597,
+        "crops": [
+          "Castor",
+          "Dates",
+          "Pomegranate"
+        ],
+        "station": "Bhuj Doppler Radar"
+      },
+      {
+        "name": "Mahisagar",
+        "headquarters": "Lunavada",
+        "lat": 23.1333,
+        "lon": 73.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mehsana",
+        "headquarters": "Mehsana",
+        "lat": 23.588,
+        "lon": 72.3693,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Morbi",
+        "headquarters": "Morbi",
+        "lat": 22.8167,
+        "lon": 70.8333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Narmada",
+        "headquarters": "Rajpipla",
+        "lat": 21.8757,
+        "lon": 73.5,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Navsari",
+        "headquarters": "Navsari",
+        "lat": 20.9453,
+        "lon": 72.9342,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Panchmahal",
+        "headquarters": "Godhra",
+        "lat": 22.7772,
+        "lon": 73.6134,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Patan",
+        "headquarters": "Patan",
+        "lat": 23.8508,
+        "lon": 72.1148,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Porbandar",
+        "headquarters": "Porbandar",
+        "lat": 21.6417,
+        "lon": 69.6293,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rajkot",
+        "lat": 22.3039,
+        "lon": 70.8022,
+        "crops": [
+          "Groundnut",
+          "Cotton",
+          "Wheat"
+        ],
+        "station": "Rajkot Agromet Station"
+      },
+      {
+        "name": "Sabarkantha",
+        "headquarters": "Himatnagar",
+        "lat": 23.6,
+        "lon": 72.9667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Surat",
+        "lat": 21.1702,
+        "lon": 72.8311,
+        "crops": [
+          "Sugarcane",
+          "Paddy",
+          "Banana"
+        ],
+        "station": "Surat Coastal Station"
+      },
+      {
+        "name": "Surendranagar",
+        "headquarters": "Surendranagar",
+        "lat": 22.7201,
+        "lon": 71.6495,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tapi",
+        "headquarters": "Vyara",
+        "lat": 21.1167,
+        "lon": 73.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Vadodara",
+        "headquarters": "Vadodara",
+        "lat": 22.3072,
+        "lon": 73.1812,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Valsad",
+        "headquarters": "Valsad",
+        "lat": 20.5992,
+        "lon": 72.9342,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Vav-Tharad",
+        "headquarters": "Tharad",
+        "lat": 24.3833,
+        "lon": 71.6167,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Haryana",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Chandigarh",
+    "districts": [
+      {
+        "name": "Ambala",
+        "lat": 30.3782,
+        "lon": 76.7767,
+        "crops": [
+          "Paddy",
+          "Wheat",
+          "Sunflower"
+        ],
+        "station": "Ambala Met Office"
+      },
+      {
+        "name": "Bhiwani",
+        "headquarters": "Bhiwani",
+        "lat": 28.799,
+        "lon": 76.1335,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Charkhi Dadri",
+        "headquarters": "Charkhi Dadri",
+        "lat": 28.5921,
+        "lon": 76.2731,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Faridabad",
+        "headquarters": "Faridabad",
+        "lat": 28.4089,
+        "lon": 77.3178,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Fatehabad",
+        "headquarters": "Fatehabad",
+        "lat": 29.5167,
+        "lon": 75.45,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gurugram",
+        "lat": 28.4595,
+        "lon": 77.0266,
+        "crops": [
+          "Mustard",
+          "Wheat",
+          "Vegetables"
+        ],
+        "station": "Gurugram AWS"
+      },
+      {
+        "name": "Hisar",
+        "lat": 29.1492,
+        "lon": 75.7217,
+        "crops": [
+          "Wheat",
+          "Cotton",
+          "Mustard"
+        ],
+        "station": "HAU Hisar Observatory"
+      },
+      {
+        "name": "Jhajjar",
+        "headquarters": "Jhajjar",
+        "lat": 28.6062,
+        "lon": 76.6468,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jind",
+        "headquarters": "Jind",
+        "lat": 29.3167,
+        "lon": 76.3167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kaithal",
+        "headquarters": "Kaithal",
+        "lat": 29.8,
+        "lon": 76.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Karnal",
+        "lat": 29.6857,
+        "lon": 76.9905,
+        "crops": [
+          "Wheat",
+          "Basmati Paddy",
+          "Sugarcane"
+        ],
+        "station": "Karnal CSSRI Agromet"
+      },
+      {
+        "name": "Kurukshetra",
+        "headquarters": "Kurukshetra",
+        "lat": 29.9695,
+        "lon": 76.8783,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mahendragarh",
+        "headquarters": "Narnaul",
+        "lat": 28.0333,
+        "lon": 76.1,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nuh",
+        "headquarters": "Nuh",
+        "lat": 28.1,
+        "lon": 77.0,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Palwal",
+        "headquarters": "Palwal",
+        "lat": 28.15,
+        "lon": 77.3167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Panchkula",
+        "headquarters": "Panchkula",
+        "lat": 30.6942,
+        "lon": 76.8606,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Panipat",
+        "headquarters": "Panipat",
+        "lat": 29.3909,
+        "lon": 76.9635,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rewari",
+        "headquarters": "Rewari",
+        "lat": 28.1833,
+        "lon": 76.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rohtak",
+        "headquarters": "Rohtak",
+        "lat": 28.8909,
+        "lon": 76.5796,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sirsa",
+        "headquarters": "Sirsa",
+        "lat": 29.5336,
+        "lon": 75.0177,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sonipat",
+        "headquarters": "Sonipat",
+        "lat": 28.9286,
+        "lon": 77.0915,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Yamunanagar",
+        "headquarters": "Yamunanagar",
+        "lat": 30.1293,
+        "lon": 77.2693,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hansi",
+        "headquarters": "Hansi",
+        "lat": 29.1,
+        "lon": 75.9667,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Himachal Pradesh",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Shimla",
+    "districts": [
+      {
+        "name": "Bilaspur",
+        "headquarters": "Bilaspur",
+        "lat": 31.3429,
+        "lon": 76.7625,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chamba",
+        "headquarters": "Chamba",
+        "lat": 32.5534,
+        "lon": 76.1258,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hamirpur",
+        "headquarters": "Hamirpur",
+        "lat": 31.6862,
+        "lon": 76.5213,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kangra",
+        "lat": 32.0998,
+        "lon": 76.2691,
+        "crops": [
+          "Tea",
+          "Paddy",
+          "Wheat"
+        ],
+        "station": "Dharamshala Met Centre"
+      },
+      {
+        "name": "Kinnaur",
+        "headquarters": "Reckong Peo",
+        "lat": 31.5333,
+        "lon": 78.25,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kullu",
+        "lat": 31.9579,
+        "lon": 77.1095,
+        "crops": [
+          "Apple",
+          "Plum",
+          "Vegetables"
+        ],
+        "station": "Kullu Bhuntar Airport"
+      },
+      {
+        "name": "Lahaul and Spiti",
+        "headquarters": "Keylong",
+        "lat": 32.5667,
+        "lon": 77.0333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mandi",
+        "headquarters": "Mandi",
+        "lat": 31.7079,
+        "lon": 76.9319,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shimla",
+        "lat": 31.1048,
+        "lon": 77.1734,
+        "crops": [
+          "Apple",
+          "Maize",
+          "Potato"
+        ],
+        "station": "Shimla MC Observatory"
+      },
+      {
+        "name": "Sirmaur",
+        "headquarters": "Nahan",
+        "lat": 30.5667,
+        "lon": 77.3,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Solan",
+        "headquarters": "Solan",
+        "lat": 30.91,
+        "lon": 77.11,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Una",
+        "headquarters": "Una",
+        "lat": 31.4684,
+        "lon": 76.2708,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Jharkhand",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Ranchi",
+    "districts": [
+      {
+        "name": "Bokaro",
+        "headquarters": "Bokaro",
+        "lat": 23.67,
+        "lon": 86.15,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chatra",
+        "headquarters": "Chatra",
+        "lat": 24.2167,
+        "lon": 84.8667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Deoghar",
+        "headquarters": "Deoghar",
+        "lat": 24.4833,
+        "lon": 86.7,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dhanbad",
+        "lat": 23.7957,
+        "lon": 86.4304,
+        "crops": [
+          "Paddy",
+          "Wheat",
+          "Vegetables"
+        ],
+        "station": "Dhanbad Agromet Station"
+      },
+      {
+        "name": "Dumka",
+        "headquarters": "Dumka",
+        "lat": 24.2667,
+        "lon": 87.25,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "East Singhbhum",
+        "lat": 22.8046,
+        "lon": 86.2029,
+        "crops": [
+          "Paddy",
+          "Maize",
+          "Gram"
+        ],
+        "station": "Jamshedpur Met Office"
+      },
+      {
+        "name": "Garhwa",
+        "headquarters": "Garhwa",
+        "lat": 24.1549,
+        "lon": 83.7996,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Giridih",
+        "headquarters": "Giridih",
+        "lat": 24.1821,
+        "lon": 86.287,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Godda",
+        "headquarters": "Godda",
+        "lat": 24.8333,
+        "lon": 87.2167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gumla",
+        "headquarters": "Gumla",
+        "lat": 23.05,
+        "lon": 84.5333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hazaribag",
+        "headquarters": "Hazaribag",
+        "lat": 23.9925,
+        "lon": 85.3637,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jamtara",
+        "headquarters": "Jamtara",
+        "lat": 23.9505,
+        "lon": 86.817,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khunti",
+        "headquarters": "Khunti",
+        "lat": 23.0667,
+        "lon": 85.2833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Koderma",
+        "headquarters": "Koderma",
+        "lat": 24.4667,
+        "lon": 85.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Latehar",
+        "headquarters": "Latehar",
+        "lat": 23.75,
+        "lon": 84.5,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lohardaga",
+        "headquarters": "Lohardaga",
+        "lat": 23.4333,
+        "lon": 84.6833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pakur",
+        "headquarters": "Pakur",
+        "lat": 24.6274,
+        "lon": 87.8549,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Palamu",
+        "headquarters": "Daltonganj",
+        "lat": 24.0333,
+        "lon": 84.0667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ramgarh",
+        "headquarters": "Ramgarh",
+        "lat": 23.6283,
+        "lon": 85.5211,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ranchi",
+        "lat": 23.3441,
+        "lon": 85.3096,
+        "crops": [
+          "Paddy",
+          "Pulses",
+          "Vegetables"
+        ],
+        "station": "Ranchi Airport MC"
+      },
+      {
+        "name": "Sahibganj",
+        "headquarters": "Sahebganj",
+        "lat": 25.25,
+        "lon": 87.65,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Seraikela-Kharsawan",
+        "headquarters": "Seraikela",
+        "lat": 22.8561,
+        "lon": 86.0122,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Simdega",
+        "headquarters": "Simdega",
+        "lat": 22.6167,
+        "lon": 84.5167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Singhbhum",
+        "headquarters": "Chaibasa",
+        "lat": 22.55,
+        "lon": 85.8,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Karnataka",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Bengaluru",
+    "districts": [
+      {
+        "name": "Bagalkot",
+        "headquarters": "Bagalkote",
+        "lat": 16.1833,
+        "lon": 75.7,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ballari",
+        "headquarters": "Ballari",
+        "lat": 15.1394,
+        "lon": 76.9214,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Belagavi",
+        "lat": 15.8497,
+        "lon": 74.4977,
+        "crops": [
+          "Sugarcane",
+          "Soybean",
+          "Maize"
+        ],
+        "station": "Sambre Airport Belagavi"
+      },
+      {
+        "name": "Bangalore Rural",
+        "headquarters": "Bangalore",
+        "lat": 13.2846,
+        "lon": 77.6408,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bangalore Urban",
+        "headquarters": "Bangalore",
+        "lat": 12.9716,
+        "lon": 77.5946,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bidar",
+        "headquarters": "Bidar",
+        "lat": 17.9133,
+        "lon": 77.5301,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chamarajanagar",
+        "headquarters": "Chamarajanagar",
+        "lat": 11.9236,
+        "lon": 76.9394,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chikkaballapur",
+        "headquarters": "Chikkaballapur",
+        "lat": 13.4342,
+        "lon": 77.7242,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chikmagalur",
+        "headquarters": "Chikmagalur",
+        "lat": 13.3153,
+        "lon": 75.7754,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chitradurga",
+        "headquarters": "Chitradurga",
+        "lat": 14.2251,
+        "lon": 76.398,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dakshina Kannada",
+        "lat": 12.9141,
+        "lon": 74.856,
+        "crops": [
+          "Arecanut",
+          "Paddy",
+          "Rubber"
+        ],
+        "station": "Mangaluru Panambur Port"
+      },
+      {
+        "name": "Davanagere",
+        "headquarters": "Davangere",
+        "lat": 14.4644,
+        "lon": 75.9218,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dharwad",
+        "headquarters": "Dharwad",
+        "lat": 15.4589,
+        "lon": 75.0078,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gadag",
+        "headquarters": "Gadag-Betageri",
+        "lat": 15.4167,
+        "lon": 75.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kalaburagi",
+        "headquarters": "Kalaburagi",
+        "lat": 17.3297,
+        "lon": 76.8343,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hassan",
+        "headquarters": "Hassan",
+        "lat": 13.0072,
+        "lon": 76.1004,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Haveri",
+        "headquarters": "Haveri",
+        "lat": 14.7936,
+        "lon": 75.4038,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kodagu",
+        "headquarters": "Madikeri",
+        "lat": 12.3375,
+        "lon": 75.8069,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kolar",
+        "headquarters": "Kolar",
+        "lat": 13.1367,
+        "lon": 78.1298,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Koppal",
+        "headquarters": "Koppal",
+        "lat": 15.3507,
+        "lon": 76.1554,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mandya",
+        "headquarters": "Mandya",
+        "lat": 12.5218,
+        "lon": 76.8951,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mysore",
+        "headquarters": "Mysuru",
+        "lat": 12.2958,
+        "lon": 76.6394,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Raichur",
+        "headquarters": "Raichur",
+        "lat": 16.2076,
+        "lon": 77.3463,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ramanagara",
+        "headquarters": "Ramanagara",
+        "lat": 12.7217,
+        "lon": 77.2811,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shimoga",
+        "headquarters": "Shimoga",
+        "lat": 13.9299,
+        "lon": 75.5681,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tumakuru",
+        "headquarters": "Tumakuru",
+        "lat": 13.3379,
+        "lon": 77.1173,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Udupi",
+        "headquarters": "Udupi",
+        "lat": 13.34,
+        "lon": 74.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Uttara Kannada",
+        "headquarters": "Karwar",
+        "lat": 14.8022,
+        "lon": 74.1315,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Vijayanagara",
+        "headquarters": "Hospete",
+        "lat": 15.2691,
+        "lon": 76.3874,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Vijayapura",
+        "headquarters": "Vijayapura",
+        "lat": 16.8302,
+        "lon": 75.71,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Yadgir",
+        "headquarters": "Yadgir",
+        "lat": 16.7667,
+        "lon": 77.1333,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Kerala",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Thiruvananthapuram",
+    "districts": [
+      {
+        "name": "Alappuzha",
+        "headquarters": "Alappuzha",
+        "lat": 9.4981,
+        "lon": 76.3388,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ernakulam",
+        "lat": 9.9816,
+        "lon": 76.2999,
+        "crops": [
+          "Paddy",
+          "Spices",
+          "Coconut"
+        ],
+        "station": "Kochi Naval Doppler Radar"
+      },
+      {
+        "name": "Idukki",
+        "headquarters": "Painavu",
+        "lat": 9.8138,
+        "lon": 76.9297,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kannur",
+        "headquarters": "Kannur",
+        "lat": 11.8745,
+        "lon": 75.3704,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kasaragod",
+        "headquarters": "Kasaragod",
+        "lat": 12.5102,
+        "lon": 74.9852,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kollam",
+        "headquarters": "Kollam",
+        "lat": 8.8932,
+        "lon": 76.6141,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kottayam",
+        "headquarters": "Kottayam",
+        "lat": 9.5916,
+        "lon": 76.5222,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kozhikode",
+        "headquarters": "Kozhikode",
+        "lat": 11.2588,
+        "lon": 75.7804,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Malappuram",
+        "headquarters": "Malappuram",
+        "lat": 11.0667,
+        "lon": 76.0667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Palakkad",
+        "lat": 10.7867,
+        "lon": 76.6548,
+        "crops": [
+          "Paddy",
+          "Sugarcane",
+          "Groundnut"
+        ],
+        "station": "Pattambi Regional Station"
+      },
+      {
+        "name": "Pathanamthitta",
+        "headquarters": "Pathanamthitta",
+        "lat": 9.2648,
+        "lon": 76.787,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Thiruvananthapuram",
+        "lat": 8.5241,
+        "lon": 76.9366,
+        "crops": [
+          "Coconut",
+          "Tapioca",
+          "Rubber"
+        ],
+        "station": "Thiruvananthapuram MC"
+      },
+      {
+        "name": "Thrissur",
+        "headquarters": "Thrissur",
+        "lat": 10.5276,
+        "lon": 76.2144,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Wayanad",
+        "lat": 11.6854,
+        "lon": 76.132,
+        "crops": [
+          "Coffee",
+          "Tea",
+          "Pepper"
+        ],
+        "station": "Ambalavayal Agromet"
+      }
+    ]
+  },
+  {
+    "state": "Madhya Pradesh",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Bhopal",
+    "districts": [
+      {
+        "name": "Agar Malwa",
+        "headquarters": "Agar",
+        "lat": 23.71,
+        "lon": 76.01,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Alirajpur",
+        "headquarters": "Alirajpur",
+        "lat": 22.3167,
+        "lon": 74.3667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Anuppur",
+        "headquarters": "Anuppur",
+        "lat": 23.11,
+        "lon": 81.6966,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ashoknagar",
+        "headquarters": "Ashoknagar",
+        "lat": 24.5667,
+        "lon": 77.7167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Balaghat",
+        "headquarters": "Balaghat",
+        "lat": 21.8129,
+        "lon": 80.1838,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Barwani",
+        "headquarters": "Barwani",
+        "lat": 22.0308,
+        "lon": 74.8972,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Betul",
+        "headquarters": "Betul",
+        "lat": 21.9153,
+        "lon": 77.8961,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhind",
+        "headquarters": "Bhind",
+        "lat": 26.5642,
+        "lon": 78.7883,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhopal",
+        "lat": 23.2599,
+        "lon": 77.4126,
+        "crops": [
+          "Soybean",
+          "Wheat",
+          "Gram"
+        ],
+        "station": "Bhopal Doppler Weather Radar"
+      },
+      {
+        "name": "Burhanpur",
+        "headquarters": "Burhanpur",
+        "lat": 21.3,
+        "lon": 76.2333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chhatarpur",
+        "headquarters": "Chhatarpur",
+        "lat": 24.9,
+        "lon": 79.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chhindwara",
+        "headquarters": "Chhindwara",
+        "lat": 22.0574,
+        "lon": 78.9382,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Damoh",
+        "headquarters": "Damoh",
+        "lat": 23.8381,
+        "lon": 79.4422,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Datia",
+        "headquarters": "Datia",
+        "lat": 25.6653,
+        "lon": 78.4609,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dewas",
+        "headquarters": "Dewas",
+        "lat": 22.9676,
+        "lon": 76.0534,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dhar",
+        "headquarters": "Dhar",
+        "lat": 22.6,
+        "lon": 75.3,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dindori",
+        "headquarters": "Dindori",
+        "lat": 22.9418,
+        "lon": 81.0768,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Guna",
+        "headquarters": "Guna",
+        "lat": 24.643,
+        "lon": 77.3031,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gwalior",
+        "headquarters": "Gwalior",
+        "lat": 26.2183,
+        "lon": 78.1828,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Harda",
+        "headquarters": "Harda",
+        "lat": 22.3442,
+        "lon": 77.0967,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hoshangabad",
+        "headquarters": "Hoshangabad",
+        "lat": 22.7441,
+        "lon": 77.737,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Indore",
+        "lat": 22.7196,
+        "lon": 75.8577,
+        "crops": [
+          "Soybean",
+          "Wheat",
+          "Cotton"
+        ],
+        "station": "Indore Airport Observatory"
+      },
+      {
+        "name": "Jabalpur",
+        "lat": 23.1815,
+        "lon": 79.9864,
+        "crops": [
+          "Wheat",
+          "Gram",
+          "Paddy"
+        ],
+        "station": "JNKVV Jabalpur Agromet"
+      },
+      {
+        "name": "Jhabua",
+        "headquarters": "Jhabua",
+        "lat": 22.7697,
+        "lon": 74.5921,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Katni",
+        "headquarters": "Katni",
+        "lat": 23.8339,
+        "lon": 80.3947,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khandwa",
+        "headquarters": "Khandwa",
+        "lat": 21.8257,
+        "lon": 76.3526,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khargone",
+        "headquarters": "Khargone",
+        "lat": 21.8335,
+        "lon": 75.615,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Maihar",
+        "headquarters": "Maihar",
+        "lat": 24.2667,
+        "lon": 80.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mandla",
+        "headquarters": "Mandla",
+        "lat": 22.5979,
+        "lon": 80.3714,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mandsaur",
+        "headquarters": "Mandsaur",
+        "lat": 24.0715,
+        "lon": 75.0685,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mauganj",
+        "headquarters": "Mauganj",
+        "lat": 24.6667,
+        "lon": 81.8833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Morena",
+        "headquarters": "Morena",
+        "lat": 26.5,
+        "lon": 78.0,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Narsinghpur",
+        "headquarters": "Narsinghpur",
+        "lat": 22.95,
+        "lon": 79.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Neemuch",
+        "headquarters": "Neemuch",
+        "lat": 24.4764,
+        "lon": 74.8624,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Niwari",
+        "headquarters": "Niwari",
+        "lat": 25.3833,
+        "lon": 78.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Panna",
+        "headquarters": "Panna",
+        "lat": 24.7167,
+        "lon": 80.1833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pandhurna",
+        "headquarters": "Pandhurna",
+        "lat": 21.6167,
+        "lon": 78.5167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Raisen",
+        "headquarters": "Raisen",
+        "lat": 23.3333,
+        "lon": 77.8,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rajgarh",
+        "headquarters": "Rajgarh",
+        "lat": 24.0079,
+        "lon": 76.7279,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ratlam",
+        "headquarters": "Ratlam",
+        "lat": 23.3315,
+        "lon": 75.0367,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rewa",
+        "headquarters": "Rewa",
+        "lat": 24.5314,
+        "lon": 81.3011,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sagar",
+        "headquarters": "Sagar",
+        "lat": 23.8388,
+        "lon": 78.7378,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Satna",
+        "headquarters": "Satna",
+        "lat": 24.6005,
+        "lon": 80.8322,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sehore",
+        "headquarters": "Sehore",
+        "lat": 23.2032,
+        "lon": 77.085,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Seoni",
+        "headquarters": "Seoni",
+        "lat": 22.0869,
+        "lon": 79.5435,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shahdol",
+        "headquarters": "Shahdol",
+        "lat": 23.3022,
+        "lon": 81.3568,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shajapur",
+        "headquarters": "Shajapur",
+        "lat": 23.4333,
+        "lon": 76.2667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sheopur",
+        "headquarters": "Sheopur",
+        "lat": 25.6667,
+        "lon": 76.7,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shivpuri",
+        "headquarters": "Shivpuri",
+        "lat": 25.4333,
+        "lon": 77.65,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sidhi",
+        "headquarters": "Sidhi",
+        "lat": 24.4167,
+        "lon": 81.8833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Singrauli",
+        "headquarters": "Waidhan",
+        "lat": 24.1,
+        "lon": 82.6667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tikamgarh",
+        "headquarters": "Tikamgarh",
+        "lat": 24.7456,
+        "lon": 78.8321,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ujjain",
+        "lat": 23.1765,
+        "lon": 75.7885,
+        "crops": [
+          "Wheat",
+          "Gram",
+          "Soybean"
+        ],
+        "station": "Ujjain Agromet Station"
+      },
+      {
+        "name": "Umaria",
+        "headquarters": "Umaria",
+        "lat": 23.531,
+        "lon": 80.8295,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Vidisha",
+        "headquarters": "Vidisha",
+        "lat": 23.5333,
+        "lon": 77.8167,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Maharashtra",
+    "type": "State",
+    "metCentre": "IMD Regional Meteorological Centre Mumbai",
+    "districts": [
+      {
+        "name": "Ahmednagar",
+        "headquarters": "Ahmednagar",
+        "lat": 19.0948,
+        "lon": 74.748,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Akola",
+        "headquarters": "Akola",
+        "lat": 20.7002,
+        "lon": 77.0082,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Amravati",
+        "headquarters": "Amravati",
+        "lat": 20.9374,
+        "lon": 77.7796,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Aurangabad",
+        "headquarters": "Chhatrapati Sambhajinagar",
+        "lat": 19.8762,
+        "lon": 75.3433,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Beed",
+        "headquarters": "Beed",
+        "lat": 18.9891,
+        "lon": 75.7601,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhandara",
+        "headquarters": "Bhandara",
+        "lat": 21.1667,
+        "lon": 79.65,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Buldhana",
+        "headquarters": "Buldhana",
+        "lat": 20.5333,
+        "lon": 76.1833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chandrapur",
+        "headquarters": "Chandrapur",
+        "lat": 19.9615,
+        "lon": 79.2961,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Osmanabad",
+        "headquarters": "Dharashiv",
+        "lat": 18.1861,
+        "lon": 76.0419,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dhule",
+        "headquarters": "Dhule",
+        "lat": 20.9042,
+        "lon": 74.7749,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gadchiroli",
+        "headquarters": "Gadchiroli",
+        "lat": 20.1833,
+        "lon": 80.0,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gondia",
+        "headquarters": "Gondia",
+        "lat": 21.45,
+        "lon": 80.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hingoli",
+        "headquarters": "Hingoli",
+        "lat": 19.7167,
+        "lon": 77.15,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jalgaon",
+        "headquarters": "Jalgaon",
+        "lat": 21.0077,
+        "lon": 75.5626,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jalna",
+        "headquarters": "Jalna",
+        "lat": 19.8347,
+        "lon": 75.8816,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kolhapur",
+        "headquarters": "Kolhapur",
+        "lat": 16.705,
+        "lon": 74.2433,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Latur",
+        "headquarters": "Latur",
+        "lat": 18.4088,
+        "lon": 76.5604,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mumbai City",
+        "headquarters": "Mumbai",
+        "lat": 18.9388,
+        "lon": 72.8354,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mumbai Suburban",
+        "headquarters": "Bandra",
+        "lat": 19.0596,
+        "lon": 72.8295,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nanded",
+        "headquarters": "Nanded",
+        "lat": 19.1383,
+        "lon": 77.321,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nandurbar",
+        "headquarters": "Nandurbar",
+        "lat": 21.3756,
+        "lon": 74.2428,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nagpur",
+        "lat": 21.1458,
+        "lon": 79.0882,
+        "crops": [
+          "Cotton",
+          "Soybean",
+          "Oranges"
+        ],
+        "station": "Nagpur Sonegaon Doppler"
+      },
+      {
+        "name": "Nashik",
+        "lat": 19.9975,
+        "lon": 73.7898,
+        "crops": [
+          "Grapes",
+          "Onion",
+          "Sugarcane"
+        ],
+        "station": "Nashik Ozar Airport"
+      },
+      {
+        "name": "Palghar",
+        "headquarters": "Palghar",
+        "lat": 19.6969,
+        "lon": 72.7658,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Parbhani",
+        "headquarters": "Parbhani",
+        "lat": 19.2704,
+        "lon": 76.7601,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pune",
+        "lat": 18.5204,
+        "lon": 73.8567,
+        "crops": [
+          "Sugarcane",
+          "Soybean",
+          "Grapes"
+        ],
+        "station": "Pune Shimla Office IMD"
+      },
+      {
+        "name": "Raigad",
+        "lat": 18.5158,
+        "lon": 73.1822,
+        "crops": [
+          "Paddy",
+          "Mango",
+          "Coconut"
+        ],
+        "station": "Alibag / Colaba S-Band Radar"
+      },
+      {
+        "name": "Ratnagiri",
+        "headquarters": "Ratnagiri",
+        "lat": 16.9902,
+        "lon": 73.312,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sangli",
+        "headquarters": "Sangli",
+        "lat": 16.8524,
+        "lon": 74.5815,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Satara",
+        "headquarters": "Satara",
+        "lat": 17.6805,
+        "lon": 74.0183,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sindhudurg",
+        "headquarters": "Oros",
+        "lat": 16.1667,
+        "lon": 73.65,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Solapur",
+        "headquarters": "Solapur",
+        "lat": 17.6599,
+        "lon": 75.9064,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Thane",
+        "headquarters": "Thane",
+        "lat": 19.2183,
+        "lon": 72.9781,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Wardha",
+        "headquarters": "Wardha",
+        "lat": 20.7453,
+        "lon": 78.6022,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Washim",
+        "headquarters": "Washim",
+        "lat": 20.1,
+        "lon": 77.1333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Yavatmal",
+        "headquarters": "Yavatmal",
+        "lat": 20.3888,
+        "lon": 78.1204,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Manipur",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Imphal",
+    "districts": [
+      {
+        "name": "Bishnupur",
+        "headquarters": "Bishnupur",
+        "lat": 24.6333,
+        "lon": 93.7667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chandel",
+        "headquarters": "Chandel",
+        "lat": 24.3167,
+        "lon": 94.0,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Churachandpur",
+        "lat": 24.3333,
+        "lon": 93.6667,
+        "crops": [
+          "Paddy",
+          "Ginger",
+          "Pineapple"
+        ],
+        "station": "Churachandpur AWS"
+      },
+      {
+        "name": "Imphal East",
+        "headquarters": "Porompat",
+        "lat": 24.817,
+        "lon": 93.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Imphal West",
+        "lat": 24.817,
+        "lon": 93.9368,
+        "crops": [
+          "Paddy",
+          "Maize",
+          "Pulses"
+        ],
+        "station": "Tulihal Airport Imphal"
+      },
+      {
+        "name": "Jiribam",
+        "headquarters": "Jiribam",
+        "lat": 24.8,
+        "lon": 93.1167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kakching",
+        "headquarters": "Kakching",
+        "lat": 24.4939,
+        "lon": 93.9825,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kamjong",
+        "headquarters": "Kamjong",
+        "lat": 25.2333,
+        "lon": 94.5,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kangpokpi",
+        "headquarters": "Kangpokpi",
+        "lat": 25.1667,
+        "lon": 93.9833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Noney",
+        "headquarters": "Noney",
+        "lat": 24.8833,
+        "lon": 93.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pherzawl",
+        "headquarters": "Pherzawl",
+        "lat": 24.25,
+        "lon": 93.4167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Senapati",
+        "headquarters": "Senapati",
+        "lat": 25.2677,
+        "lon": 94.021,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tamenglong",
+        "headquarters": "Tamenglong",
+        "lat": 24.9879,
+        "lon": 93.4953,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tengnoupal",
+        "headquarters": "Tengnoupal",
+        "lat": 24.3167,
+        "lon": 94.2667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Thoubal",
+        "headquarters": "Thoubal",
+        "lat": 24.6333,
+        "lon": 93.9833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ukhrul",
+        "headquarters": "Ukhrul",
+        "lat": 25.1,
+        "lon": 94.3667,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Meghalaya",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Shillong",
+    "districts": [
+      {
+        "name": "East Garo Hills",
+        "headquarters": "Williamnagar",
+        "lat": 25.4833,
+        "lon": 90.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "East Jaintia Hills",
+        "headquarters": "Khliehriat",
+        "lat": 25.4333,
+        "lon": 92.3333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "East Khasi Hills",
+        "lat": 25.5788,
+        "lon": 91.8933,
+        "crops": [
+          "Potato",
+          "Ginger",
+          "Maize"
+        ],
+        "station": "Sohra / Cherrapunji Met"
+      },
+      {
+        "name": "Eastern West Khasi Hills",
+        "headquarters": "Mairang",
+        "lat": 25.5333,
+        "lon": 91.65,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "North Garo Hills",
+        "headquarters": "Resubelpara",
+        "lat": 25.7833,
+        "lon": 90.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ri Bhoi",
+        "headquarters": "Nongpoh",
+        "lat": 25.8432,
+        "lon": 91.9856,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South Garo Hills",
+        "headquarters": "Baghmara",
+        "lat": 25.3301,
+        "lon": 90.5636,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South West Garo Hills",
+        "headquarters": "Ampati",
+        "lat": 25.5,
+        "lon": 90.1333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South West Khasi Hills",
+        "headquarters": "Mawkyrwat",
+        "lat": 25.3167,
+        "lon": 91.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Garo Hills",
+        "lat": 25.5138,
+        "lon": 90.2201,
+        "crops": [
+          "Paddy",
+          "Cashew",
+          "Arecanut"
+        ],
+        "station": "Tura Agromet Station"
+      },
+      {
+        "name": "West Jaintia Hills",
+        "headquarters": "Jowai",
+        "lat": 25.45,
+        "lon": 92.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Khasi Hills",
+        "headquarters": "Nongstoin",
+        "lat": 25.5625,
+        "lon": 91.2891,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Mizoram",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Aizawl",
+    "districts": [
+      {
+        "name": "Aizawl",
+        "lat": 23.7271,
+        "lon": 92.7176,
+        "crops": [
+          "Paddy",
+          "Ginger",
+          "Turmeric"
+        ],
+        "station": "Lengpui Airport Aizawl"
+      },
+      {
+        "name": "Champhai",
+        "headquarters": "Champhai",
+        "lat": 23.4566,
+        "lon": 93.3282,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hnahthial",
+        "headquarters": "Hnahthial",
+        "lat": 22.95,
+        "lon": 92.9833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khawzawl",
+        "headquarters": "Khawzawl",
+        "lat": 23.4667,
+        "lon": 93.05,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kolasib",
+        "headquarters": "Kolasib",
+        "lat": 24.2333,
+        "lon": 92.6833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lawngtlai",
+        "headquarters": "Lawngtlai",
+        "lat": 22.5333,
+        "lon": 92.8833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lunglei",
+        "lat": 22.8833,
+        "lon": 92.7333,
+        "crops": [
+          "Paddy",
+          "Maize",
+          "Spices"
+        ],
+        "station": "Lunglei AWS"
+      },
+      {
+        "name": "Mamit",
+        "headquarters": "Mamit",
+        "lat": 23.9333,
+        "lon": 92.5,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Saiha",
+        "headquarters": "Saiha",
+        "lat": 22.4897,
+        "lon": 92.9793,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Saitual",
+        "headquarters": "Saitual",
+        "lat": 23.5667,
+        "lon": 92.7167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Serchhip",
+        "headquarters": "Serchhip",
+        "lat": 23.3417,
+        "lon": 92.8502,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Nagaland",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Kohima",
+    "districts": [
+      {
+        "name": "Chumoukedima",
+        "headquarters": "Chumoukedima",
+        "lat": 25.9167,
+        "lon": 93.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dimapur",
+        "lat": 25.9094,
+        "lon": 93.7266,
+        "crops": [
+          "Paddy",
+          "Sugarcane",
+          "Mustard"
+        ],
+        "station": "Dimapur Airport"
+      },
+      {
+        "name": "Kiphire",
+        "headquarters": "Kiphire",
+        "lat": 25.8689,
+        "lon": 94.7853,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kohima",
+        "lat": 25.6751,
+        "lon": 94.1086,
+        "crops": [
+          "Terraced Paddy",
+          "Maize",
+          "Soybean"
+        ],
+        "station": "Kohima Upper Met"
+      },
+      {
+        "name": "Longleng",
+        "headquarters": "Longleng",
+        "lat": 26.4902,
+        "lon": 94.8197,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mokokchung",
+        "headquarters": "Mokokchung",
+        "lat": 26.322,
+        "lon": 94.5135,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mon",
+        "headquarters": "Mon",
+        "lat": 26.7226,
+        "lon": 95.0312,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Niuland",
+        "headquarters": "Niuland",
+        "lat": 25.8667,
+        "lon": 93.85,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Noklak",
+        "headquarters": "Noklak",
+        "lat": 26.1167,
+        "lon": 95.0333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Peren",
+        "headquarters": "Peren",
+        "lat": 25.5125,
+        "lon": 93.7391,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Phek",
+        "headquarters": "Phek",
+        "lat": 25.6995,
+        "lon": 94.4612,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shamator",
+        "headquarters": "Shamator",
+        "lat": 26.25,
+        "lon": 94.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tseminyu",
+        "headquarters": "Tseminyu",
+        "lat": 25.9333,
+        "lon": 93.9833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tuensang",
+        "headquarters": "Tuensang",
+        "lat": 26.2667,
+        "lon": 94.8333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Wokha",
+        "headquarters": "Wokha",
+        "lat": 26.0833,
+        "lon": 94.2667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Zunheboto",
+        "headquarters": "Zunheboto",
+        "lat": 26.0,
+        "lon": 94.5167,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Odisha",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Bhubaneswar",
+    "districts": [
+      {
+        "name": "Angul",
+        "headquarters": "Angul",
+        "lat": 20.85,
+        "lon": 85.1,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Boudh",
+        "headquarters": "Boudh",
+        "lat": 20.8333,
+        "lon": 84.3167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhadrak",
+        "headquarters": "Bhadrak",
+        "lat": 21.0583,
+        "lon": 86.4958,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Balangir",
+        "headquarters": "Balangir",
+        "lat": 20.7167,
+        "lon": 83.4833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bargarh",
+        "headquarters": "Bargarh",
+        "lat": 21.3333,
+        "lon": 83.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Balasore",
+        "lat": 21.4934,
+        "lon": 86.9135,
+        "crops": [
+          "Paddy",
+          "Betelvine",
+          "Mustard"
+        ],
+        "station": "Chandipur Coastal Station"
+      },
+      {
+        "name": "Cuttack",
+        "headquarters": "Cuttack",
+        "lat": 20.4625,
+        "lon": 85.8828,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Debagarh",
+        "headquarters": "Debagarh",
+        "lat": 21.5333,
+        "lon": 84.7333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dhenkanal",
+        "headquarters": "Dhenkanal",
+        "lat": 20.6667,
+        "lon": 85.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ganjam",
+        "lat": 19.3149,
+        "lon": 84.7941,
+        "crops": [
+          "Paddy",
+          "Groundnut",
+          "Cashew"
+        ],
+        "station": "Gopalpur Doppler Radar"
+      },
+      {
+        "name": "Gajapati",
+        "headquarters": "Paralakhemundi",
+        "lat": 18.7833,
+        "lon": 84.0833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jharsuguda",
+        "headquarters": "Jharsuguda",
+        "lat": 21.8558,
+        "lon": 84.0061,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jajpur",
+        "headquarters": "Jajpur",
+        "lat": 20.85,
+        "lon": 86.3333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jagatsinghpur",
+        "headquarters": "Jagatsinghpur",
+        "lat": 20.1976,
+        "lon": 86.3377,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khordha",
+        "lat": 20.1809,
+        "lon": 85.6214,
+        "crops": [
+          "Paddy",
+          "Pulses",
+          "Vegetables"
+        ],
+        "station": "Bhubaneswar Doppler Radar"
+      },
+      {
+        "name": "Kendujhar",
+        "headquarters": "Kendujhar",
+        "lat": 21.6333,
+        "lon": 85.5833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kalahandi",
+        "headquarters": "Bhawanipatna",
+        "lat": 19.9083,
+        "lon": 83.1667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kandhamal",
+        "headquarters": "Phulbani",
+        "lat": 20.1342,
+        "lon": 84.0167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Koraput",
+        "headquarters": "Koraput",
+        "lat": 18.8125,
+        "lon": 82.71,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kendrapara",
+        "headquarters": "Kendrapara",
+        "lat": 20.5,
+        "lon": 86.4167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Malkangiri",
+        "headquarters": "Malkangiri",
+        "lat": 18.35,
+        "lon": 81.9,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mayurbhanj",
+        "headquarters": "Baripada",
+        "lat": 21.9333,
+        "lon": 86.7333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nabarangpur",
+        "headquarters": "Nabarangpur",
+        "lat": 19.2281,
+        "lon": 82.547,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nuapada",
+        "headquarters": "Nuapada",
+        "lat": 20.8167,
+        "lon": 82.5333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nayagarh",
+        "headquarters": "Nayagarh",
+        "lat": 20.1231,
+        "lon": 85.1038,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Puri",
+        "headquarters": "Puri",
+        "lat": 19.8134,
+        "lon": 85.8315,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rayagada",
+        "headquarters": "Rayagada",
+        "lat": 19.1667,
+        "lon": 83.4167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sambalpur",
+        "lat": 21.4669,
+        "lon": 83.9812,
+        "crops": [
+          "Paddy",
+          "Sugarcane",
+          "Mustard"
+        ],
+        "station": "Sambalpur Agromet"
+      },
+      {
+        "name": "Subarnapur",
+        "headquarters": "Subarnapur",
+        "lat": 20.8333,
+        "lon": 83.9,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sundargarh",
+        "headquarters": "Sundergarh",
+        "lat": 22.1167,
+        "lon": 84.0333,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Punjab",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Chandigarh",
+    "districts": [
+      {
+        "name": "Amritsar",
+        "lat": 31.634,
+        "lon": 74.8723,
+        "crops": [
+          "Wheat",
+          "Paddy",
+          "Maize"
+        ],
+        "station": "Raja Sansi Airport Amritsar"
+      },
+      {
+        "name": "Barnala",
+        "headquarters": "Barnala",
+        "lat": 30.3819,
+        "lon": 75.5468,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bathinda",
+        "lat": 30.211,
+        "lon": 74.9455,
+        "crops": [
+          "Cotton",
+          "Wheat",
+          "Mustard"
+        ],
+        "station": "Bathinda Agromet Station"
+      },
+      {
+        "name": "Faridkot",
+        "headquarters": "Faridkot",
+        "lat": 30.6667,
+        "lon": 74.75,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Fatehgarh Sahib",
+        "headquarters": "Fatehgarh Sahib",
+        "lat": 30.6167,
+        "lon": 76.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Fazilka",
+        "headquarters": "Fazilka",
+        "lat": 30.403,
+        "lon": 74.0287,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Firozpur",
+        "headquarters": "Firozpur",
+        "lat": 30.9167,
+        "lon": 74.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gurdaspur",
+        "headquarters": "Gurdaspur",
+        "lat": 32.0419,
+        "lon": 75.4053,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hoshiarpur",
+        "headquarters": "Hoshiarpur",
+        "lat": 31.5312,
+        "lon": 75.9111,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jalandhar",
+        "headquarters": "Jalandhar",
+        "lat": 31.326,
+        "lon": 75.5762,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kapurthala",
+        "headquarters": "Kapurthala",
+        "lat": 31.38,
+        "lon": 75.38,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ludhiana",
+        "lat": 30.901,
+        "lon": 75.8573,
+        "crops": [
+          "Wheat",
+          "Paddy",
+          "Cotton"
+        ],
+        "station": "PAU Ludhiana Agromet"
+      },
+      {
+        "name": "Malerkotla",
+        "headquarters": "Malerkotla",
+        "lat": 30.5333,
+        "lon": 75.8833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mansa",
+        "headquarters": "Mansa",
+        "lat": 29.9833,
+        "lon": 75.3833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Moga",
+        "headquarters": "Moga",
+        "lat": 30.8165,
+        "lon": 75.1717,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pathankot",
+        "headquarters": "Pathankot",
+        "lat": 32.2746,
+        "lon": 75.6522,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Patiala",
+        "lat": 30.3398,
+        "lon": 76.3869,
+        "crops": [
+          "Wheat",
+          "Paddy",
+          "Sugarcane"
+        ],
+        "station": "Patiala Aerodrome"
+      },
+      {
+        "name": "Rupnagar",
+        "headquarters": "Rupnagar",
+        "lat": 30.9659,
+        "lon": 76.523,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sahibzada Ajit Singh Nagar",
+        "headquarters": "Mohali",
+        "lat": 30.7046,
+        "lon": 76.7179,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sangrur",
+        "headquarters": "Sangrur",
+        "lat": 30.2458,
+        "lon": 75.8421,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shahid Bhagat Singh Nagar",
+        "headquarters": "Nawanshahr",
+        "lat": 31.0913,
+        "lon": 76.0392,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sri Muktsar Sahib",
+        "headquarters": "Sri Muktsar Sahib",
+        "lat": 30.4833,
+        "lon": 74.5167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tarn Taran",
+        "headquarters": "Tarn Taran Sahib",
+        "lat": 31.45,
+        "lon": 74.9333,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Rajasthan",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Jaipur",
+    "districts": [
+      {
+        "name": "Ajmer",
+        "headquarters": "Ajmer",
+        "lat": 26.4499,
+        "lon": 74.6399,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Alwar",
+        "headquarters": "Alwar",
+        "lat": 27.5609,
+        "lon": 76.625,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Balotra",
+        "headquarters": "Balotra",
+        "lat": 25.8333,
+        "lon": 72.2333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Banswara",
+        "headquarters": "Banswara",
+        "lat": 23.55,
+        "lon": 74.45,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Baran",
+        "headquarters": "Baran",
+        "lat": 25.1,
+        "lon": 76.52,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Barmer",
+        "headquarters": "Barmer",
+        "lat": 25.75,
+        "lon": 71.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Beawar",
+        "headquarters": "Beawar",
+        "lat": 26.1,
+        "lon": 74.3167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bharatpur",
+        "headquarters": "Bharatpur",
+        "lat": 27.217,
+        "lon": 77.4895,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhilwara",
+        "headquarters": "Bhilwara",
+        "lat": 25.35,
+        "lon": 74.6333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bikaner",
+        "headquarters": "Bikaner",
+        "lat": 28.0167,
+        "lon": 73.3119,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bundi",
+        "headquarters": "Bundi",
+        "lat": 25.4305,
+        "lon": 75.6499,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chittorgarh",
+        "headquarters": "Chittorgarh",
+        "lat": 24.8887,
+        "lon": 74.6269,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Churu",
+        "headquarters": "Churu",
+        "lat": 28.3,
+        "lon": 74.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dausa",
+        "headquarters": "Dausa",
+        "lat": 26.89,
+        "lon": 76.33,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Deeg",
+        "headquarters": "Deeg",
+        "lat": 27.4667,
+        "lon": 77.3333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dholpur",
+        "headquarters": "Dholpur",
+        "lat": 26.7052,
+        "lon": 77.8882,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Didwana Kuchaman",
+        "headquarters": "Didwana",
+        "lat": 27.4,
+        "lon": 74.5833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dungarpur",
+        "headquarters": "Dungarpur",
+        "lat": 23.8417,
+        "lon": 73.7147,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hanumangarh",
+        "headquarters": "Hanumangarh",
+        "lat": 29.5833,
+        "lon": 74.3167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jaipur",
+        "lat": 26.9124,
+        "lon": 75.7873,
+        "crops": [
+          "Mustard",
+          "Wheat",
+          "Bajra"
+        ],
+        "station": "Jaipur Sanganer Doppler Radar"
+      },
+      {
+        "name": "Jaisalmer",
+        "headquarters": "Jaisalmer",
+        "lat": 26.9157,
+        "lon": 70.9083,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jalore",
+        "headquarters": "Jalore",
+        "lat": 25.3445,
+        "lon": 72.6254,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jhalawar",
+        "headquarters": "Jhalawar",
+        "lat": 24.5973,
+        "lon": 76.161,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jhunjhunu",
+        "headquarters": "Jhunjhunu",
+        "lat": 28.1333,
+        "lon": 75.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jodhpur",
+        "lat": 26.2389,
+        "lon": 73.0243,
+        "crops": [
+          "Bajra",
+          "Moong",
+          "Guar"
+        ],
+        "station": "CAZRI Jodhpur Agromet"
+      },
+      {
+        "name": "Karauli",
+        "headquarters": "Karauli",
+        "lat": 26.4833,
+        "lon": 77.0167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khairthal-Tijara",
+        "headquarters": "Khairthal",
+        "lat": 27.9833,
+        "lon": 76.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kota",
+        "lat": 25.2138,
+        "lon": 75.8648,
+        "crops": [
+          "Soybean",
+          "Wheat",
+          "Mustard"
+        ],
+        "station": "Kota Chambal Observatory"
+      },
+      {
+        "name": "Kotputli-Behror",
+        "headquarters": "Kotputli",
+        "lat": 27.7,
+        "lon": 76.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nagaur",
+        "headquarters": "Nagaur",
+        "lat": 27.2,
+        "lon": 73.7333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pali",
+        "headquarters": "Pali",
+        "lat": 25.7667,
+        "lon": 73.3333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Phalodi",
+        "headquarters": "Phalodi",
+        "lat": 27.1333,
+        "lon": 72.3667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pratapgarh",
+        "headquarters": "Pratapgarh",
+        "lat": 24.0333,
+        "lon": 74.7833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rajsamand",
+        "headquarters": "Rajsamand",
+        "lat": 25.0667,
+        "lon": 73.8833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Salumbar",
+        "headquarters": "Salumbar",
+        "lat": 24.05,
+        "lon": 74.0333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sawai Madhopur",
+        "headquarters": "Sawai Madhopur",
+        "lat": 25.9833,
+        "lon": 76.3667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sikar",
+        "headquarters": "Sikar",
+        "lat": 27.6094,
+        "lon": 75.1399,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sirohi",
+        "headquarters": "Sirohi",
+        "lat": 24.8833,
+        "lon": 72.8667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sri Ganganagar",
+        "headquarters": "Sri Ganganagar",
+        "lat": 29.9038,
+        "lon": 73.8772,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tonk",
+        "headquarters": "Tonk",
+        "lat": 26.1667,
+        "lon": 75.7833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Udaipur",
+        "headquarters": "Udaipur",
+        "lat": 24.58,
+        "lon": 73.68,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Sikkim",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Gangtok",
+    "districts": [
+      {
+        "name": "Gangtok",
+        "headquarters": "Gangtok",
+        "lat": 27.3314,
+        "lon": 88.6138,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gyalshing",
+        "headquarters": "Gyalshing",
+        "lat": 27.2844,
+        "lon": 88.2439,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mangan",
+        "headquarters": "Mangan",
+        "lat": 27.5167,
+        "lon": 88.5333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Namchi",
+        "headquarters": "Namchi",
+        "lat": 27.1667,
+        "lon": 88.3667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pakyong",
+        "headquarters": "Pakyong",
+        "lat": 27.2333,
+        "lon": 88.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Soreng",
+        "headquarters": "Soreng",
+        "lat": 27.25,
+        "lon": 88.2333,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Tamil Nadu",
+    "type": "State",
+    "metCentre": "IMD Regional Meteorological Centre Chennai",
+    "districts": [
+      {
+        "name": "Ariyalur",
+        "headquarters": "Ariyalur",
+        "lat": 11.1401,
+        "lon": 79.0782,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chengalpattu",
+        "headquarters": "Chengalpattu",
+        "lat": 12.6819,
+        "lon": 79.9864,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chennai",
+        "lat": 13.0827,
+        "lon": 80.2707,
+        "crops": [
+          "Paddy",
+          "Vegetables",
+          "Horticulture"
+        ],
+        "station": "Chennai Port Doppler Radar"
+      },
+      {
+        "name": "Coimbatore",
+        "lat": 11.0168,
+        "lon": 76.9558,
+        "crops": [
+          "Cotton",
+          "Tea",
+          "Sugarcane"
+        ],
+        "station": "TNAU Coimbatore Agromet"
+      },
+      {
+        "name": "Cuddalore",
+        "headquarters": "Cuddalore",
+        "lat": 11.748,
+        "lon": 79.7714,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dharmapuri",
+        "headquarters": "Dharmapuri",
+        "lat": 12.1211,
+        "lon": 78.1583,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dindigul",
+        "headquarters": "Dindigul",
+        "lat": 10.3673,
+        "lon": 77.9803,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Erode",
+        "headquarters": "Erode",
+        "lat": 11.341,
+        "lon": 77.7172,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kallakurichi",
+        "headquarters": "Kallakurichi",
+        "lat": 11.74,
+        "lon": 78.96,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kanchipuram",
+        "headquarters": "Kanchipuram",
+        "lat": 12.8342,
+        "lon": 79.7036,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kanyakumari",
+        "headquarters": "Nagercoil",
+        "lat": 8.178,
+        "lon": 77.434,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Karur",
+        "headquarters": "Karur",
+        "lat": 10.9601,
+        "lon": 78.0766,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Krishnagiri",
+        "headquarters": "Krishnagiri",
+        "lat": 12.5186,
+        "lon": 78.2137,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Madurai",
+        "lat": 9.9252,
+        "lon": 78.1198,
+        "crops": [
+          "Paddy",
+          "Cotton",
+          "Millets"
+        ],
+        "station": "Madurai Airport Observatory"
+      },
+      {
+        "name": "Mayiladuthurai",
+        "headquarters": "Mayiladuthurai",
+        "lat": 11.103,
+        "lon": 79.652,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nagapattinam",
+        "headquarters": "Nagapattinam",
+        "lat": 10.7688,
+        "lon": 79.8394,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nilgiris",
+        "headquarters": "Ooty",
+        "lat": 11.4064,
+        "lon": 76.6932,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Namakkal",
+        "headquarters": "Namakkal",
+        "lat": 11.2194,
+        "lon": 78.1677,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Perambalur",
+        "headquarters": "Perambalur",
+        "lat": 11.2333,
+        "lon": 78.8833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pudukkottai",
+        "headquarters": "Pudukkottai",
+        "lat": 10.3797,
+        "lon": 78.8208,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ramanathapuram",
+        "headquarters": "Ramanathapuram",
+        "lat": 9.3639,
+        "lon": 78.8395,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ranipet",
+        "headquarters": "Ranipettai",
+        "lat": 12.9247,
+        "lon": 79.3308,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Salem",
+        "headquarters": "Salem",
+        "lat": 11.6643,
+        "lon": 78.146,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sivaganga",
+        "headquarters": "Sivagangai",
+        "lat": 9.8433,
+        "lon": 78.4809,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tenkasi",
+        "headquarters": "Tenkasi",
+        "lat": 8.96,
+        "lon": 77.3152,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tiruppur",
+        "headquarters": "Tiruppur",
+        "lat": 11.1085,
+        "lon": 77.3411,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tiruchirappalli",
+        "lat": 10.7905,
+        "lon": 78.7047,
+        "crops": [
+          "Paddy",
+          "Banana",
+          "Sugarcane"
+        ],
+        "station": "Trichy Airport Met"
+      },
+      {
+        "name": "Theni",
+        "headquarters": "Theni",
+        "lat": 10.0104,
+        "lon": 77.4768,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tirunelveli",
+        "headquarters": "Tirunelveli",
+        "lat": 8.7139,
+        "lon": 77.7567,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Thanjavur",
+        "lat": 10.787,
+        "lon": 79.1378,
+        "crops": [
+          "Paddy",
+          "Sugarcane",
+          "Coconut"
+        ],
+        "station": "Thanjavur Cauvery Delta Met"
+      },
+      {
+        "name": "Thoothukudi",
+        "headquarters": "Thoothukudi",
+        "lat": 8.7642,
+        "lon": 78.1348,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tirupattur",
+        "headquarters": "Tirupattur",
+        "lat": 12.4956,
+        "lon": 78.573,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tiruvallur",
+        "headquarters": "Tiruvallur",
+        "lat": 13.1231,
+        "lon": 79.912,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tiruvarur",
+        "headquarters": "Thiruvarur",
+        "lat": 10.7714,
+        "lon": 79.637,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tiruvannamalai",
+        "headquarters": "Tiruvannamalai",
+        "lat": 12.2253,
+        "lon": 79.0747,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Vellore",
+        "headquarters": "Vellore",
+        "lat": 12.9165,
+        "lon": 79.1325,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Viluppuram",
+        "headquarters": "Viluppuram",
+        "lat": 11.9401,
+        "lon": 79.4861,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Virudhunagar",
+        "headquarters": "Virudhunagar",
+        "lat": 9.581,
+        "lon": 77.9624,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Telangana",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Hyderabad (Begumpet)",
+    "districts": [
+      {
+        "name": "Adilabad",
+        "headquarters": "Adilabad",
+        "lat": 19.6667,
+        "lon": 78.5333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhadradri Kothagudem",
+        "headquarters": "Kothagudem",
+        "lat": 17.55,
+        "lon": 80.6167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hanamkonda",
+        "headquarters": "Hanamkonda",
+        "lat": 18.006,
+        "lon": 79.55,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hyderabad",
+        "lat": 17.385,
+        "lon": 78.4867,
+        "crops": [
+          "Vegetables",
+          "Paddy",
+          "Maize"
+        ],
+        "station": "Begumpet Doppler Radar"
+      },
+      {
+        "name": "Jagtial",
+        "headquarters": "Jagtial",
+        "lat": 18.79,
+        "lon": 78.91,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jangaon",
+        "headquarters": "Jangaon",
+        "lat": 17.7267,
+        "lon": 79.1783,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jayashankar Bhupalpally",
+        "headquarters": "Bhupalpally",
+        "lat": 18.43,
+        "lon": 79.86,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jogulamba Gadwal",
+        "headquarters": "Gadwal",
+        "lat": 16.2333,
+        "lon": 77.8,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kamareddy",
+        "headquarters": "Kamareddy",
+        "lat": 18.32,
+        "lon": 78.34,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Karimnagar",
+        "headquarters": "Karimnagar",
+        "lat": 18.4386,
+        "lon": 79.1288,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Khammam",
+        "headquarters": "Khammam",
+        "lat": 17.2473,
+        "lon": 80.1514,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kumuram Bheem Asifabad",
+        "headquarters": "Asifabad",
+        "lat": 19.37,
+        "lon": 79.28,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mahabubabad",
+        "headquarters": "Mahabubabad",
+        "lat": 17.6,
+        "lon": 80.0,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mahbubnagar",
+        "headquarters": "Mahbubnagar",
+        "lat": 16.7333,
+        "lon": 77.9833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mancherial",
+        "headquarters": "Mancherial",
+        "lat": 18.87,
+        "lon": 79.46,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Medak",
+        "headquarters": "Medak",
+        "lat": 18.0459,
+        "lon": 78.2624,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Medchal-Malkajgiri",
+        "headquarters": "Shamirpet",
+        "lat": 17.58,
+        "lon": 78.55,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mulugu",
+        "headquarters": "Mulugu",
+        "lat": 18.19,
+        "lon": 80.0,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nalgonda",
+        "headquarters": "Nalgonda",
+        "lat": 17.05,
+        "lon": 79.2667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nagarkurnool",
+        "headquarters": "Nagarkurnool",
+        "lat": 16.4833,
+        "lon": 78.3167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Narayanpet",
+        "headquarters": "Narayanpet",
+        "lat": 16.75,
+        "lon": 77.5,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nirmal",
+        "headquarters": "Nirmal",
+        "lat": 19.1,
+        "lon": 78.3333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Nizamabad",
+        "lat": 18.6725,
+        "lon": 78.0941,
+        "crops": [
+          "Turmeric",
+          "Sugarcane",
+          "Paddy"
+        ],
+        "station": "Nizamabad Observatory"
+      },
+      {
+        "name": "Peddapalli",
+        "headquarters": "Peddapalli",
+        "lat": 18.6167,
+        "lon": 79.3667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rajanna Sircilla",
+        "headquarters": "Sircilla",
+        "lat": 18.39,
+        "lon": 78.81,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ranga Reddy",
+        "headquarters": "Hyderabad",
+        "lat": 17.34,
+        "lon": 78.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sangareddy",
+        "headquarters": "Sangareddy",
+        "lat": 17.63,
+        "lon": 78.08,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Siddipet",
+        "headquarters": "Siddipet",
+        "lat": 18.1019,
+        "lon": 78.8489,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Suryapet",
+        "headquarters": "Suryapet",
+        "lat": 17.14,
+        "lon": 79.62,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Vikarabad",
+        "headquarters": "Vikarabad",
+        "lat": 17.34,
+        "lon": 77.9,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Wanaparthy",
+        "headquarters": "Wanaparthy",
+        "lat": 16.36,
+        "lon": 78.06,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Warangal",
+        "lat": 17.9689,
+        "lon": 79.5941,
+        "crops": [
+          "Cotton",
+          "Chilli",
+          "Paddy"
+        ],
+        "station": "Warangal Agromet Station"
+      },
+      {
+        "name": "Yadadri Bhuvanagiri",
+        "headquarters": "Bhongir",
+        "lat": 17.51,
+        "lon": 78.89,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Tripura",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Agartala",
+    "districts": [
+      {
+        "name": "Dhalai",
+        "headquarters": "Ambassa",
+        "lat": 23.95,
+        "lon": 91.85,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gomati",
+        "lat": 23.535,
+        "lon": 91.49,
+        "crops": [
+          "Paddy",
+          "Sugarcane",
+          "Pineapple"
+        ],
+        "station": "Udaipur Agromet Station"
+      },
+      {
+        "name": "Khowai",
+        "headquarters": "Khowai",
+        "lat": 24.0667,
+        "lon": 91.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "North Tripura",
+        "headquarters": "Dharmanagar",
+        "lat": 24.3667,
+        "lon": 92.1667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sepahijala",
+        "headquarters": "Bishramganj",
+        "lat": 23.6667,
+        "lon": 91.3333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South Tripura",
+        "headquarters": "Belonia",
+        "lat": 23.25,
+        "lon": 91.45,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Unakoti",
+        "headquarters": "Kailashahar",
+        "lat": 24.3333,
+        "lon": 92.0,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Tripura",
+        "lat": 23.8315,
+        "lon": 91.2868,
+        "crops": [
+          "Paddy",
+          "Rubber",
+          "Jute"
+        ],
+        "station": "Agartala Doppler Weather Radar"
+      }
+    ]
+  },
+  {
+    "state": "Uttar Pradesh",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Lucknow (Amausi)",
+    "districts": [
+      {
+        "name": "Agra",
+        "lat": 27.1767,
+        "lon": 78.0081,
+        "crops": [
+          "Potato",
+          "Mustard",
+          "Bajra"
+        ],
+        "station": "Kheria Air Force Agra"
+      },
+      {
+        "name": "Aligarh",
+        "headquarters": "Aligarh",
+        "lat": 27.8974,
+        "lon": 78.088,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ambedkar Nagar",
+        "headquarters": "Akbarpur",
+        "lat": 26.43,
+        "lon": 82.53,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Amethi",
+        "headquarters": "Gauriganj",
+        "lat": 26.25,
+        "lon": 81.68,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Amroha",
+        "headquarters": "Amroha",
+        "lat": 28.9044,
+        "lon": 78.4685,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Auraiya",
+        "headquarters": "Auraiya",
+        "lat": 26.4667,
+        "lon": 79.5167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ayodhya",
+        "headquarters": "Ayodhya",
+        "lat": 26.7922,
+        "lon": 82.1998,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Azamgarh",
+        "headquarters": "Azamgarh",
+        "lat": 26.0737,
+        "lon": 83.1859,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bagpat",
+        "headquarters": "Baghpat",
+        "lat": 28.95,
+        "lon": 77.2167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bahraich",
+        "headquarters": "Bahraich",
+        "lat": 27.5833,
+        "lon": 81.6,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ballia",
+        "headquarters": "Ballia",
+        "lat": 25.75,
+        "lon": 84.15,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Balrampur",
+        "headquarters": "Balrampur",
+        "lat": 27.43,
+        "lon": 82.18,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Banda",
+        "headquarters": "Banda",
+        "lat": 25.4833,
+        "lon": 80.3333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Barabanki",
+        "headquarters": "Barabanki",
+        "lat": 26.9167,
+        "lon": 81.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bareilly",
+        "headquarters": "Bareilly",
+        "lat": 28.367,
+        "lon": 79.4304,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Basti",
+        "headquarters": "Basti",
+        "lat": 26.8177,
+        "lon": 82.7633,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bhadohi",
+        "headquarters": "Gyanpur",
+        "lat": 25.44,
+        "lon": 82.2,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bijnor",
+        "headquarters": "Bijnor",
+        "lat": 29.3724,
+        "lon": 78.1358,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Budaun",
+        "headquarters": "Budaun",
+        "lat": 28.0333,
+        "lon": 79.1167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bulandshahr",
+        "headquarters": "Bulandshahr",
+        "lat": 28.4041,
+        "lon": 77.8498,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chandauli",
+        "headquarters": "Chandauli",
+        "lat": 25.26,
+        "lon": 83.27,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chitrakoot",
+        "headquarters": "Karwi",
+        "lat": 25.19,
+        "lon": 80.95,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Deoria",
+        "headquarters": "Deoria",
+        "lat": 26.5024,
+        "lon": 83.7791,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Etah",
+        "headquarters": "Etah",
+        "lat": 27.63,
+        "lon": 78.66,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Etawah",
+        "headquarters": "Etawah",
+        "lat": 26.8117,
+        "lon": 79.0047,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Farrukhabad",
+        "headquarters": "Fatehgarh",
+        "lat": 27.3706,
+        "lon": 79.63,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Fatehpur",
+        "headquarters": "Fatehpur",
+        "lat": 25.9309,
+        "lon": 80.8135,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Firozabad",
+        "headquarters": "Firozabad",
+        "lat": 27.1591,
+        "lon": 78.3958,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gautam Buddha Nagar",
+        "headquarters": "Noida",
+        "lat": 28.5355,
+        "lon": 77.391,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ghaziabad",
+        "headquarters": "Ghaziabad",
+        "lat": 28.6692,
+        "lon": 77.4538,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ghazipur",
+        "headquarters": "Ghazipur",
+        "lat": 25.58,
+        "lon": 83.58,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gonda",
+        "headquarters": "Gonda",
+        "lat": 27.134,
+        "lon": 81.9619,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Gorakhpur",
+        "headquarters": "Gorakhpur",
+        "lat": 26.7606,
+        "lon": 83.3732,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hamirpur",
+        "headquarters": "Hamirpur",
+        "lat": 25.95,
+        "lon": 80.15,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hapur",
+        "headquarters": "Hapur",
+        "lat": 28.73,
+        "lon": 77.78,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hardoi",
+        "headquarters": "Hardoi",
+        "lat": 27.4167,
+        "lon": 80.1167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Hathras",
+        "headquarters": "Hathras",
+        "lat": 27.595,
+        "lon": 78.051,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jalaun",
+        "headquarters": "Orai",
+        "lat": 25.99,
+        "lon": 79.47,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jaunpur",
+        "headquarters": "Jaunpur",
+        "lat": 25.75,
+        "lon": 82.6833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jhansi",
+        "headquarters": "Jhansi",
+        "lat": 25.4484,
+        "lon": 78.5685,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kannauj",
+        "headquarters": "Kannauj",
+        "lat": 27.05,
+        "lon": 79.9167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kanpur Dehat",
+        "headquarters": "Akbarpur",
+        "lat": 26.42,
+        "lon": 79.97,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kanpur Nagar",
+        "lat": 26.4499,
+        "lon": 80.3319,
+        "crops": [
+          "Wheat",
+          "Gram",
+          "Mustard"
+        ],
+        "station": "CSAU Kanpur Agromet"
+      },
+      {
+        "name": "Kasganj",
+        "headquarters": "Kasganj",
+        "lat": 27.81,
+        "lon": 78.65,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kaushambi",
+        "headquarters": "Manjhanpur",
+        "lat": 25.33,
+        "lon": 81.4,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kushinagar",
+        "headquarters": "Padrauna",
+        "lat": 26.9,
+        "lon": 83.98,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lakhimpur Kheri",
+        "headquarters": "Lakhimpur",
+        "lat": 27.9477,
+        "lon": 80.781,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lalitpur",
+        "headquarters": "Lalitpur",
+        "lat": 24.69,
+        "lon": 78.41,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Lucknow",
+        "lat": 26.8467,
+        "lon": 80.9462,
+        "crops": [
+          "Wheat",
+          "Paddy",
+          "Mango"
+        ],
+        "station": "Amausi Airport Doppler Radar"
+      },
+      {
+        "name": "Maharajganj",
+        "headquarters": "Maharajganj",
+        "lat": 27.15,
+        "lon": 83.56,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mahoba",
+        "headquarters": "Mahoba",
+        "lat": 25.2921,
+        "lon": 79.8724,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mainpuri",
+        "headquarters": "Mainpuri",
+        "lat": 27.2333,
+        "lon": 79.0167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mathura",
+        "headquarters": "Mathura",
+        "lat": 27.4924,
+        "lon": 77.6737,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Mau",
+        "headquarters": "Mau",
+        "lat": 25.94,
+        "lon": 83.56,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Meerut",
+        "lat": 28.9845,
+        "lon": 77.7064,
+        "crops": [
+          "Sugarcane",
+          "Wheat",
+          "Potato"
+        ],
+        "station": "Modipuram SVPUAT Agromet"
+      },
+      {
+        "name": "Mirzapur",
+        "headquarters": "Mirzapur",
+        "lat": 25.1337,
+        "lon": 82.5644,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Moradabad",
+        "headquarters": "Moradabad",
+        "lat": 28.8316,
+        "lon": 78.7783,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Muzaffarnagar",
+        "headquarters": "Muzaffarnagar",
+        "lat": 29.4727,
+        "lon": 77.7085,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pilibhit",
+        "headquarters": "Pilibhit",
+        "lat": 28.6333,
+        "lon": 79.8,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pratapgarh",
+        "headquarters": "Pratapgarh",
+        "lat": 25.9026,
+        "lon": 81.7787,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Prayagraj",
+        "headquarters": "Prayagraj",
+        "lat": 25.4358,
+        "lon": 81.8463,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Raebareli",
+        "headquarters": "Raebareli",
+        "lat": 26.2333,
+        "lon": 81.2333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rampur",
+        "headquarters": "Rampur",
+        "lat": 28.8,
+        "lon": 79.0333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Saharanpur",
+        "headquarters": "Saharanpur",
+        "lat": 29.964,
+        "lon": 77.546,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sambhal",
+        "headquarters": "Sambhal",
+        "lat": 28.5833,
+        "lon": 78.5667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sant Kabir Nagar",
+        "headquarters": "Khalilabad",
+        "lat": 26.7672,
+        "lon": 83.0761,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shahjahanpur",
+        "headquarters": "Shahjahanpur",
+        "lat": 27.88,
+        "lon": 79.91,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shamli",
+        "headquarters": "Shamli",
+        "lat": 29.45,
+        "lon": 77.3167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shravasti",
+        "headquarters": "Shravasti",
+        "lat": 27.51,
+        "lon": 82.03,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Siddharthnagar",
+        "headquarters": "Naugarh",
+        "lat": 27.2833,
+        "lon": 83.1,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sitapur",
+        "headquarters": "Sitapur",
+        "lat": 27.5639,
+        "lon": 80.6664,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sonbhadra",
+        "headquarters": "Robertsganj",
+        "lat": 24.69,
+        "lon": 83.07,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Sultanpur",
+        "headquarters": "Sultanpur",
+        "lat": 26.265,
+        "lon": 82.073,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Unnao",
+        "headquarters": "Unnao",
+        "lat": 26.5464,
+        "lon": 80.4879,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Varanasi",
+        "lat": 25.3176,
+        "lon": 82.9739,
+        "crops": [
+          "Paddy",
+          "Wheat",
+          "Vegetables"
+        ],
+        "station": "Babatpur Airport Varanasi"
+      }
+    ]
+  },
+  {
+    "state": "Uttarakhand",
+    "type": "State",
+    "metCentre": "IMD Meteorological Centre Dehradun",
+    "districts": [
+      {
+        "name": "Almora",
+        "headquarters": "Almora",
+        "lat": 29.5971,
+        "lon": 79.6591,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bageshwar",
+        "headquarters": "Bageshwar",
+        "lat": 29.8386,
+        "lon": 79.7714,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Chamoli",
+        "headquarters": "Gopeshwar",
+        "lat": 30.4167,
+        "lon": 79.3167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Champawat",
+        "headquarters": "Champawat",
+        "lat": 29.335,
+        "lon": 80.0929,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dehradun",
+        "lat": 30.3165,
+        "lon": 78.0322,
+        "crops": [
+          "Basmati Paddy",
+          "Wheat",
+          "Litchi"
+        ],
+        "station": "Dehradun Survey of India Met"
+      },
+      {
+        "name": "Haridwar",
+        "lat": 29.9457,
+        "lon": 78.1642,
+        "crops": [
+          "Sugarcane",
+          "Paddy",
+          "Wheat"
+        ],
+        "station": "Roorkee Agromet Station"
+      },
+      {
+        "name": "Nainital",
+        "lat": 29.3919,
+        "lon": 79.4542,
+        "crops": [
+          "Soybean",
+          "Millets",
+          "Apple"
+        ],
+        "station": "Mukteshwar High Altitude Met"
+      },
+      {
+        "name": "Pauri Garhwal",
+        "headquarters": "Pauri",
+        "lat": 30.1467,
+        "lon": 78.777,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pithoragarh",
+        "headquarters": "Pithoragarh",
+        "lat": 29.5829,
+        "lon": 80.2182,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rudraprayag",
+        "headquarters": "Rudraprayag",
+        "lat": 30.2849,
+        "lon": 78.9814,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Tehri Garhwal",
+        "headquarters": "New Tehri",
+        "lat": 30.3712,
+        "lon": 78.4803,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Udham Singh Nagar",
+        "lat": 28.98,
+        "lon": 79.4,
+        "crops": [
+          "Paddy",
+          "Wheat",
+          "Sugarcane"
+        ],
+        "station": "Pantnagar GBPUAT Agromet"
+      },
+      {
+        "name": "Uttarkashi",
+        "headquarters": "Uttarkashi",
+        "lat": 30.7333,
+        "lon": 78.45,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "West Bengal",
+    "type": "State",
+    "metCentre": "IMD Regional Meteorological Centre Kolkata (Alipore)",
+    "districts": [
+      {
+        "name": "Alipurduar",
+        "headquarters": "Alipurduar",
+        "lat": 26.4833,
+        "lon": 89.5167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Bankura",
+        "headquarters": "Bankura",
+        "lat": 23.2372,
+        "lon": 87.0652,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Birbhum",
+        "headquarters": "Suri",
+        "lat": 23.9167,
+        "lon": 87.5333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Cooch Behar",
+        "headquarters": "Cooch Behar",
+        "lat": 26.3452,
+        "lon": 89.4482,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Dakshin Dinajpur",
+        "headquarters": "Balurghat",
+        "lat": 25.2167,
+        "lon": 88.7667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Darjeeling",
+        "lat": 27.041,
+        "lon": 88.2663,
+        "crops": [
+          "Darjeeling Tea",
+          "Cardamom",
+          "Orange"
+        ],
+        "station": "Darjeeling Ridge Met"
+      },
+      {
+        "name": "Hooghly",
+        "headquarters": "Chinsurah",
+        "lat": 22.901,
+        "lon": 88.396,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Howrah",
+        "headquarters": "Howrah",
+        "lat": 22.5958,
+        "lon": 88.2636,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jalpaiguri",
+        "headquarters": "Jalpaiguri",
+        "lat": 26.5167,
+        "lon": 88.7333,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jhargram",
+        "headquarters": "Jhargram",
+        "lat": 22.45,
+        "lon": 86.9833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kalimpong",
+        "headquarters": "Kalimpong",
+        "lat": 27.0667,
+        "lon": 88.4667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kolkata",
+        "lat": 22.5726,
+        "lon": 88.3639,
+        "crops": [
+          "Paddy",
+          "Vegetables",
+          "Jute"
+        ],
+        "station": "Alipore Doppler Weather Radar"
+      },
+      {
+        "name": "Maldah",
+        "headquarters": "English Bazar",
+        "lat": 25.0108,
+        "lon": 88.1411,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Murshidabad",
+        "lat": 24.1837,
+        "lon": 88.2709,
+        "crops": [
+          "Jute",
+          "Paddy",
+          "Mango"
+        ],
+        "station": "Berhampore Agromet"
+      },
+      {
+        "name": "Nadia",
+        "headquarters": "Krishnanagar",
+        "lat": 23.4,
+        "lon": 88.5,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "North 24 Parganas",
+        "headquarters": "Barasat",
+        "lat": 22.7191,
+        "lon": 88.482,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Paschim Bardhaman",
+        "headquarters": "Asansol",
+        "lat": 23.6739,
+        "lon": 86.9524,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Paschim Medinipur",
+        "headquarters": "Midnapore",
+        "lat": 22.4257,
+        "lon": 87.32,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Purba Bardhaman",
+        "lat": 23.2324,
+        "lon": 87.8615,
+        "crops": [
+          "Paddy (Rice Bowl)",
+          "Potato",
+          "Mustard"
+        ],
+        "station": "Burdwan Agromet Station"
+      },
+      {
+        "name": "Purba Medinipur",
+        "headquarters": "Tamluk",
+        "lat": 22.3,
+        "lon": 87.9167,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Purulia",
+        "headquarters": "Purulia",
+        "lat": 23.3321,
+        "lon": 86.3652,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South 24 Parganas",
+        "headquarters": "Alipore",
+        "lat": 22.1352,
+        "lon": 88.4016,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Uttar Dinajpur",
+        "headquarters": "Raiganj",
+        "lat": 25.6167,
+        "lon": 88.1167,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Andaman and Nicobar Islands",
+    "type": "Union Territory",
+    "metCentre": "IMD Meteorological Centre Port Blair",
+    "districts": [
+      {
+        "name": "Nicobar",
+        "lat": 9.155,
+        "lon": 92.818,
+        "crops": [
+          "Coconut",
+          "Banana",
+          "Papaya"
+        ],
+        "station": "Car Nicobar Air Base"
+      },
+      {
+        "name": "North and Middle Andaman",
+        "headquarters": "Mayabunder",
+        "lat": 12.9333,
+        "lon": 92.9,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South Andaman",
+        "lat": 11.6234,
+        "lon": 92.7265,
+        "crops": [
+          "Coconut",
+          "Arecanut",
+          "Paddy"
+        ],
+        "station": "Port Blair Doppler Weather Radar"
+      }
+    ]
+  },
+  {
+    "state": "Chandigarh",
+    "type": "Union Territory",
+    "metCentre": "IMD Meteorological Centre Chandigarh",
+    "districts": [
+      {
+        "name": "Chandigarh",
+        "lat": 30.7333,
+        "lon": 76.7794,
+        "crops": [
+          "Wheat",
+          "Maize",
+          "Vegetables"
+        ],
+        "station": "Chandigarh Sector 39 MC"
+      }
+    ]
+  },
+  {
+    "state": "Dadra and Nagar Haveli and Daman and Diu",
+    "type": "Union Territory",
+    "metCentre": "IMD Meteorological Centre Ahmedabad",
+    "districts": [
+      {
+        "name": "Dadra and Nagar Haveli",
+        "headquarters": "Silvassa",
+        "lat": 20.2767,
+        "lon": 73.0169,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Daman",
+        "lat": 20.3974,
+        "lon": 72.8328,
+        "crops": [
+          "Paddy",
+          "Coconut",
+          "Chikoo"
+        ],
+        "station": "Daman Coast Guard Met"
+      },
+      {
+        "name": "Diu",
+        "lat": 20.7144,
+        "lon": 70.9874,
+        "crops": [
+          "Bajra",
+          "Coconut",
+          "Groundnut"
+        ],
+        "station": "Diu Coastal Station"
+      }
+    ]
+  },
+  {
+    "state": "Delhi",
+    "type": "Union Territory",
+    "metCentre": "IMD Regional Meteorological Centre New Delhi (Lodhi Road / Palam)",
+    "districts": [
+      {
+        "name": "Central Delhi",
+        "headquarters": "Daryaganj",
+        "lat": 28.645,
+        "lon": 77.245,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "East Delhi",
+        "headquarters": "Preet Vihar",
+        "lat": 28.6196,
+        "lon": 77.298,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "New Delhi",
+        "lat": 28.6139,
+        "lon": 77.209,
+        "crops": [
+          "Vegetables",
+          "Wheat",
+          "Mustard"
+        ],
+        "station": "Palam Doppler Weather Radar"
+      },
+      {
+        "name": "North Delhi",
+        "lat": 28.7306,
+        "lon": 77.1325,
+        "crops": [
+          "Paddy",
+          "Vegetables",
+          "Wheat"
+        ],
+        "station": "Lodhi Road HQ"
+      },
+      {
+        "name": "North East Delhi",
+        "headquarters": "Seelampur",
+        "lat": 28.6966,
+        "lon": 77.2635,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "North West Delhi",
+        "headquarters": "Kanjhawala",
+        "lat": 28.7706,
+        "lon": 77.0795,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shahdara",
+        "headquarters": "Nand Nagri",
+        "lat": 28.68,
+        "lon": 77.29,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South Delhi",
+        "headquarters": "Saket",
+        "lat": 28.5086,
+        "lon": 77.2175,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South East Delhi",
+        "headquarters": "Defence Colony",
+        "lat": 28.57,
+        "lon": 77.24,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "South West Delhi",
+        "headquarters": "Vasant Vihar",
+        "lat": 28.57,
+        "lon": 77.15,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "West Delhi",
+        "headquarters": "Rajouri Garden",
+        "lat": 28.6663,
+        "lon": 77.068,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Jammu and Kashmir",
+    "type": "Union Territory",
+    "metCentre": "IMD Meteorological Centre Srinagar",
+    "districts": [
+      {
+        "name": "Anantnag",
+        "lat": 33.7311,
+        "lon": 75.1522,
+        "crops": [
+          "Apple",
+          "Walnut",
+          "Paddy"
+        ],
+        "station": "Anantnag Valley Station"
+      },
+      {
+        "name": "Bandipore",
+        "headquarters": "Bandipore",
+        "lat": 34.42,
+        "lon": 74.65,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Baramulla",
+        "headquarters": "Baramulla",
+        "lat": 34.209,
+        "lon": 74.343,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Budgam",
+        "headquarters": "Budgam",
+        "lat": 34.018,
+        "lon": 74.725,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Doda",
+        "headquarters": "Doda",
+        "lat": 33.1457,
+        "lon": 75.548,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ganderbal",
+        "headquarters": "Ganderbal",
+        "lat": 34.2333,
+        "lon": 74.7833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Jammu",
+        "lat": 32.7266,
+        "lon": 74.857,
+        "crops": [
+          "Wheat",
+          "Basmati Paddy",
+          "Mustard"
+        ],
+        "station": "Jammu Chatha Agromet"
+      },
+      {
+        "name": "Kathua",
+        "headquarters": "Kathua",
+        "lat": 32.3776,
+        "lon": 75.5218,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kishtwar",
+        "headquarters": "Kishtwar",
+        "lat": 33.3167,
+        "lon": 75.7667,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kulgam",
+        "headquarters": "Kulgam",
+        "lat": 33.6451,
+        "lon": 75.0185,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Kupwara",
+        "headquarters": "Kupwara",
+        "lat": 34.5261,
+        "lon": 74.2555,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Poonch",
+        "headquarters": "Poonch",
+        "lat": 33.7717,
+        "lon": 74.093,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Pulwama",
+        "headquarters": "Pulwama",
+        "lat": 33.8716,
+        "lon": 74.8946,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Rajouri",
+        "headquarters": "Rajouri",
+        "lat": 33.3781,
+        "lon": 74.3128,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Ramban",
+        "headquarters": "Ramban",
+        "lat": 33.245,
+        "lon": 75.236,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Reasi",
+        "headquarters": "Reasi",
+        "lat": 33.081,
+        "lon": 74.833,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Samba",
+        "headquarters": "Samba",
+        "lat": 32.56,
+        "lon": 75.12,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Shopian",
+        "headquarters": "Shopian",
+        "lat": 33.717,
+        "lon": 74.8361,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Srinagar",
+        "lat": 34.0837,
+        "lon": 74.7973,
+        "crops": [
+          "Apple",
+          "Saffron",
+          "Paddy"
+        ],
+        "station": "Srinagar Doppler Radar"
+      },
+      {
+        "name": "Udhampur",
+        "headquarters": "Udhampur",
+        "lat": 32.916,
+        "lon": 75.142,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Ladakh",
+    "type": "Union Territory",
+    "metCentre": "IMD Meteorological Centre Leh",
+    "districts": [
+      {
+        "name": "Kargil",
+        "lat": 34.5539,
+        "lon": 76.1349,
+        "crops": [
+          "Barley",
+          "Apricot",
+          "Wheat"
+        ],
+        "station": "Kargil Valley AWS"
+      },
+      {
+        "name": "Leh",
+        "lat": 34.1526,
+        "lon": 77.5771,
+        "crops": [
+          "Barley",
+          "Seabuckthorn",
+          "Apricot"
+        ],
+        "station": "Leh High Altitude Met Centre"
+      }
+    ]
+  },
+  {
+    "state": "Lakshadweep",
+    "type": "Union Territory",
+    "metCentre": "IMD Meteorological Centre Thiruvananthapuram",
+    "districts": [
+      {
+        "name": "Lakshadweep",
+        "headquarters": "Kavaratti",
+        "lat": 10.5669,
+        "lon": 72.642,
+        "crops": null,
+        "station": null
+      }
+    ]
+  },
+  {
+    "state": "Puducherry",
+    "type": "Union Territory",
+    "metCentre": "IMD Regional Meteorological Centre Chennai",
+    "districts": [
+      {
+        "name": "Karaikal",
+        "lat": 10.9254,
+        "lon": 79.838,
+        "crops": [
+          "Paddy",
+          "Pulses",
+          "Coconut"
+        ],
+        "station": "Karaikal Cyclone Warning Centre"
+      },
+      {
+        "name": "Mahe",
+        "headquarters": "Mahe",
+        "lat": 11.7,
+        "lon": 75.54,
+        "crops": null,
+        "station": null
+      },
+      {
+        "name": "Puducherry",
+        "lat": 11.9416,
+        "lon": 79.8083,
+        "crops": [
+          "Paddy",
+          "Sugarcane",
+          "Groundnut"
+        ],
+        "station": "Puducherry Coastal Met"
+      },
+      {
+        "name": "Yanam",
+        "headquarters": "Yanam",
+        "lat": 16.7333,
+        "lon": 82.2167,
+        "crops": null,
+        "station": null
+      }
+    ]
+  }
+]

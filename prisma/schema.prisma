@@ -1,0 +1,101 @@
+// Prisma schema for WeatherGPT (SIH 2026, PS 26068)
+// PostgreSQL + pgvector for bulletin embeddings
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid())
+  phoneNumber    String?
+  preferredLang  String          @default("hi-IN") // hi-IN, ta-IN, en-IN
+  voiceEnabled   Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  savedLocations SavedLocation[]
+  chatSessions   ChatSession[]
+}
+
+model SavedLocation {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  district   String   @default("Raigad")
+  state      String   @default("Maharashtra")
+  latitude   Float    @default(18.5158)
+  longitude  Float    @default(73.1822)
+  isPrimary  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model ChatSession {
+  id        String        @id @default(uuid())
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  title     String        @default("Weather Conversation")
+  language  String        @default("hi-IN")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id            String      @id @default(uuid())
+  sessionId     String
+  session       ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role          String      // "user" | "assistant"
+  content       String      // plain-language text
+  intent        String?     // current_weather, rainfall_forecast, warning_status, crop_advisory, seven_day_outlook, safety_crisis
+  dataCard      Json?       // temp, humidity, wind, rainfall, advisory rules
+  sourceProduct String?     // e.g. "IMD Nowcast (Mumbai Radar / Colaba S-band)"
+  issueTime     DateTime?
+  createdAt     DateTime    @default(now())
+}
+
+model ForecastCache {
+  id            String   @id @default(uuid())
+  district      String   @default("Raigad")
+  state         String   @default("Maharashtra")
+  sourceProduct String   // "data.gov.in — IMD Daily District Forecast" or "Open-Meteo Fallback"
+  issueTime     DateTime
+  validUntil    DateTime
+  payload       Json     // full normalized forecast schema
+  fetchedAt     DateTime @default(now())
+
+  @@index([district, issueTime])
+}
+
+model Alert {
+  id            String   @id @default(uuid())
+  district      String   @default("Raigad")
+  severity      String   // "Low" | "Moderate" | "High" | "Severe"
+  headline      String
+  warningText   String   // Delivered VERBATIM from IMD product - never altered
+  sourceProduct String   // e.g. "IMD Impact-Based Warning Bulletin"
+  issueTime     DateTime
+  validFrom     DateTime
+  validTo       DateTime
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([district, isActive])
+}
+
+model BulletinEmbedding {
+  id            String   @id @default(uuid())
+  district      String   @default("Raigad")
+  product       String   // e.g. "IMD Agromet Advisory Bulletin (Raigad District)"
+  issueTime     DateTime
+  chunkIndex    Int
+  content       String   // overlapping chunk of bulletin text
+  // Stored vector representation or serialized embedding array
+  embeddingJson Json?
+  createdAt     DateTime @default(now())
+
+  @@index([district, product])
+}

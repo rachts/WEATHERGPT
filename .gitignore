@@ -1,0 +1,82 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+.nyc_output
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+/dist
+
+# misc
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# env files
+.env
+.env*.local
+.env.development
+.env.production
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# serwist / pwa build output
+/public/sw.js
+/public/sw.js.map
+/public/swe-worker-*.js
+/public/workbox-*.js
+/public/fallback-*.js
+
+# prisma local dev db
+/prisma/*.db
+/prisma/*.db-journal
+/prisma/dev.db*
+
+# editor / IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# turbopack / cache
+.turbo
+.cache
+
+# ---- project-specific: non-essential / generated content ----
+
+# internal docs, planning notes, and design exports (Stitch, screenshots, etc.)
+/DOCS/
+
+# one-off dev/demo scripts, not needed to run the app
+/scripts/
+
+# sample/seed/demo data — remove these lines if the app imports
+# these JSON files directly at build or runtime, since ignoring
+# them would break the app for anyone who clones fresh
+/lib/data/sample-alerts.json
+/lib/data/sample-forecast.json
+/lib/data/seeded-bulletins.json
