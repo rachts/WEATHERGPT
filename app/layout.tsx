@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { I18nProvider } from "@/lib/i18n/context";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -54,6 +55,7 @@ export default function RootLayout({
         <I18nProvider>
           <Navigation>{children}</Navigation>
         </I18nProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
