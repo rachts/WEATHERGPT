@@ -1,22 +1,29 @@
+// WeatherGPT — Production Prisma Client Singleton
+// Type-safe singleton proxy with lazy instantiation and graceful connection reuse across serverless invocations.
+
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+declare global {
+  // eslint-disable-next-line no-var
+  var prismaGlobal: PrismaClient | undefined;
+}
 
 export function getPrismaClient(): PrismaClient {
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient({
+  if (!globalThis.prismaGlobal) {
+    globalThis.prismaGlobal = new PrismaClient({
       log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
     });
   }
-  return globalForPrisma.prisma;
+  return globalThis.prismaGlobal;
 }
 
-export const prisma = new Proxy({} as PrismaClient, {
-  get(_target, prop) {
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get<K extends keyof PrismaClient>(_target: PrismaClient, prop: K): PrismaClient[K] {
     const client = getPrismaClient();
-    return (client as any)[prop];
+    const val = client[prop];
+    if (typeof val === "function") {
+      return (val as (...args: unknown[]) => unknown).bind(client) as PrismaClient[K];
+    }
+    return val;
   },
 });
-

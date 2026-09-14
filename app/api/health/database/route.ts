@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export async function GET() {
       requestId: correlationId,
     });
   } catch (error) {
-    console.error(`[Database Health Check Failed - ${correlationId}]`, error);
+    logger.error("Database health check ping failed", { correlationId, error: (error as Error).message });
     return NextResponse.json(
       {
         status: "unavailable",

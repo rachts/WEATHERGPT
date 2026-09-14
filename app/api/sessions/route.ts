@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isRateLimited } from "@/lib/utils/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const correlationId = crypto.randomUUID();
+  const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
+
+  if (await isRateLimited(`sessions:${clientIp}`, 60, 60_000)) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "RATE_LIMIT_EXCEEDED",
+          message: "Too many session requests. Please slow down.",
+          requestId: correlationId,
+        },
+      },
+      { status: 429 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get("sessionId");

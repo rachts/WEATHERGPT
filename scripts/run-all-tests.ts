@@ -10,11 +10,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 
-import { getDeterministicCropAdvisory } from "../lib/services/advisory-rules.js";
-import { getDistrictWeather } from "../lib/services/weather-data.js";
-import { processWeatherQuery, detectCrisisMessage } from "../lib/services/query-pipeline.js";
-import { routeWarningDissemination } from "../lib/services/alerts.js";
-import { generateGroundedResponse, verifyCitationGate } from "../lib/services/rag.js";
+import { getDeterministicCropAdvisory } from "../lib/services/advisory-rules";
+import { getDistrictWeather } from "../lib/services/weather-data";
+import { processWeatherQuery, detectCrisisMessage } from "../lib/services/query-pipeline";
+import { routeWarningDissemination } from "../lib/services/alerts";
+import { generateGroundedResponse, verifyCitationGate } from "../lib/services/rag";
 
 async function runTests() {
   console.log("\n========================================================");
@@ -37,8 +37,9 @@ async function runTests() {
 
   // --- GATE G2: PWA Manifest & Service Worker ---
   try {
-    const manifestModule = await import("../app/manifest.js");
-    const manifestData = typeof manifestModule.default === "function" ? manifestModule.default() : manifestModule.default;
+    const manifestModule = await import("../app/manifest");
+    const manifestFnOrData: any = manifestModule.default;
+    const manifestData = typeof manifestFnOrData === "function" ? manifestFnOrData() : manifestFnOrData;
     const swTs = fs.readFileSync(path.join(rootDir, "app/sw.ts"), "utf-8");
     const iconsExist = fs.existsSync(path.join(rootDir, "public/icon-192.png")) &&
                        fs.existsSync(path.join(rootDir, "public/icon-512.png"));
@@ -63,7 +64,7 @@ async function runTests() {
     record("G3", "Design Tokens & Forbidden Pattern Scan", hasMoss && noBoldRule && noPurple,
       "Accent #2D5016 active, NO bold tags in CSS, zero purple/neon colors.");
   } catch (err) {
-    record("G3", "Design Tokens & Forbidden Pattern Scan", false, err.message);
+    record("G3", "Design Tokens & Forbidden Pattern Scan", false, (err as Error).message);
   }
 
   // --- GATE G4: Voice Fallback & Synthesis ---
@@ -74,7 +75,7 @@ async function runTests() {
     record("G4", "Voice Web Speech Capture & TTS with Chip Fallback", hasWebSpeech && hasFallbackChips,
       "SpeechRecognition (hi-IN/ta-IN/en-IN) + SpeechSynthesisUtterance + Suggested chips present.");
   } catch (err) {
-    record("G4", "Voice Web Speech Capture & TTS with Chip Fallback", false, err.message);
+    record("G4", "Voice Web Speech Capture & TTS with Chip Fallback", false, (err as Error).message);
   }
 
   // --- GATE G5: 5 Intents Query Pipeline ---
@@ -98,7 +99,7 @@ async function runTests() {
     record("G5", "Query Pipeline (5 Intents with Data Card + Source + Issue Time)", allIntentsOk,
       "All 5 intents resolved with valid data cards and IMD source citations.");
   } catch (err) {
-    record("G5", "Query Pipeline (5 Intents)", false, err.message);
+    record("G5", "Query Pipeline (5 Intents)", false, (err as Error).message);
   }
 
   // --- GATE G6: Degradation & Citation Gate ---
@@ -118,7 +119,7 @@ async function runTests() {
     record("G6", "Degradation Paths & Citation Gate Enforcement", hasCachedIssueTime && hasFallback && citationCheckRejected,
       `Cached issue_time="${cachedWeather.issueTime}", Open-Meteo fallback active, uncited answers strictly rejected.`);
   } catch (err) {
-    record("G6", "Degradation Paths & Citation Gate", false, err.message);
+    record("G6", "Degradation Paths & Citation Gate", false, (err as Error).message);
   }
 
   // --- GATE G7: RAG Grounded Generation ---
@@ -131,7 +132,7 @@ async function runTests() {
     record("G7", "RAG Grounded Generation & Out-of-Scope Handling", hasSource && outOfScopeCaught,
       `Passage cited: "${ragAnswer.sourceProduct}". Out-of-scope inquiry returned "insufficient data".`);
   } catch (err) {
-    record("G7", "RAG Grounded Generation", false, err.message);
+    record("G7", "RAG Grounded Generation", false, (err as Error).message);
   }
 
   // --- GATE G8: Advisory Rules (NO LLM Call Assertion) ---
@@ -154,7 +155,7 @@ async function runTests() {
     record("G8", "Advisory Rules (Deterministic, Grep: NO LLM Call)", !hasLlmCall && isDeterministic,
       "Grep check verified: 0 LLM/AI imports or calls in advisory-rules.ts.");
   } catch (err) {
-    record("G8", "Advisory Rules", false, err.message);
+    record("G8", "Advisory Rules", false, (err as Error).message);
   }
 
   // --- GATE G9: Alerts Severity Routing & Verbatim Text ---
@@ -182,7 +183,7 @@ async function runTests() {
     record("G9", "Alerts Severity Routing (4 Tiers) & Verbatim Text Guarantee", verbatimExact && allChannelsFired,
       "Severe tier activated banner, push, SMS stub, and IVR stub. Warning text 100% byte-identical.");
   } catch (err) {
-    record("G9", "Alerts Severity Routing", false, err.message);
+    record("G9", "Alerts Severity Routing", false, (err as Error).message);
   }
 
   // --- GATE G10: Safety & Self-Harm Tele MANAS 14416 Interception ---
@@ -199,7 +200,7 @@ async function runTests() {
     record("G10", "Safety Interception (Tele MANAS 14416 Before Weather Resolution)", isCrisisDetected && interceptedBeforeWeather,
       "Distress input routed directly to Tele MANAS helpline 14416; weather pipeline strictly skipped.");
   } catch (err) {
-    record("G10", "Safety Interception", false, err.message);
+    record("G10", "Safety Interception", false, (err as Error).message);
   }
 
   // --- GATE G11: Polish Checklist (Zero Lorem / Zero Fake Testimonials) ---
@@ -228,7 +229,7 @@ async function runTests() {
 
   // --- GATE G12: Wind Direction Cardinal Conversion ---
   try {
-    await import("../tests/wind-direction.test.js");
+    await import("../tests/wind-direction.test");
     record("G12", "Wind Direction Cardinal Tests (0°, 22.5°, 45°, 90°, 180°, 270°, 359°)", true,
       "Deterministic 16-point cardinal compass conversion with exact boundary sectors verified.");
   } catch (err) {
@@ -237,7 +238,7 @@ async function runTests() {
 
   // --- GATE G13: 15 Safety-Critical Integrity Gates ---
   try {
-    await import("../tests/safety-critical.test.js");
+    await import("../tests/safety-critical.test");
     record("G13", "15/15 Safety-Critical Integrity Gates", true,
       "All 15 non-negotiable safety-critical data integrity and security gates passed.");
   } catch (err) {

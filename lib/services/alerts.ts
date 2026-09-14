@@ -142,12 +142,36 @@ async function fetchLiveImdNowcastAreas(): Promise<ImdNowcastArea[]> {
 }
 
 /**
+ * Validates and sanitizes phone numbers (E.164 format or standard 10-15 digit mobile).
+ */
+export function sanitizePhoneNumber(phone: string): string | null {
+  const cleaned = phone.trim().replace(/[\s\-()]/g, "");
+  if (!/^\+?[1-9]\d{9,14}$/.test(cleaned)) {
+    return null;
+  }
+  return cleaned;
+}
+
+/**
  * PRODUCTION GATEWAY STUB: SMS Dissemination
+ * Sanitizes phone numbers and cleans control characters.
  * NO hardcoded recipients! Recipient phone must be provided by authenticated subscriber.
  */
-export function sendSmsGatewayStub(recipientPhone: string, verbatimText: string): { status: "STUBBED"; note: string } {
-  const maskedPhone = recipientPhone.replace(/\d(?=\d{4})/g, "*");
-  const logMsg = `[Production SMS Gateway Stub] Dispatched SMS alert to ${maskedPhone}. Gateway requires C-DOT/MoES tie-in. Verbatim length: ${verbatimText.length} chars.`;
+export function sendSmsGatewayStub(
+  recipientPhone: string,
+  verbatimText: string
+): { status: "STUBBED" | "REJECTED"; note: string } {
+  const sanitized = sanitizePhoneNumber(recipientPhone);
+  if (!sanitized) {
+    return {
+      status: "REJECTED",
+      note: "Invalid phone number format. Must conform to E.164 or valid 10-15 digit phone.",
+    };
+  }
+
+  const cleanText = verbatimText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, 1000);
+  const maskedPhone = sanitized.replace(/\d(?=\d{4})/g, "*");
+  const logMsg = `[Production SMS Gateway Stub] Dispatched SMS alert to ${maskedPhone}. Gateway requires C-DOT/MoES tie-in. Verbatim length: ${cleanText.length} chars.`;
   console.log(logMsg);
   return {
     status: "STUBBED",
@@ -157,11 +181,24 @@ export function sendSmsGatewayStub(recipientPhone: string, verbatimText: string)
 
 /**
  * PRODUCTION GATEWAY STUB: Outbound IVR Dialer
+ * Sanitizes phone numbers and cleans control characters.
  * NO hardcoded recipients! Recipient phone must be provided by authenticated subscriber.
  */
-export function sendIvrGatewayStub(recipientPhone: string, verbatimText: string): { status: "STUBBED"; note: string } {
-  const maskedPhone = recipientPhone.replace(/\d(?=\d{4})/g, "*");
-  const logMsg = `[Production IVR Gateway Stub] Dispatched IVR call to ${maskedPhone}. Verbatim length: ${verbatimText.length} chars.`;
+export function sendIvrGatewayStub(
+  recipientPhone: string,
+  verbatimText: string
+): { status: "STUBBED" | "REJECTED"; note: string } {
+  const sanitized = sanitizePhoneNumber(recipientPhone);
+  if (!sanitized) {
+    return {
+      status: "REJECTED",
+      note: "Invalid phone number format. Must conform to E.164 or valid 10-15 digit phone.",
+    };
+  }
+
+  const cleanText = verbatimText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, 1000);
+  const maskedPhone = sanitized.replace(/\d(?=\d{4})/g, "*");
+  const logMsg = `[Production IVR Gateway Stub] Dispatched IVR call to ${maskedPhone}. Verbatim length: ${cleanText.length} chars.`;
   console.log(logMsg);
   return {
     status: "STUBBED",

@@ -4,6 +4,7 @@ import { processWeatherQuery } from "@/lib/services/query-pipeline";
 import { UnknownDistrictError } from "@/lib/utils/location";
 import { isRateLimited } from "@/lib/utils/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
   const correlationId = crypto.randomUUID();
   const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
 
-  if (isRateLimited(`chat:${clientIp}`, 60, 60_000)) {
+  if (await isRateLimited(`chat:${clientIp}`, 60, 60_000)) {
     return NextResponse.json(
       {
         error: {
@@ -137,7 +138,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.error(`[Chat API Error - ${correlationId}]`, error);
+    logger.error("Chat API processing error", { correlationId, error: (error as Error).message });
     const isTimeout = (error as Error)?.message?.includes("timed out");
     return NextResponse.json(
       {

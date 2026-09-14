@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { timingSafeEqual } from "crypto";
 import {
   fetchLiveImdDistrictAlerts,
   routeWarningDissemination,
@@ -7,6 +8,7 @@ import {
   IMDWarningProduct,
 } from "@/lib/services/alerts";
 import { isRateLimited } from "@/lib/utils/rate-limit";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +42,7 @@ export async function GET(req: NextRequest) {
   const correlationId = crypto.randomUUID();
   const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
 
-  if (isRateLimited(`alerts:${clientIp}`, 120, 60_000)) {
+  if (await isRateLimited(`alerts:${clientIp}`, 120, 60_000)) {
     return NextResponse.json(
       {
         error: {
@@ -96,7 +98,7 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error(`[Alerts GET Error - ${correlationId}]`, error);
+    logger.error("Failed to retrieve alerts", { requestId: correlationId, error });
     return NextResponse.json(
       {
         error: {
@@ -113,21 +115,30 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const correlationId = crypto.randomUUID();
 
-  // Public-safety lockdown: Gate endpoint behind ingestion secret
+  // Public-safety lockdown: Gate endpoint behind ingestion secret with timing-safe comparison
   const configuredToken = process.env.ALERT_INGESTION_TOKEN;
   const authHeader = req.headers.get("authorization");
   const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
   const customHeaderToken = req.headers.get("x-ingestion-token");
   const providedToken = bearerToken || customHeaderToken;
 
-  if (!configuredToken || providedToken !== configuredToken) {
+  let isAuthorized = false;
+  if (configuredToken && providedToken) {
+    const a = Buffer.from(providedToken);
+    const b = Buffer.from(configuredToken);
+    if (a.length === b.length && timingSafeEqual(a, b)) {
+      isAuthorized = true;
+    }
+  }
+
+  if (!isAuthorized) {
     // Return 404 to avoid leaking existence of ingestion endpoint to unauthorized callers
     return new NextResponse(null, { status: 404 });
   }
 
   // Rate limit: max 15 emergency alert updates per minute
   const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
-  if (isRateLimited(`alert-ingest:${clientIp}`, 15, 60_000)) {
+  if (await isRateLimited(`alert-ingest:${clientIp}`, 15, 60_000)) {
     return NextResponse.json(
       {
         error: {
@@ -187,7 +198,7 @@ export async function POST(req: NextRequest) {
       dissemination,
     });
   } catch (error) {
-    console.error(`[Alert Ingestion Error - ${correlationId}]`, error);
+    logger.error("Alert ingestion error", { correlationId, error: (error as Error).message });
     return NextResponse.json(
       {
         error: {

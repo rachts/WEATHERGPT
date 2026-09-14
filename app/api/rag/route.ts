@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateGroundedResponse } from "@/lib/services/rag";
 import { isRateLimited } from "@/lib/utils/rate-limit";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,7 @@ export async function POST(req: NextRequest) {
   const correlationId = crypto.randomUUID();
   const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
 
-  if (isRateLimited(`rag:${clientIp}`, 60, 60_000)) {
+  if (await isRateLimited(`rag:${clientIp}`, 60, 60_000)) {
     return NextResponse.json(
       { error: "Too many requests. Please slow down.", correlationId },
       { status: 429 }
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
     const result = await generateGroundedResponse(query, district, language);
     return NextResponse.json(result);
   } catch (error) {
-    console.error(`[RAG API Error - ${correlationId}]`, error);
+    logger.error("RAG API generation error", { correlationId, error: (error as Error).message });
     return NextResponse.json(
       { error: "RAG generation failed", correlationId },
       { status: 500 }

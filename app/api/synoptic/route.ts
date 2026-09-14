@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ACTIVE_SYNOPTIC_SYSTEMS, getDistrictSynopticImpact } from "@/lib/services/synoptic";
 import { findDistrictInfo } from "@/lib/utils/location";
+import { isRateLimited } from "@/lib/utils/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  const correlationId = crypto.randomUUID();
+  const clientIp = request.headers.get("x-forwarded-for") || "unknown-ip";
+
+  if (await isRateLimited(`synoptic:${clientIp}`, 120, 60_000)) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "RATE_LIMIT_EXCEEDED",
+          message: "Too many synoptic requests. Please slow down.",
+          requestId: correlationId,
+        },
+      },
+      { status: 429 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const district = searchParams.get("district") || "Kolkata";
   const state = searchParams.get("state") || "West Bengal";

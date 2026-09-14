@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isRateLimited } from "@/lib/utils/rate-limit";
+import { logger } from "@/lib/utils/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   const correlationId = crypto.randomUUID();
   const clientIp = request.headers.get("x-forwarded-for") || "unknown-ip";
 
-  if (isRateLimited(`satellite:${clientIp}`, 60, 60_000)) {
+  if (await isRateLimited(`satellite:${clientIp}`, 60, 60_000)) {
     return NextResponse.json(
       { error: "Rate limit exceeded", correlationId },
       { status: 429 }
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (err: any) {
-    console.error(`[Satellite Proxy Error - ${correlationId}]`, err);
+    logger.error("Satellite proxy fetch error", { correlationId, error: err?.message || String(err) });
     return NextResponse.json(
       { error: "Failed to fetch IMD satellite image", correlationId },
       { status: 504 }

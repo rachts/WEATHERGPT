@@ -31,6 +31,8 @@ model SavedLocation {
   longitude  Float    @default(73.1822)
   isPrimary  Boolean  @default(true)
   createdAt  DateTime @default(now())
+
+  @@index([userId, isPrimary])
 }
 
 model ChatSession {
@@ -42,6 +44,9 @@ model ChatSession {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   messages  ChatMessage[]
+
+  @@index([userId, updatedAt])
+  @@index([updatedAt])
 }
 
 model ChatMessage {
@@ -55,6 +60,8 @@ model ChatMessage {
   sourceProduct String?     // e.g. "IMD Nowcast (Mumbai Radar / Colaba S-band)"
   issueTime     DateTime?
   createdAt     DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
 }
 
 model ForecastCache {

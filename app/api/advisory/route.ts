@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getDeterministicCropAdvisory } from "@/lib/services/advisory-rules";
 import { getDistrictWeather, UnknownDistrictError } from "@/lib/services/weather-data";
 import { isRateLimited } from "@/lib/utils/rate-limit";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
   const correlationId = crypto.randomUUID();
   const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
 
-  if (isRateLimited(`advisory:${clientIp}`, 120, 60_000)) {
+  if (await isRateLimited(`advisory:${clientIp}`, 120, 60_000)) {
     return NextResponse.json(
       {
         error: {
@@ -100,7 +101,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    console.error(`[Advisory API Error - ${correlationId}]`, error);
+    logger.error("Advisory API processing error", { correlationId, error: (error as Error).message });
     return NextResponse.json(
       {
         error: {
