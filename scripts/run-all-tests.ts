@@ -263,6 +263,16 @@ async function runTests() {
     record("G15", "Phase 2 Conversational AI Overhaul", false, (err as Error).message);
   }
 
+  // --- GATE G16: Phase 3 Hardening & Polish Gates ---
+  try {
+    const { runPhase3Tests } = await import("../tests/phase3-hardening.test");
+    await runPhase3Tests();
+    record("G16", "Phase 3 Hardening & Polish (Prisma Build Deploy, Metadata API, Strict CSP, Route Compatibility)", true,
+      "Prisma generate & migrate deploy script, robots.ts, sitemap.ts, strict CSP headers, and /api/v1/* route compatibility verified.");
+  } catch (err) {
+    record("G16", "Phase 3 Hardening & Polish", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

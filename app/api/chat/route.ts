@@ -10,6 +10,13 @@ import { detectCrisisMessage } from "@/lib/services/query-pipeline";
 import { isRateLimited, getRateLimitConfig } from "@/lib/utils/rate-limit";
 import { logger } from "@/lib/utils/logger";
 import { prisma } from "@/lib/prisma";
+import {
+  detectMessageLanguage,
+  extractLocationAndTime,
+  mapToIMDDistrict,
+  fetchIMDData,
+  buildConversationalPrompt,
+} from "@/lib/ai/pipeline";
 
 export const dynamic = "force-dynamic";
 
@@ -139,13 +146,28 @@ export async function POST(req: NextRequest) {
     const latestUserMessage = messages[messages.length - 1];
     const userQuery = latestUserMessage?.content || "";
 
-    // 1. Safety & Crisis Interception (Tele MANAS 14416)
+    // ------------------------------------------------------------------------
+    // STAGE 1: Detect language (Per message, not per session)
+    // ------------------------------------------------------------------------
+    const detectedLang = detectMessageLanguage(userQuery);
+
+    // Safety & Crisis Interception (Tele MANAS 14416)
     if (detectCrisisMessage(userQuery)) {
       const crisisText =
-        "यदि आप या आपका कोई परिचित मानसिक तनाव, अवसाद या संकट से जूझ रहा है, तो कृपया तुरंत सहायता लें। भारत सरकार की 24x7 निःशुल्क हेल्पलाइन सेवाएँ:\n\n" +
-        "- **टेली-मानस (Tele MANAS)**: **14416** या **1800-891-4416**\n" +
-        "- **किसान कॉल सेंटर**: **1800-180-1551**\n\n" +
-        "आप अकेले नहीं हैं। कृपया अभी संपर्क करें, विशेषज्ञ परामर्शदाता सहायता के लिए सदैव उपलब्ध हैं।";
+        detectedLang.code === "ta"
+          ? "நீங்கள் அல்லது உங்களுக்குத் தெரிந்தவர்கள் மன உளைச்சலில் இருந்தால், தயவுசெய்து உடனடி உதவி பெறவும். இந்திய அரசு 24x7 இலவச உதவி எண்கள்:\n\n" +
+            "- **டெலி-மானாஸ் (Tele MANAS)**: **14416** அல்லது **1800-891-4416**\n" +
+            "- **கிசான் கால் சென்டர்**: **1800-180-1551**\n\n" +
+            "நீங்கள் தனியாக இல்லை. உதவி எப்போதும் உள்ளது."
+          : detectedLang.code === "hi" || detectedLang.code === "mr"
+          ? "यदि आप या आपका कोई परिचित मानसिक तनाव, अवसाद या संकट से जूझ रहा है, तो कृपया तुरंत सहायता लें। भारत सरकार की 24x7 निःशुल्क हेल्पलाइन सेवाएँ:\n\n" +
+            "- **टेली-मानस (Tele MANAS)**: **14416** या **1800-891-4416**\n" +
+            "- **किसान कॉल सेंटर**: **1800-180-1551**\n\n" +
+            "आप अकेले नहीं हैं। विशेषज्ञ परामर्शदाता सहायता के लिए सदैव उपलब्ध हैं।"
+          : "If you or someone you know is experiencing severe emotional distress or despair, please reach out immediately. Government of India 24x7 toll-free helplines:\n\n" +
+            "- **Tele MANAS**: **14416** or **1800-891-4416**\n" +
+            "- **Kisan Call Centre**: **1800-180-1551**\n\n" +
+            "You are not alone. Professional counselors are available 24x7.";
 
       const stream = new ReadableStream({
         start(controller) {
@@ -161,19 +183,41 @@ export async function POST(req: NextRequest) {
       return createUIMessageStreamResponse({ stream });
     }
 
-    // 2. Select Language Model (Gemini / OpenAI)
-    const model = getLanguageModel();
+    // ------------------------------------------------------------------------
+    // STAGE 2: Extract location and time (Structured output plus history)
+    // ------------------------------------------------------------------------
+    const extracted = extractLocationAndTime(messages, userQuery);
 
-    const activeDistrict = resolveDistrictFromMessages(
-      messages,
-      rawBody.district || "Kolkata"
+    // ------------------------------------------------------------------------
+    // STAGE 3: Map to IMD district (Fuzzy match plus aliases)
+    // ------------------------------------------------------------------------
+    const fallbackDistrict = resolveDistrictFromMessages(messages, rawBody.district || "Kolkata");
+    const mapped = mapToIMDDistrict(extracted.rawLocation, fallbackDistrict);
+    const activeDistrict = mapped.district;
+
+    // ------------------------------------------------------------------------
+    // STAGE 4: Fetch IMD data (Nowcast, forecast, or none)
+    // ------------------------------------------------------------------------
+    const imdData = await fetchIMDData(activeDistrict, extracted.timeHorizon, extracted.intent);
+
+    // ------------------------------------------------------------------------
+    // STAGE 5: Generate localized reply (One LLM call, native language)
+    // ------------------------------------------------------------------------
+    const systemPrompt = buildConversationalPrompt(
+      detectedLang,
+      activeDistrict,
+      extracted.timeHorizon,
+      imdData
     );
+
+    // Select Language Model (Gemini / OpenAI)
+    const model = getLanguageModel();
 
     // If model is configured with valid API key, run Vercel AI SDK tool calling
     if (model) {
       const result = streamText({
         model,
-        system: METEOROLOGIST_SYSTEM_PROMPT,
+        system: systemPrompt,
         messages: messages as any,
         tools: { getWeather: getWeather as any },
         stopWhen: isStepCount(3),
@@ -183,7 +227,7 @@ export async function POST(req: NextRequest) {
               const session = await prisma.chatSession.create({
                 data: {
                   title: userQuery.slice(0, 40),
-                  language: "hi-IN",
+                  language: detectedLang.code,
                 },
               });
               await prisma.chatMessage.createMany({
