@@ -63,16 +63,20 @@ const nextConfig = {
   },
 };
 
-let config = nextConfig;
+export default async function () {
+  if (process.env.NODE_ENV === "production") {
+    try {
+      const withSerwistInit = (await import("@serwist/next")).default;
+      const withSerwist = withSerwistInit({
+        swSrc: "app/sw.ts",
+        swDest: "public/sw.js",
+        disable: false,
+      });
+      return withSerwist(nextConfig);
+    } catch {
+      return nextConfig;
+    }
+  }
 
-if (process.env.NODE_ENV === "production") {
-  const withSerwistInit = (await import("@serwist/next")).default;
-  const withSerwist = withSerwistInit({
-    swSrc: "app/sw.ts",
-    swDest: "public/sw.js",
-    disable: false,
-  });
-  config = withSerwist(nextConfig);
+  return nextConfig;
 }
-
-export default config;

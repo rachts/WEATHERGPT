@@ -105,11 +105,18 @@ async function runTests() {
   // --- GATE G6: Degradation & Citation Gate ---
   try {
     // 1. Simulate network block -> cached forecast with issue_time
-    const cachedWeather = await getDistrictWeather("Raigad", false, false, true);
+    const cachedWeather = await getDistrictWeather({
+      district: "Raigad",
+      simulateNetworkFailure: true,
+    });
     const hasCachedIssueTime = cachedWeather.isCachedFallback && Boolean(cachedWeather.issueTime);
 
     // 2. Simulate IMD failure -> Open-Meteo fallback
-    const fallbackWeather = await getDistrictWeather("Raigad", true, true, false);
+    const fallbackWeather = await getDistrictWeather({
+      district: "Raigad",
+      forceFresh: true,
+      simulateImdFailure: true,
+    });
     const hasFallback = fallbackWeather.sourceProduct.includes("Open-Meteo") || Boolean(fallbackWeather.issueTime);
 
     // 3. Citation Gate: assert NO uncited answer is ever displayed

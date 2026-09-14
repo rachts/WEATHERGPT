@@ -432,31 +432,50 @@ async function fetchImdWeather(
   };
 }
 
+export interface GetDistrictWeatherOptions {
+  district?: string;
+  state?: string;
+  forceFresh?: boolean;
+  simulateImdFailure?: boolean;
+  simulateNetworkFailure?: boolean;
+}
+
 /**
  * Main weather retrieval entry point with multi-tier degradation and canonical location resolution.
+ * Accepts either a single configuration options object or canonical positional arguments.
  * If district is unknown: THROWS UnknownDistrictError (UNKNOWN_DISTRICT). Never silently falls back to Raigad!
  */
 export async function getDistrictWeather(
-  district: string = "Raigad",
+  districtOrOptions: string | GetDistrictWeatherOptions = "Raigad",
   stateOrForceFresh: string | boolean = false,
   forceFreshOrSimulateImd: boolean = false,
   simulateImdOrNetwork: boolean = false,
   simulateNetworkFailure: boolean = false
 ): Promise<NormalizedWeather> {
+  let district = "Raigad";
   let state: string | undefined = undefined;
   let forceFresh = false;
   let simulateImdFailure = false;
   let simulateNetwork = false;
 
-  if (typeof stateOrForceFresh === "string") {
-    state = stateOrForceFresh;
-    forceFresh = Boolean(forceFreshOrSimulateImd);
-    simulateImdFailure = Boolean(simulateImdOrNetwork);
-    simulateNetwork = Boolean(simulateNetworkFailure);
+  if (typeof districtOrOptions === "object" && districtOrOptions !== null) {
+    district = districtOrOptions.district || "Raigad";
+    state = districtOrOptions.state;
+    forceFresh = Boolean(districtOrOptions.forceFresh);
+    simulateImdFailure = Boolean(districtOrOptions.simulateImdFailure);
+    simulateNetwork = Boolean(districtOrOptions.simulateNetworkFailure);
   } else {
-    forceFresh = Boolean(stateOrForceFresh);
-    simulateImdFailure = Boolean(forceFreshOrSimulateImd);
-    simulateNetwork = Boolean(simulateImdOrNetwork);
+    district = districtOrOptions;
+    if (typeof stateOrForceFresh === "string") {
+      state = stateOrForceFresh;
+      forceFresh = Boolean(forceFreshOrSimulateImd);
+      simulateImdFailure = Boolean(simulateImdOrNetwork);
+      simulateNetwork = Boolean(simulateNetworkFailure);
+    } else {
+      forceFresh = Boolean(stateOrForceFresh);
+      simulateImdFailure = Boolean(forceFreshOrSimulateImd);
+      simulateNetwork = Boolean(simulateImdOrNetwork);
+    }
   }
 
   // Strictly resolve location or throw UnknownDistrictError (UNKNOWN_DISTRICT)

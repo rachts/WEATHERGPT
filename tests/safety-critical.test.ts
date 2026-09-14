@@ -45,7 +45,11 @@ async function runSafetyCriticalTests() {
   // Test 2: Open-Meteo must never be labelled IMD
   try {
     // Simulate IMD failure with forceFresh to force Open-Meteo fallback
-    const fallbackWeather = await getDistrictWeather("Raigad", true, true, false);
+    const fallbackWeather = await getDistrictWeather({
+      district: "Raigad",
+      forceFresh: true,
+      simulateImdFailure: true,
+    });
     if (fallbackWeather.provenance.provider === "OPEN_METEO") {
       assert.strictEqual(fallbackWeather.provenance.isOfficial, false);
       assert.strictEqual(fallbackWeather.provenance.quality, "FALLBACK");

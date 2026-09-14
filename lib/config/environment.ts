@@ -12,16 +12,16 @@ export const environmentSchema = z.object({
   ALERT_INGESTION_TOKEN: z
     .string()
     .min(16, "ALERT_INGESTION_TOKEN must be at least 16 characters long for cryptographic security."),
-  DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL.").optional().or(z.literal("")),
+  DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL.").or(z.literal("")).optional(),
   NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL must be a valid URL.").default("http://localhost:3000"),
-  UPSTASH_REDIS_REST_URL: z.string().url().optional().or(z.literal("")),
-  UPSTASH_REDIS_REST_TOKEN: z.string().optional().or(z.literal("")),
-  DATA_GOV_IN_API_KEY: z.string().optional().or(z.literal("")),
-  RATE_LIMIT_MAX_REQUESTS: z.string().regex(/^\d+$/).optional().default("60"),
-  RATE_LIMIT_WINDOW_SECONDS: z.string().regex(/^\d+$/).optional().default("60"),
-  GEMINI_API_KEY: z.string().optional().or(z.literal("")),
-  GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional().or(z.literal("")),
-  OPENAI_API_KEY: z.string().optional().or(z.literal("")),
+  UPSTASH_REDIS_REST_URL: z.string().url().or(z.literal("")).optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().or(z.literal("")).optional(),
+  DATA_GOV_IN_API_KEY: z.string().or(z.literal("")).optional(),
+  RATE_LIMIT_MAX_REQUESTS: z.string().regex(/^\d+$/).default("60"),
+  RATE_LIMIT_WINDOW_SECONDS: z.string().regex(/^\d+$/).default("60"),
+  GEMINI_API_KEY: z.string().or(z.literal("")).optional(),
+  GOOGLE_GENERATIVE_AI_API_KEY: z.string().or(z.literal("")).optional(),
+  OPENAI_API_KEY: z.string().or(z.literal("")).optional(),
 });
 
 export type ValidatedEnvironment = z.infer<typeof environmentSchema>;
@@ -58,7 +58,6 @@ export function assertEnvironmentValid(env: Record<string, string | undefined> =
         ALERT_INGESTION_TOKEN: z
           .string()
           .min(16)
-          .optional()
           .default("weathergpt-local-dev-token-min-16-chars"),
       });
 
