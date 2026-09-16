@@ -1,14 +1,12 @@
-// WeatherGPT — Vercel AI SDK Tool Definitions
-// Connects the conversational model to verified IMD weather telemetry and forecasts.
-
 import { z } from "zod";
+import { tool } from "ai";
 import { getDistrictWeather } from "@/lib/services/weather-data";
 import { DEFAULT_DISTRICT } from "@/lib/config/constants";
 
-export const getWeather = {
+export const getWeather = tool({
   description:
     "Retrieve live weather observations, current conditions, and official 7-day forecasts for any Indian district from India Meteorological Department (IMD) Open Data.",
-  parameters: z.object({
+  inputSchema: z.object({
     district: z
       .string()
       .optional()
@@ -62,4 +60,4 @@ export const getWeather = {
       };
     }
   },
-};
+});

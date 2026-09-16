@@ -20,14 +20,20 @@ export async function runDefaultDistrictTests() {
   assert.strictEqual(DEFAULT_STATE, "Maharashtra", "DEFAULT_STATE must be Maharashtra");
 
   // 2. getWeather tool default without arguments
-  const defaultWeather = await getWeather.execute({});
-  assert.strictEqual(defaultWeather.success, true, "getWeather.execute({}) should succeed");
-  assert.strictEqual(defaultWeather.district, "Raigad", "Default weather should resolve to Raigad");
+  const defaultWeather = await getWeather.execute!(
+    {},
+    { toolCallId: "test-call-1", messages: [], context: {} }
+  );
+  assert.strictEqual((defaultWeather as any).success, true, "getWeather.execute({}) should succeed");
+  assert.strictEqual((defaultWeather as any).district, "Raigad", "Default weather should resolve to Raigad");
 
   // 3. getWeather tool with state parameter (M12)
-  const puneWeather = await getWeather.execute({ district: "Pune", state: "Maharashtra" });
-  assert.strictEqual(puneWeather.success, true);
-  assert.strictEqual(puneWeather.district, "Pune");
+  const puneWeather = await getWeather.execute!(
+    { district: "Pune", state: "Maharashtra" },
+    { toolCallId: "test-call-2", messages: [], context: {} }
+  );
+  assert.strictEqual((puneWeather as any).success, true);
+  assert.strictEqual((puneWeather as any).district, "Pune");
 
   // 4. mapToIMDDistrict fallback
   const mapped = mapToIMDDistrict(null);

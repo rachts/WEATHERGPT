@@ -327,6 +327,27 @@ export interface DistrictMappingResult {
   confidence: number;
 }
 
+// Memoized district list and mapping cache (Low/Polish performance optimization)
+let memoizedAllDistricts: DistrictInfo[] | null = null;
+function getMemoizedDistricts(): DistrictInfo[] {
+  if (!memoizedAllDistricts) {
+    memoizedAllDistricts = getAllDistricts();
+  }
+  return memoizedAllDistricts;
+}
+
+const districtMappingMemoCache = new Map<string, DistrictMappingResult>();
+const MAX_MAPPING_CACHE = 1000;
+
+function storeMappingResult(key: string, result: DistrictMappingResult): DistrictMappingResult {
+  if (districtMappingMemoCache.size >= MAX_MAPPING_CACHE) {
+    const oldestKey = districtMappingMemoCache.keys().next().value;
+    if (oldestKey) districtMappingMemoCache.delete(oldestKey);
+  }
+  districtMappingMemoCache.set(key, result);
+  return result;
+}
+
 export function mapToIMDDistrict(
   rawLocation: string | null,
   fallbackDistrict = DEFAULT_DISTRICT
@@ -340,42 +361,45 @@ export function mapToIMDDistrict(
   }
 
   const query = rawLocation.trim().toLowerCase();
+  const cacheKey = `${query}:${fallbackDistrict}`;
+  const cached = districtMappingMemoCache.get(cacheKey);
+  if (cached) return cached;
 
   // 1. Check alias dictionary
   if (COMMON_DISTRICT_ALIASES[query]) {
     const aliased = COMMON_DISTRICT_ALIASES[query];
     const info = findDistrictInfo(aliased);
-    return {
+    return storeMappingResult(cacheKey, {
       district: info?.name || aliased,
       state: info?.state,
       matchedBy: "alias",
       confidence: 0.99,
-    };
+    });
   }
 
   // 2. Exact match in district directory
   const exact = findDistrictInfo(rawLocation);
   if (exact) {
-    return {
+    return storeMappingResult(cacheKey, {
       district: exact.name,
       state: exact.state,
       matchedBy: "exact",
       confidence: 1.0,
-    };
+    });
   }
 
   // 3. Substring match
-  const allDistricts = getAllDistricts();
+  const allDistricts = getMemoizedDistricts();
   const subMatch = allDistricts.find(
     (d) => d.name.toLowerCase().includes(query) || query.includes(d.name.toLowerCase())
   );
   if (subMatch) {
-    return {
+    return storeMappingResult(cacheKey, {
       district: subMatch.name,
       state: subMatch.state,
       matchedBy: "fuzzy",
       confidence: 0.85,
-    };
+    });
   }
 
   // 4. Levenshtein fuzzy distance matching
@@ -393,20 +417,20 @@ export function mapToIMDDistrict(
   // Allow fuzzy match with distance threshold <= 2 for short words or <= 3 for longer words
   const threshold = query.length > 6 ? 3 : 2;
   if (bestMatch && lowestDistance <= threshold) {
-    return {
+    return storeMappingResult(cacheKey, {
       district: bestMatch.name,
       state: bestMatch.state,
       matchedBy: "fuzzy",
       confidence: Math.max(0.6, 1 - lowestDistance / query.length),
-    };
+    });
   }
 
   // 5. If completely unrecognized, return as-is for tool execution / fallback
-  return {
+  return storeMappingResult(cacheKey, {
     district: rawLocation.trim(),
     matchedBy: "fallback",
     confidence: 0.3,
-  };
+  });
 }
 
 function levenshteinDistance(a: string, b: string): number {

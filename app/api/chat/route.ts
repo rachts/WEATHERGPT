@@ -2,10 +2,11 @@
 // Streams tool-calling meteorologist responses with multi-turn conversation memory.
 
 import { NextRequest, NextResponse } from "next/server";
-import { streamText, createUIMessageStreamResponse, isStepCount } from "ai";
+import { streamText, createUIMessageStreamResponse, isStepCount, type ModelMessage } from "ai";
 import { getLanguageModel } from "@/lib/ai/models";
 import { METEOROLOGIST_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import { getWeather } from "@/lib/ai/tools";
+import { getDistrictWeather } from "@/lib/services/weather-data";
 import { isRateLimited, getRateLimitConfig, buildRateLimitIdentifier } from "@/lib/utils/rate-limit";
 import { logger } from "@/lib/utils/logger";
 import { prisma } from "@/lib/prisma";
@@ -60,10 +61,10 @@ async function generateDeterministicBriefing(
   const latestMessage = messages[messages.length - 1]?.content || "";
   const queryLower = latestMessage.toLowerCase();
 
-  // Execute official tool
-  const weatherResult = await (getWeather.execute as any)({ district });
+  // Retrieve official weather telemetry directly
+  const weatherResult = await getDistrictWeather({ district });
 
-  if (weatherResult.error || !weatherResult.current) {
+  if (!weatherResult || !weatherResult.current) {
     return `Live observation telemetry from the IMD weather observatory for ${district} is temporarily unreachable right now. Please check back in a few minutes, or choose a nearby district.`;
   }
 
@@ -88,22 +89,26 @@ async function generateDeterministicBriefing(
 
   // Synthesize conversational response based on user intent
   if (queryLower.includes("rain") || queryLower.includes("बारिश") || queryLower.includes("वर्षा")) {
-    const rainChance = targetDay?.pop ?? (targetDay?.rainfallMm > 0 ? 70 : 10);
-    const rainMm = targetDay?.rainfallMm ?? 0;
-    if (rainMm > 5 || rainChance > 60) {
-      return `For **${district}** (${state}) ${timeLabel}, wet weather is anticipated with an expected rainfall of approximately **${rainMm} mm** and a **${rainChance}%** probability of precipitation. If you are planning pesticide spraying or grain drying, it is strongly recommended to postpone field applications until conditions stabilize.`;
+    const rainMm = targetDay?.rainfallMm ?? null;
+    const rainChance = targetDay?.pop ?? (rainMm != null && rainMm > 0 ? 70 : 10);
+    if ((rainMm != null && rainMm > 5) || rainChance > 60) {
+      return `For **${district}** (${state}) ${timeLabel}, wet weather is anticipated with an expected rainfall of approximately **${rainMm ?? "variable"} mm** and a **${rainChance}%** probability of precipitation. If you are planning pesticide spraying or grain drying, it is strongly recommended to postpone field applications until conditions stabilize.`;
     }
-    return `For **${district}** (${state}) ${timeLabel}, primarily dry conditions are forecast. Rain probability remains low at **${rainChance}%** with ${rainMm > 0 ? `${rainMm} mm drizzle` : "no significant precipitation expected"}. Weather conditions will remain favorable for harvesting and routine agricultural tasks.`;
+    return `For **${district}** (${state}) ${timeLabel}, primarily dry conditions are forecast. Rain probability remains low at **${rainChance}%** with ${rainMm != null && rainMm > 0 ? `${rainMm} mm drizzle` : "no significant precipitation expected"}. Weather conditions will remain favorable for harvesting and routine agricultural tasks.`;
   }
 
   if (queryLower.includes("temp") || queryLower.includes("तापमान") || queryLower.includes("hot") || queryLower.includes("cold")) {
-    const min = targetDay?.tempMin ?? current.temperature - 4;
-    const max = targetDay?.tempMax ?? current.temperature + 3;
-    return `In **${district}** (${state}), temperatures ${timeLabel} are expected to range between **${min}°C** and **${max}°C** with ${targetDay?.condition?.toLowerCase() || current.condition?.toLowerCase() || "fair skies"}. Humidity will hover around **${current.humidity}%**.`;
+    const min = targetDay?.tempMin ?? (current.temperature != null ? current.temperature - 4 : null);
+    const max = targetDay?.tempMax ?? (current.temperature != null ? current.temperature + 3 : null);
+    const tempRange = min != null && max != null ? `range between **${min}°C** and **${max}°C**` : (current.temperature != null ? `hover near **${current.temperature}°C**` : "remain seasonable");
+    return `In **${district}** (${state}), temperatures ${timeLabel} are expected to ${tempRange} with ${targetDay?.condition?.toLowerCase() || current.condition?.toLowerCase() || "fair skies"}. Humidity will hover around **${current.humidity != null ? `${current.humidity}%` : "seasonal levels"}**.`;
   }
 
   // General comprehensive briefing
-  return `In **${district}** (${state}), current weather is **${current.condition}** with a temperature of **${current.temperature}°C** and relative humidity at **${current.humidity}%**. Winds are moving from the ${current.windDirection} at **${current.windSpeed} km/h**. Over the next 24–48 hours, conditions will remain predominantly ${targetDay?.condition?.toLowerCase() || "fair"}, with day temperatures reaching up to **${targetDay?.tempMax ?? current.temperature}°C**.`;
+  const currentTempDisplay = current.temperature != null ? `a temperature of **${current.temperature}°C**` : "fair observation levels";
+  const maxDayTemp = targetDay?.tempMax ?? current.temperature;
+  const maxDayTempDisplay = maxDayTemp != null ? `reaching up to **${maxDayTemp}°C**` : "remaining in seasonal bounds";
+  return `In **${district}** (${state}), current weather is **${current.condition}** with ${currentTempDisplay} and relative humidity at **${current.humidity != null ? `${current.humidity}%` : "seasonal values"}**. Winds are moving from the ${current.windDirection ?? "variable direction"} at **${current.windSpeed != null ? `${current.windSpeed} km/h` : "calm speeds"}**. Over the next 24–48 hours, conditions will remain predominantly ${targetDay?.condition?.toLowerCase() || "fair"}, with day temperatures ${maxDayTempDisplay}.`;
 }
 
 export async function POST(req: NextRequest) {
@@ -243,8 +248,8 @@ export async function POST(req: NextRequest) {
       const result = streamText({
         model,
         system: systemPrompt,
-        messages: messages as any,
-        tools: { getWeather: getWeather as any },
+        messages: messages as unknown as ModelMessage[],
+        tools: { getWeather },
         stopWhen: isStepCount(3),
         onFinish: async ({ text }) => {
           await persistChatExchange(activeSessionId, userQuery, text, {

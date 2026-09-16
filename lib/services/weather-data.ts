@@ -216,7 +216,7 @@ async function fetchOpenMeteo(
   stationName: string
 ): Promise<NormalizedWeather | null> {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia%2FKolkata`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation,surface_pressure,cloud_cover&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia%2FKolkata`;
     const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const json = await res.json();
@@ -282,8 +282,8 @@ async function fetchOpenMeteo(
         isRainfallEstimated: true,
         currentPrecipitationMm: json.current?.precipitation !== undefined ? Number(json.current.precipitation) : null,
         rainUnit: "mm",
-        pressure: null,
-        cloudCover: null,
+        pressure: json.current?.surface_pressure !== undefined && json.current?.surface_pressure !== null ? Math.round(Number(json.current.surface_pressure)) : null,
+        cloudCover: json.current?.cloud_cover !== undefined && json.current?.cloud_cover !== null ? Math.round(Number(json.current.cloud_cover)) : null,
         quality: "FALLBACK",
       },
       forecastDaily: daily.slice(0, 7),
@@ -447,7 +447,10 @@ async function fetchImdWeather(
     },
     forecastDaily: dailyForecast,
     radarNowcast: {
-      station: `${bestStation.station} / ${stationNameFallback}`,
+      station:
+        bestStation.station.toLowerCase() === stationNameFallback.toLowerCase()
+          ? bestStation.station
+          : `${bestStation.station} (Observatory fallback: ${stationNameFallback})`,
       scanTime: issueTime,
       status: "LIVE",
       summary: `IMD live observation telemetry active from ${bestStation.station} Observatory (${roundedDistance} km)`,
@@ -634,6 +637,45 @@ export async function getDistrictWeather(
  * Builds explicit demo weather dataset with quality="DEMO" and isOfficial=false.
  * Only permissible when WEATHERGPT_MODE !== "production".
  */
+interface SampleForecastPayload {
+  issueTime?: string;
+  validUntil?: string;
+  current?: {
+    temperature?: number | null;
+    tempUnit?: string;
+    humidity?: number | null;
+    humidityUnit?: string;
+    windSpeed?: number | null;
+    windDirection?: string;
+    windDirectionDegrees?: number | null;
+    windUnit?: string;
+    condition?: string;
+    rainfallLast24h?: number | null;
+    rainfallLast24hEstimate?: number | null;
+    isRainfallEstimated?: boolean;
+    currentPrecipitationMm?: number | null;
+    rainUnit?: string;
+    pressure?: number | null;
+    cloudCover?: number | null;
+  };
+  forecastDaily?: Array<{
+    day: string;
+    date: string;
+    condition: string;
+    tempMin: number | null;
+    tempMax: number | null;
+    rainfallMm: number | null;
+    pop: number;
+  }>;
+  radarNowcast?: {
+    station?: string;
+    scanTime?: string | null;
+    status?: string;
+    summary?: string;
+    reflectivityBands?: Array<{ band: string; range: string; color: string }>;
+  };
+}
+
 function buildDemoWeatherData(
   districtName: string,
   districtCode: string,
@@ -643,7 +685,7 @@ function buildDemoWeatherData(
   lon: number,
   stationName: string
 ): NormalizedWeather {
-  const sample = sampleForecastData as any;
+  const sample = sampleForecastData as unknown as SampleForecastPayload;
   const nowIso = new Date().toISOString();
 
   const provenance: DataProvenance = {
