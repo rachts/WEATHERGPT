@@ -310,6 +310,16 @@ async function runTests() {
     record("G19", "Intent Matching & Substring Collision Guard (H2)", false, (err as Error).message);
   }
 
+  // --- GATE G20: Zero Fabricated Values Policy (H3 & H6) ---
+  try {
+    const { runZeroFabricationTests } = await import("../tests/zero-fabrication.test");
+    await runZeroFabricationTests();
+    record("G20", "Zero Fabricated Values Policy (H3 & H6)", true,
+      "Observed rainfall strictly null when model-derived, tempMin/Max nullable, falsy zero WMO/nebulosity preserved, demo values honest.");
+  } catch (err) {
+    record("G20", "Zero Fabricated Values Policy (H3 & H6)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

@@ -42,19 +42,21 @@ export interface NormalizedWeather {
     windUnit: string;
     condition: string;
     rainfallLast24h: number | null;
+    rainfallLast24hEstimate?: number | null;
+    isRainfallEstimated?: boolean;
     currentPrecipitationMm: number | null;
     rainUnit: string;
     pressure: number | null;
-    cloudCover?: number;
+    cloudCover?: number | null;
     quality: DataQuality;
   };
   forecastDaily: Array<{
     day: string;
     date: string;
     condition: string;
-    tempMin: number;
-    tempMax: number;
-    rainfallMm: number;
+    tempMin: number | null;
+    tempMax: number | null;
+    rainfallMm: number | null;
     pop: number;
   }>;
   radarNowcast: {
@@ -143,8 +145,8 @@ async function fetchImdSynopStations(): Promise<ImdSynopStation[]> {
           windsp: p.windsp !== null && p.windsp !== undefined && !isNaN(Number(p.windsp)) ? Number(p.windsp) : null,
           rainfall24h: p["24hrlyrain"] !== null && p["24hrlyrain"] !== undefined && !isNaN(Number(p["24hrlyrain"])) ? Number(p["24hrlyrain"]) : null,
           update_time: p.update_time ? String(p.update_time) : undefined,
-          weather: p.weather ? Number(p.weather) : null,
-          nebulosity: p.nebulosity ? Number(p.nebulosity) : null,
+          weather: p.weather !== null && p.weather !== undefined && !isNaN(Number(p.weather)) ? Number(p.weather) : null,
+          nebulosity: p.nebulosity !== null && p.nebulosity !== undefined && !isNaN(Number(p.nebulosity)) ? Number(p.nebulosity) : null,
         });
       }
 
@@ -223,9 +225,9 @@ async function fetchOpenMeteo(
         day: dayName,
         date: t,
         condition: WEATHER_CODE_MAP[code] || "Showers",
-        tempMin: json.daily?.temperature_2m_min?.[idx] !== undefined ? Math.round(json.daily.temperature_2m_min[idx]) : 20,
-        tempMax: json.daily?.temperature_2m_max?.[idx] !== undefined ? Math.round(json.daily.temperature_2m_max[idx]) : 30,
-        rainfallMm: json.daily?.precipitation_sum?.[idx] !== undefined ? Number(json.daily.precipitation_sum[idx]) : 0,
+        tempMin: json.daily?.temperature_2m_min?.[idx] !== undefined && json.daily?.temperature_2m_min?.[idx] !== null ? Math.round(json.daily.temperature_2m_min[idx]) : null,
+        tempMax: json.daily?.temperature_2m_max?.[idx] !== undefined && json.daily?.temperature_2m_max?.[idx] !== null ? Math.round(json.daily.temperature_2m_max[idx]) : null,
+        rainfallMm: json.daily?.precipitation_sum?.[idx] !== undefined && json.daily?.precipitation_sum?.[idx] !== null ? Number(json.daily.precipitation_sum[idx]) : null,
         pop: json.daily?.precipitation_probability_max?.[idx] ?? 0,
       };
     });
@@ -270,10 +272,13 @@ async function fetchOpenMeteo(
         windDirectionDegrees: windDirDeg,
         windUnit: "km/h",
         condition: WEATHER_CODE_MAP[json.current?.weather_code] || "Fair",
-        rainfallLast24h: json.daily?.precipitation_sum?.[0] !== undefined ? Number(json.daily.precipitation_sum[0]) : 0,
+        rainfallLast24h: null, // Zero fabricated values: NWP models do not report observed gauge rainfall
+        rainfallLast24hEstimate: json.daily?.precipitation_sum?.[0] !== undefined && json.daily?.precipitation_sum?.[0] !== null ? Number(json.daily.precipitation_sum[0]) : null,
+        isRainfallEstimated: true,
         currentPrecipitationMm: json.current?.precipitation !== undefined ? Number(json.current.precipitation) : null,
         rainUnit: "mm",
         pressure: null,
+        cloudCover: null,
         quality: "FALLBACK",
       },
       forecastDaily: daily.slice(0, 7),
@@ -352,7 +357,9 @@ async function fetchImdWeather(
 
   const tempC = bestStation.dbtemp !== null ? Math.round(bestStation.dbtemp * 10) / 10 : (openMeteo?.current?.temperature ?? null);
   const rhPct = bestStation.rh !== null ? Math.round(bestStation.rh) : (openMeteo?.current?.humidity ?? null);
-  const rain24 = bestStation.rainfall24h !== null ? Math.round(bestStation.rainfall24h * 10) / 10 : (openMeteo?.current?.rainfallLast24h ?? null);
+  const rain24Observed = bestStation.rainfall24h !== null ? Math.round(bestStation.rainfall24h * 10) / 10 : null;
+  const rain24Estimate = rain24Observed === null ? (openMeteo?.current?.rainfallLast24hEstimate ?? null) : null;
+  const isRainEstimated = rain24Observed === null && rain24Estimate !== null;
   
   const windDirDeg = bestStation.winddir !== null ? bestStation.winddir : (openMeteo?.current?.windDirectionDegrees ?? null);
   const windCardinal = degreesToCardinal(windDirDeg);
@@ -361,11 +368,13 @@ async function fetchImdWeather(
   // Calculate descriptive condition from IMD observation
   let condition = openMeteo?.current?.condition;
   if (!condition) {
-    if (rain24 !== null && rain24 > 64.4) condition = "Heavy Rain";
-    else if (rain24 !== null && rain24 > 15.5) condition = "Moderate Rain";
-    else if (rain24 !== null && rain24 > 0.1) condition = "Light Rain";
-    else if (bestStation.nebulosity && bestStation.nebulosity >= 6) condition = "Overcast";
-    else if (bestStation.nebulosity && bestStation.nebulosity >= 3) condition = "Partly Cloudy";
+    const effectiveRain = rain24Observed ?? rain24Estimate;
+    if (effectiveRain !== null && effectiveRain > 64.4) condition = "Heavy Rain";
+    else if (effectiveRain !== null && effectiveRain > 15.5) condition = "Moderate Rain";
+    else if (effectiveRain !== null && effectiveRain > 0.1) condition = "Light Rain";
+    else if (bestStation.nebulosity != null && bestStation.nebulosity >= 6) condition = "Overcast";
+    else if (bestStation.nebulosity != null && bestStation.nebulosity >= 3) condition = "Partly Cloudy";
+    else if (bestStation.nebulosity != null && bestStation.nebulosity === 0) condition = "Clear Sky";
     else condition = "Mainly Clear Sky";
   }
 
@@ -415,11 +424,14 @@ async function fetchImdWeather(
       windDirectionDegrees: windDirDeg,
       windUnit: "km/h",
       condition,
-      rainfallLast24h: rain24,
+      rainfallLast24h: rain24Observed,
+      rainfallLast24hEstimate: rain24Estimate,
+      isRainfallEstimated: isRainEstimated,
       currentPrecipitationMm: openMeteo?.current?.currentPrecipitationMm ?? null,
       rainUnit: "mm",
       pressure: pressureHpa,
-      quality: "OBSERVED",
+      cloudCover: bestStation.nebulosity != null ? Math.round((bestStation.nebulosity / 8) * 100) : null,
+      quality: isRainEstimated ? "ESTIMATED" : "OBSERVED",
     },
     forecastDaily: dailyForecast,
     radarNowcast: {
@@ -636,14 +648,17 @@ function buildDemoWeatherData(
       humidity: sample.current?.humidity ?? null,
       humidityUnit: "%",
       windSpeed: sample.current?.windSpeed ?? null,
-      windDirection: sample.current?.windDirection ?? "W",
-      windDirectionDegrees: 270,
+      windDirection: sample.current?.windDirection ?? (sample.current?.windDirectionDegrees != null ? degreesToCardinal(sample.current.windDirectionDegrees) : null),
+      windDirectionDegrees: sample.current?.windDirectionDegrees ?? null,
       windUnit: "km/h",
       condition: sample.current?.condition || "Partly Cloudy",
       rainfallLast24h: sample.current?.rainfallLast24h ?? null,
-      currentPrecipitationMm: 0,
+      rainfallLast24hEstimate: sample.current?.rainfallLast24hEstimate ?? null,
+      isRainfallEstimated: Boolean(sample.current?.isRainfallEstimated),
+      currentPrecipitationMm: sample.current?.currentPrecipitationMm ?? null,
       rainUnit: "mm",
-      pressure: 1008,
+      pressure: sample.current?.pressure ?? null,
+      cloudCover: sample.current?.cloudCover ?? null,
       quality: "DEMO",
     },
     forecastDaily: sample.forecastDaily || [],

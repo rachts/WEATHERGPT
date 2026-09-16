@@ -239,11 +239,21 @@ export function resolveIntent(query: string): WeatherIntent {
  * >= 115.6 mm: Very Heavy Rain
  */
 function formatRainfallAnswer(
-  rainfallMm: number,
+  rainfallMm: number | null,
   condition: string,
   district: string,
   language: "hi-IN" | "ta-IN" | "en-IN"
 ): string {
+  if (rainfallMm === null) {
+    if (language === "hi-IN") {
+      return `${district} के लिए वर्षा का कोई प्रेक्षित डेटा उपलब्ध नहीं है। वर्तमान स्थिति: ${condition}।`;
+    }
+    if (language === "ta-IN") {
+      return `${district} மாவட்டத்திற்கான மழைப்பொழிவு தரவு கிடைக்கவில்லை. தற்போதைய நிலை: ${condition}.`;
+    }
+    return `Rainfall data is currently unavailable for ${district}. Current condition: ${condition}.`;
+  }
+
   if (rainfallMm === 0) {
     if (language === "hi-IN") {
       return `${district} में आज वर्षा की कोई संभावना नहीं है (0 मिमी)। मौसम मुख्यतः शुष्क रहेगा।`;
@@ -332,7 +342,7 @@ export async function processWeatherQuery(
           humidity: weather.current.humidity,
           windSpeed: weather.current.windSpeed,
           windDirection: weather.current.windDirection,
-          rainfallLast24h: weather.current.rainfallLast24h,
+          rainfallLast24h: weather.current.rainfallLast24h ?? weather.current.rainfallLast24hEstimate ?? null,
           rainfallForecastNext24h: weather.forecastDaily[0]?.rainfallMm ?? 0,
         },
         language,
@@ -400,12 +410,14 @@ export async function processWeatherQuery(
     }
 
     case "rainfall_forecast": {
-      const todayRain = weather.forecastDaily[0]?.rainfallMm ?? 0;
+      const todayRain = weather.forecastDaily[0]?.rainfallMm !== undefined
+        ? weather.forecastDaily[0].rainfallMm
+        : (weather.current.rainfallLast24hEstimate ?? null);
       const condition = weather.current.condition;
       answerText = formatRainfallAnswer(todayRain, condition, districtInfo.name, language);
 
       dataCard = {
-        rainfall: `${todayRain} mm`,
+        rainfall: todayRain !== null ? `${todayRain} mm` : "N/A",
         humidity: weather.current.humidity !== null ? `${weather.current.humidity}%` : "N/A",
         wind: weather.current.windSpeed !== null ? `${weather.current.windSpeed} km/h` : "N/A",
         condition,
@@ -422,10 +434,10 @@ export async function processWeatherQuery(
     }
 
     case "seven_day_outlook": {
-      const minTemps = weather.forecastDaily.map(d => d.tempMin).filter(t => t !== null && !isNaN(t));
-      const maxTemps = weather.forecastDaily.map(d => d.tempMax).filter(t => t !== null && !isNaN(t));
-      const overallMin = minTemps.length > 0 ? Math.min(...minTemps) : 20;
-      const overallMax = maxTemps.length > 0 ? Math.max(...maxTemps) : 32;
+      const minTemps = weather.forecastDaily.map(d => d.tempMin).filter((t): t is number => t !== null && !isNaN(t));
+      const maxTemps = weather.forecastDaily.map(d => d.tempMax).filter((t): t is number => t !== null && !isNaN(t));
+      const overallMin = minTemps.length > 0 ? Math.min(...minTemps) : null;
+      const overallMax = maxTemps.length > 0 ? Math.max(...maxTemps) : null;
       const rainyDays = weather.forecastDaily.filter(d => (d.rainfallMm ?? 0) > 1 || d.condition.toLowerCase().includes("rain") || d.condition.toLowerCase().includes("shower"));
 
       let summaryEn = rainyDays.length > 0
@@ -438,18 +450,22 @@ export async function processWeatherQuery(
         ? `அடுத்த 7 நாட்களில் சுமார் ${rainyDays.length} நாட்கள் மழை பெய்ய வாய்ப்புள்ளது.`
         : `அடுத்த 7 நாட்களில் பெரும்பாலும் வறண்ட வானிலை நிலவும்.`;
 
+      const tempRangeEn = overallMin !== null && overallMax !== null ? `Temperatures ranging between ${overallMin}°C and ${overallMax}°C.` : `Temperature trends currently updating.`;
+      const tempRangeHi = overallMin !== null && overallMax !== null ? `तापमान ${overallMin}°C से ${overallMax}°C के बीच रहने का अनुमान है।` : `तापमान डेटा अद्यतन हो रहा है।`;
+      const tempRangeTa = overallMin !== null && overallMax !== null ? `வெப்பநிலை ${overallMin}°C முதல் ${overallMax}°C வரை இருக்கும்.` : `வெப்பநிலை தகவல் புதுப்பிக்கப்படுகிறது.`;
+
       if (language === "hi-IN") {
-        answerText = `${districtInfo.name} के लिए 7-दिवसीय पूर्वानुमान: तापमान ${overallMin}°C से ${overallMax}°C के बीच रहने का अनुमान है। ${summaryHi}`;
+        answerText = `${districtInfo.name} के लिए 7-दिवसीय पूर्वानुमान: ${tempRangeHi} ${summaryHi}`;
       } else if (language === "ta-IN") {
-        answerText = `${districtInfo.name} 7 நாள் வானிலை: வெப்பநிலை ${overallMin}°C முதல் ${overallMax}°C வரை இருக்கும். ${summaryTa}`;
+        answerText = `${districtInfo.name} 7 நாள் வானிலை: ${tempRangeTa} ${summaryTa}`;
       } else {
-        answerText = `7-Day Outlook for ${districtInfo.name}: Temperatures ranging between ${overallMin}°C and ${overallMax}°C. ${summaryEn}`;
+        answerText = `7-Day Outlook for ${districtInfo.name}: ${tempRangeEn} ${summaryEn}`;
       }
       dataCard = {
         outlook: weather.forecastDaily.map((d) => ({
           day: d.day,
           condition: d.condition,
-          range: `${d.tempMin}° / ${d.tempMax}°`,
+          range: `${d.tempMin != null ? `${d.tempMin}°` : "N/A"} / ${d.tempMax != null ? `${d.tempMax}°` : "N/A"}`,
         })),
       };
       break;

@@ -12,9 +12,9 @@ interface ForecastDay {
   day: string;
   date: string;
   condition: string;
-  tempMin: number;
-  tempMax: number;
-  rainfallMm: number;
+  tempMin: number | null;
+  tempMax: number | null;
+  rainfallMm: number | null;
   pop: number;
 }
 
@@ -101,7 +101,8 @@ export default function ForecastPage() {
   const formattedIssueTime = formatISTTime(issueTime);
 
   // Compute dynamic SVG chart coordinates based on daily forecast max temperatures
-  const maxTemps = days.length > 0 ? days.map((d) => d.tempMax) : [30, 31, 32, 33, 34, 34, 33];
+  const validMaxTemps = days.map((d) => d.tempMax).filter((t): t is number => t !== null && !isNaN(t));
+  const maxTemps = validMaxTemps.length > 0 ? validMaxTemps : [30, 31, 32, 33, 34, 34, 33];
   const minT = Math.min(...maxTemps, 20);
   const maxT = Math.max(...maxTemps, 40);
   const range = maxT - minT || 1;
@@ -269,7 +270,7 @@ export default function ForecastPage() {
                   <td className="py-3.5 px-4 font-medium text-text-primary">{d.day}</td>
                   <td className="py-3.5 px-4 text-text-secondary">{d.condition}</td>
                   <td className="py-3.5 px-4 text-right font-medium text-text-primary">
-                    {d.tempMin}° / {d.tempMax}°
+                    {d.tempMin !== null ? `${d.tempMin}°` : "N/A"} / {d.tempMax !== null ? `${d.tempMax}°` : "N/A"}
                   </td>
                 </tr>
               ))}
