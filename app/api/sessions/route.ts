@@ -63,3 +63,36 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ sessions: [], messages: [] });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const correlationId = crypto.randomUUID();
+  const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
+
+  if (await isRateLimited(`sessions-prune:${clientIp}`, 10, 60_000)) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const maxAgeDays = parseInt(searchParams.get("maxAgeDays") || "30", 10);
+    const { pruneOldChatSessions } = await import("@/lib/services/chat-session");
+    const count = await pruneOldChatSessions(maxAgeDays);
+
+    return NextResponse.json({
+      success: true,
+      prunedCount: count,
+      maxAgeDays,
+      requestId: correlationId,
+    });
+  } catch (error) {
+    logger.error("Session pruning endpoint failure", {
+      correlationId,
+      error: (error as Error).message,
+    });
+    return NextResponse.json(
+      { error: "Failed to prune sessions", requestId: correlationId },
+      { status: 500 }
+    );
+  }
+}
+

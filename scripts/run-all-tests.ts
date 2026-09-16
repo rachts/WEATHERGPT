@@ -360,6 +360,16 @@ async function runTests() {
     record("G24", "SMS & IVR Dissemination Suite (H8)", false, (err as Error).message);
   }
 
+  // --- GATE G25: Rate Limiting, Session Reuse & Boot Validation (M7, M8, M14, M15) ---
+  try {
+    const { runRateLimitSessionInstrumentationTests } = await import("../tests/rate-limit-session-instrumentation.test");
+    await runRateLimitSessionInstrumentationTests();
+    record("G25", "Rate Limiting, Session Reuse & Boot Validation (M7, M8, M14, M15)", true,
+      "True sliding-window rate limiting, rural CG-NAT session isolation, chat session continuity with auto-pruning, and server boot instrumentation.");
+  } catch (err) {
+    record("G25", "Rate Limiting, Session Reuse & Boot Validation (M7, M8, M14, M15)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

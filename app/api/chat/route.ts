@@ -6,8 +6,7 @@ import { streamText, createUIMessageStreamResponse, isStepCount } from "ai";
 import { getLanguageModel } from "@/lib/ai/models";
 import { METEOROLOGIST_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import { getWeather } from "@/lib/ai/tools";
-import { detectCrisisMessage } from "@/lib/services/query-pipeline";
-import { isRateLimited, getRateLimitConfig } from "@/lib/utils/rate-limit";
+import { isRateLimited, getRateLimitConfig, buildRateLimitIdentifier } from "@/lib/utils/rate-limit";
 import { logger } from "@/lib/utils/logger";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_DISTRICT } from "@/lib/config/constants";
@@ -18,6 +17,8 @@ import {
   fetchIMDData,
   buildConversationalPrompt,
 } from "@/lib/ai/pipeline";
+import { detectCrisisMessage } from "@/lib/services/query-pipeline";
+import { getOrCreateChatSession, persistChatExchange } from "@/lib/services/chat-session";
 
 export const dynamic = "force-dynamic";
 
@@ -108,24 +109,37 @@ async function generateDeterministicBriefing(
 export async function POST(req: NextRequest) {
   const correlationId = crypto.randomUUID();
   const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
-
-  // Rate limiting (configurable AI rate limit)
-  const rateLimitConfig = getRateLimitConfig("ai");
-  if (await isRateLimited(`chat:${clientIp}`, rateLimitConfig.maxRequests, rateLimitConfig.windowMs)) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "RATE_LIMIT_EXCEEDED",
-          message: "Too many chat requests. Please slow down.",
-          requestId: correlationId,
-        },
-      },
-      { status: 429 }
-    );
-  }
+  const headerSessionId = req.headers.get("x-session-id") || req.nextUrl?.searchParams?.get("sessionId") || undefined;
 
   try {
-    const rawBody = await req.json();
+    let rawBody: any = {};
+    try {
+      rawBody = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON request body.", requestId: correlationId },
+        { status: 400 }
+      );
+    }
+
+    const clientSessionId =
+      (typeof rawBody?.sessionId === "string" && rawBody.sessionId.trim()) || headerSessionId;
+
+    // Rate limiting: keyed by sessionId + clientIp to protect rural users behind shared carrier NAT (M8)
+    const rateLimitConfig = getRateLimitConfig("ai");
+    const rateLimitKey = buildRateLimitIdentifier("chat", clientIp, clientSessionId);
+    if (await isRateLimited(rateLimitKey, rateLimitConfig.maxRequests, rateLimitConfig.windowMs)) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "RATE_LIMIT_EXCEEDED",
+            message: "Too many chat requests. Please slow down.",
+            requestId: correlationId,
+          },
+        },
+        { status: 429 }
+      );
+    }
 
     // Normalizing messages from either standard useChat body or legacy payload
     let messages: Array<{ role: "user" | "assistant" | "system"; content: string }> = [];
@@ -214,6 +228,13 @@ export async function POST(req: NextRequest) {
       imdData
     );
 
+    // Resolve or reuse chat session for multi-turn continuity (M15)
+    const activeSessionId = await getOrCreateChatSession(
+      clientSessionId,
+      userQuery.slice(0, 40),
+      detectedLang.code
+    );
+
     // Select Language Model (Gemini / OpenAI)
     const model = getLanguageModel();
 
@@ -226,31 +247,16 @@ export async function POST(req: NextRequest) {
         tools: { getWeather: getWeather as any },
         stopWhen: isStepCount(3),
         onFinish: async ({ text }) => {
-          if (process.env.DATABASE_URL) {
-            try {
-              const session = await prisma.chatSession.create({
-                data: {
-                  title: userQuery.slice(0, 40),
-                  language: detectedLang.code,
-                },
-              });
-              await prisma.chatMessage.createMany({
-                data: [
-                  { sessionId: session.id, role: "user", content: userQuery },
-                  { sessionId: session.id, role: "assistant", content: text },
-                ],
-              });
-            } catch (err) {
-              logger.warn("Chat session persistence failed", {
-                correlationId,
-                error: (err as Error).message,
-              });
-            }
-          }
+          await persistChatExchange(activeSessionId, userQuery, text, {
+            intent: extracted.intent,
+          });
         },
       });
 
       return result.toUIMessageStreamResponse({
+        headers: {
+          "X-Session-Id": activeSessionId,
+        },
         onError: (err) => {
           logger.warn("LLM streaming error intercepted", {
             correlationId,
@@ -268,6 +274,11 @@ export async function POST(req: NextRequest) {
       messages,
       activeDistrict
     );
+
+    // Persist conversation exchange for multi-turn continuity
+    persistChatExchange(activeSessionId, userQuery, naturalLanguageResponse, {
+      intent: extracted.intent,
+    }).catch(() => {});
 
     const stream = new ReadableStream({
       start(controller) {
@@ -294,7 +305,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return createUIMessageStreamResponse({ stream });
+    return createUIMessageStreamResponse({
+      stream,
+      headers: {
+        "X-Session-Id": activeSessionId,
+      },
+    });
   } catch (error) {
     logger.error("Chat API processing failure", {
       correlationId,
