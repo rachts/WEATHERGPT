@@ -497,10 +497,26 @@ export async function dispatchSmsAlert(
 /**
  * Dispatches a real IVR voice alert via Twilio Voice or custom webhook.
  */
+function escapeXml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function getPollyVoiceForLanguage(lang?: string): { voice: string; languageCode: string } {
+  const code = (lang || "").toLowerCase();
+  if (code.startsWith("te")) return { voice: "Polly.Chitra", languageCode: "te-IN" };
+  if (code.startsWith("en")) return { voice: "Polly.Raveena", languageCode: "en-IN" };
+  return { voice: "Polly.Aditi", languageCode: "hi-IN" };
+}
+
 export async function dispatchIvrAlert(
   recipientPhone: string,
   verbatimText: string,
-  options: { maxRetries?: number; timeoutMs?: number } = {}
+  options: { maxRetries?: number; timeoutMs?: number; language?: string } = {}
 ): Promise<DeliveryReceipt> {
   const sanitized = sanitizePhoneNumber(recipientPhone);
   if (!sanitized) {
@@ -516,9 +532,11 @@ export async function dispatchIvrAlert(
   }
 
   const cleanText = verbatimText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, 1000);
+  const escapedText = escapeXml(cleanText);
   const maskedPhone = maskPhoneNumber(sanitized);
   const maxRetries = options.maxRetries ?? 2;
   const timeoutMs = options.timeoutMs ?? 5000;
+  const { voice, languageCode } = getPollyVoiceForLanguage(options.language);
 
   const twilioSid = process.env.TWILIO_ACCOUNT_SID;
   const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
@@ -533,12 +551,13 @@ export async function dispatchIvrAlert(
       attempt++;
       try {
         const basicAuth = Buffer.from(`${twilioSid}:${twilioAuth}`).toString("base64");
-        const twiml = `<Response><Pause length="1"/><Say voice="Polly.Aditi" language="hi-IN">${cleanText}</Say></Response>`;
+        const twiml = `<Response><Pause length="1"/><Say voice="${voice}" language="${languageCode}">${escapedText}</Say></Response>`;
         const bodyParams = new URLSearchParams({
           To: sanitized,
           From: twilioFrom,
           Twiml: twiml,
         });
+
 
         const res = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Calls.json`,
@@ -715,15 +734,9 @@ export function routeWarningDissemination(
       channels.inAppBanner = true;
       channels.webPush = true;
       channels.ivrStubbed = false;
-      if (smsConfigured) {
-        channels.smsStubbed = false;
-        channels.smsSent = true;
-        logs.push("Tier High: Dispatched to In-App Banner + Web Push + Live SMS Gateway.");
-      } else {
-        channels.smsStubbed = true;
-        channels.smsSent = false;
-        logs.push("Tier High: Dispatched to In-App Banner + Web Push + SMS Gateway (STUBBED - credentials unconfigured).");
-      }
+      channels.smsStubbed = !smsConfigured;
+      channels.smsSent = false; // Synchronous route does not execute live network I/O; see routeWarningDisseminationAsync
+      logs.push(`Tier High: Dispatched to In-App Banner + Web Push + SMS Gateway (${smsConfigured ? "Configured for Async Dispatch" : "STUBBED"}).`);
       for (const phone of matchedUserPhones) {
         if (phone) {
           const res = sendSmsGatewayStub(phone, warning.warningText);
@@ -735,22 +748,12 @@ export function routeWarningDissemination(
     case "Severe":
       channels.inAppBanner = true;
       channels.webPush = true;
-      if (smsConfigured) {
-        channels.smsStubbed = false;
-        channels.smsSent = true;
-      } else {
-        channels.smsStubbed = true;
-        channels.smsSent = false;
-      }
-      if (ivrConfigured) {
-        channels.ivrStubbed = false;
-        channels.ivrSent = true;
-      } else {
-        channels.ivrStubbed = true;
-        channels.ivrSent = false;
-      }
+      channels.smsStubbed = !smsConfigured;
+      channels.smsSent = false;
+      channels.ivrStubbed = !ivrConfigured;
+      channels.ivrSent = false;
       logs.push(
-        `Tier Severe: Dispatched to In-App Banner + Web Push + SMS (${smsConfigured ? "LIVE" : "STUBBED"}) + IVR (${ivrConfigured ? "LIVE" : "STUBBED"}).`
+        `Tier Severe: Dispatched to In-App Banner + Web Push + SMS (${smsConfigured ? "LIVE-READY" : "STUBBED"}) + IVR (${ivrConfigured ? "LIVE-READY" : "STUBBED"}).`
       );
       for (const phone of matchedUserPhones) {
         if (phone) {
@@ -778,6 +781,7 @@ export function routeWarningDissemination(
 
 /**
  * Asynchronously disseminates an IMD warning with live external network calls when gateways are configured.
+ * Uses Promise.allSettled for concurrent dispatch capped at 50 recipients to prevent serverless timeouts.
  */
 export async function routeWarningDisseminationAsync(
   warning: IMDWarningProduct,
@@ -793,30 +797,46 @@ export async function routeWarningDisseminationAsync(
   let smsSent = false;
   let ivrSent = false;
 
-  if (warning.severity === "High" || warning.severity === "Severe") {
-    for (const phone of matchedUserPhones) {
-      if (!phone) continue;
-      const receipt = await dispatchSmsAlert(phone, warning.warningText);
-      receipts.push(receipt);
-      if (receipt.status === "SENT") {
-        smsSent = true;
-        logs.push(`Dispatched live SMS via ${receipt.provider} to ${receipt.recipient} [ID: ${receipt.messageId || "N/A"}].`);
-      } else if (receipt.status === "FAILED") {
-        logs.push(`Failed SMS dispatch to ${receipt.recipient}: ${receipt.error}.`);
+  const validPhones = matchedUserPhones.filter(Boolean).slice(0, 50);
+
+  if ((warning.severity === "High" || warning.severity === "Severe") && validPhones.length > 0) {
+    const smsDispatches = await Promise.allSettled(
+      validPhones.map((phone) => dispatchSmsAlert(phone, warning.warningText))
+    );
+
+    for (const result of smsDispatches) {
+      if (result.status === "fulfilled") {
+        const receipt = result.value;
+        receipts.push(receipt);
+        if (receipt.status === "SENT") {
+          smsSent = true;
+          logs.push(`Dispatched live SMS via ${receipt.provider} to ${receipt.recipient} [ID: ${receipt.messageId || "N/A"}].`);
+        } else if (receipt.status === "FAILED") {
+          logs.push(`Failed SMS dispatch to ${receipt.recipient}: ${receipt.error}.`);
+        }
+      } else {
+        logs.push(`SMS dispatch promise rejected: ${result.reason?.message || "Unknown error"}.`);
       }
     }
   }
 
-  if (warning.severity === "Severe") {
-    for (const phone of matchedUserPhones) {
-      if (!phone) continue;
-      const receipt = await dispatchIvrAlert(phone, warning.warningText);
-      receipts.push(receipt);
-      if (receipt.status === "SENT") {
-        ivrSent = true;
-        logs.push(`Dispatched live IVR voice call via ${receipt.provider} to ${receipt.recipient} [ID: ${receipt.messageId || "N/A"}].`);
-      } else if (receipt.status === "FAILED") {
-        logs.push(`Failed IVR dispatch to ${receipt.recipient}: ${receipt.error}.`);
+  if (warning.severity === "Severe" && validPhones.length > 0) {
+    const ivrDispatches = await Promise.allSettled(
+      validPhones.map((phone) => dispatchIvrAlert(phone, warning.warningText))
+    );
+
+    for (const result of ivrDispatches) {
+      if (result.status === "fulfilled") {
+        const receipt = result.value;
+        receipts.push(receipt);
+        if (receipt.status === "SENT") {
+          ivrSent = true;
+          logs.push(`Dispatched live IVR voice call via ${receipt.provider} to ${receipt.recipient} [ID: ${receipt.messageId || "N/A"}].`);
+        } else if (receipt.status === "FAILED") {
+          logs.push(`Failed IVR dispatch to ${receipt.recipient}: ${receipt.error}.`);
+        }
+      } else {
+        logs.push(`IVR dispatch promise rejected: ${result.reason?.message || "Unknown error"}.`);
       }
     }
   }
@@ -834,6 +854,7 @@ export async function routeWarningDisseminationAsync(
     receipts,
   };
 }
+
 
 /**
  * Fetches genuine real-time district nowcasts from the official IMD Mausam Portal.

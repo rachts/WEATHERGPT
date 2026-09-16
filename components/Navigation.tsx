@@ -40,17 +40,12 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
       if (process.env.NODE_ENV === "production") {
         navigator.serviceWorker
           .register("/sw.js")
-          .then((reg) => console.log("PWA ServiceWorker registered:", reg.scope))
-          .catch((err) => console.log("PWA ServiceWorker registration note:", err));
+          .catch(() => {});
       } else {
         // In development, ensure any stale production SW is unregistered and caches cleared
         navigator.serviceWorker.getRegistrations().then((registrations) => {
           for (const registration of registrations) {
-            registration.unregister().then((success) => {
-              if (success) {
-                console.log("Dev mode: Unregistered stale ServiceWorker:", registration.scope);
-              }
-            });
+            registration.unregister().catch(() => {});
           }
         });
         if ("caches" in window) {

@@ -65,3 +65,6 @@ next-env.d.ts
 # turbopack / cache
 .turbo
 .cache
+
+# agent state
+AGENT_STATE.md

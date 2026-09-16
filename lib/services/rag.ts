@@ -1,6 +1,7 @@
-// WeatherGPT — RAG / Grounded Generation Module (SIH 2026, PS 26068)
-// Chunks bulletins, retrieves top passages, enforces constrained prompt & citation gate.
-// Uncited answers are rejected & re-retrieved (max 2 retries) -> never shown.
+// WeatherGPT — Grounded Generation & Agromet Bulletin Retrieval Module (SIH 2026, PS 26068)
+// Retrieves relevant passages from indexed IMD district bulletins and enforces explicit attribution.
+// Unverified or uncited answers that lack authoritative source citations or valid issue timestamps
+// fail the citation gate and degrade gracefully to localized agromet extension guidance.
 
 import seededBulletins from "../data/seeded-bulletins.json";
 import { DEFAULT_DISTRICT } from "../config/constants";
@@ -78,15 +79,29 @@ export function retrieveRelevantBulletins(query: string, district: string = DEFA
 }
 
 /**
- * Verify if the generated answer contains valid citation metadata
- * The citation gate: draft without source + issue_time -> REJECT.
+ * Verify if the generated answer contains valid citation metadata and explicit attribution markers.
+ * Fails if text lacks authoritative attribution, or if sourceProduct/issueTime are missing/invalid.
  */
 export function verifyCitationGate(draft: { sourceProduct?: string; issueTime?: string; text?: string }): boolean {
   if (!draft.sourceProduct || draft.sourceProduct.trim().length === 0) return false;
   if (!draft.issueTime || draft.issueTime.trim().length === 0) return false;
   if (!draft.text || draft.text.trim().length === 0) return false;
+
+  // 1. Verify text contains explicit in-line attribution to meteorological bulletins
+  const attributionPattern = /(?:According to|आईएमडी|बुलेटिन|source:|आधार:|আবহাওয়া|हवामान|IMD|Bulletin|forecast|अंदाज|அறிக்கை|பரிந்துரை)/i;
+  if (!attributionPattern.test(draft.text)) {
+    return false;
+  }
+
+  // 2. Verify timestamp is a valid parsable ISO date
+  const parsedTime = Date.parse(draft.issueTime);
+  if (isNaN(parsedTime)) {
+    return false;
+  }
+
   return true;
 }
+
 
 /**
  * Grounded Generation with Citation Verification Loop (max 2 retries)

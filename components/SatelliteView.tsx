@@ -72,10 +72,10 @@ export default function SatelliteView() {
   const targetXPct = Math.min(Math.max(((userLon - 40) / 70) * 100, 5), 95);
   const targetYPct = Math.min(Math.max(((45 - userLat) / 55) * 100, 5), 95);
 
-  // Depression center on INSAT-3D
-  const depressionSystem = ACTIVE_SYNOPTIC_SYSTEMS.find((s) => s.type === "depression") || ACTIVE_SYNOPTIC_SYSTEMS[0];
-  const depXPct = ((depressionSystem.center[0] - 40) / 70) * 100;
-  const depYPct = ((45 - depressionSystem.center[1]) / 55) * 100;
+  // Depression center on INSAT-3D (if an active tropical cyclone/depression exists)
+  const depressionSystem = ACTIVE_SYNOPTIC_SYSTEMS.find((s) => s.type === "depression" || s.type === "deep_depression") || null;
+  const depXPct = depressionSystem ? ((depressionSystem.center[0] - 40) / 70) * 100 : null;
+  const depYPct = depressionSystem ? ((45 - depressionSystem.center[1]) / 55) * 100 : null;
 
   // Initialize MapLibre for TrueColor Earth Observation
   useEffect(() => {
@@ -339,7 +339,7 @@ export default function SatelliteView() {
           </div>
 
           {/* Synoptic Depression Distance HUD */}
-          {synopticImpact && (
+          {synopticImpact && synopticImpact.nearestSystem && (
             <div className="absolute bottom-3 left-3 right-3 sm:right-auto sm:max-w-md bg-surface/95 border border-border p-3 rounded-lg text-xs shadow-md backdrop-blur-sm space-y-1">
               <div className="flex items-center justify-between text-[11px] border-b border-border pb-1">
                 <span className="text-text-secondary font-medium uppercase tracking-wider">
@@ -446,18 +446,20 @@ export default function SatelliteView() {
               </div>
             </div>
 
-            {/* Depression Reticle on INSAT-3D Image */}
-            <div
-              className="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ left: `${depXPct}%`, top: `${depYPct}%` }}
-            >
-              <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping"></span>
-              <span className="absolute inset-1.5 rounded-full border-2 border-red-500 shadow-md"></span>
-              <span className="absolute inset-3 rounded-full bg-red-600"></span>
-              <div className="absolute left-9 top-0 bg-black/85 border border-red-500/60 text-white text-[10px] px-2 py-0.5 rounded whitespace-nowrap shadow-lg">
-                🌀 {depressionSystem.name} ({depressionSystem.centralPressureHpa} hPa)
+            {/* Depression Reticle on INSAT-3D Image (rendered only when active cyclone/depression exists) */}
+            {depressionSystem && depXPct !== null && depYPct !== null && (
+              <div
+                className="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ left: `${depXPct}%`, top: `${depYPct}%` }}
+              >
+                <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping"></span>
+                <span className="absolute inset-1.5 rounded-full border-2 border-red-500 shadow-md"></span>
+                <span className="absolute inset-3 rounded-full bg-red-600"></span>
+                <div className="absolute left-9 top-0 bg-black/85 border border-red-500/60 text-white text-[10px] px-2 py-0.5 rounded whitespace-nowrap shadow-lg">
+                  🌀 {depressionSystem.name} ({depressionSystem.centralPressureHpa} hPa)
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-text-secondary mt-3 pt-2 border-t border-border gap-1">
@@ -501,17 +503,17 @@ export default function SatelliteView() {
 
       {/* Mode 3: Depressions & Synoptic Systems Tracker */}
       <div className={subMode === "depressions_tracker" ? "block space-y-4" : "hidden"}>
-        {/* Local District Proximity & Advisory Card */}
+        {/* Localized Proximity & Synoptic Impact Card */}
         {synopticImpact && (
-          <div className="bg-surface border border-border rounded-xl p-4 sm:p-5 space-y-3 shadow-sm">
+          <div className="bg-surface border border-border rounded-xl p-4 space-y-3 shadow-sm">
             <div className="flex items-center justify-between border-b border-border pb-2">
               <div className="flex items-center space-x-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
+                <span className={`w-2.5 h-2.5 rounded-full ${synopticImpact.nearestSystem ? "bg-red-600 animate-pulse" : "bg-emerald-500"}`}></span>
                 <span className="text-xs uppercase tracking-wider text-text-secondary font-medium">
-                  Synoptic Impact on {activeLocation.district}
+                  Synoptic Status & Impact on {activeLocation.district}
                 </span>
               </div>
-              <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-800">
+              <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${synopticImpact.nearestSystem ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800"}`}>
                 {synopticImpact.impactLevel}
               </span>
             </div>
@@ -520,30 +522,32 @@ export default function SatelliteView() {
               {synopticImpact.localizedAdvisory}
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border text-xs">
-              <div>
-                <span className="text-text-secondary block text-[10px]">Nearest Center:</span>
-                <span className="font-medium text-text-primary">
-                  {synopticImpact.distanceKm} km {synopticImpact.bearing}
-                </span>
+            {synopticImpact.nearestSystem && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border text-xs">
+                <div>
+                  <span className="text-text-secondary block text-[10px]">Nearest Center:</span>
+                  <span className="font-medium text-text-primary">
+                    {synopticImpact.distanceKm} km {synopticImpact.bearing}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-text-secondary block text-[10px]">Associated System:</span>
+                  <span className="font-medium text-text-primary">{synopticImpact.nearestSystem.name}</span>
+                </div>
+                <div>
+                  <span className="text-text-secondary block text-[10px]">Central Pressure:</span>
+                  <span className="font-medium text-text-primary">
+                    {synopticImpact.nearestSystem.centralPressureHpa} hPa
+                  </span>
+                </div>
+                <div>
+                  <span className="text-text-secondary block text-[10px]">Sustained Winds:</span>
+                  <span className="font-medium text-text-primary">
+                    {synopticImpact.nearestSystem.maxSustainedWindKmph}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-text-secondary block text-[10px]">Associated System:</span>
-                <span className="font-medium text-text-primary">{synopticImpact.nearestSystem.name}</span>
-              </div>
-              <div>
-                <span className="text-text-secondary block text-[10px]">Central Pressure:</span>
-                <span className="font-medium text-text-primary">
-                  {synopticImpact.nearestSystem.centralPressureHpa} hPa
-                </span>
-              </div>
-              <div>
-                <span className="text-text-secondary block text-[10px]">Sustained Winds:</span>
-                <span className="font-medium text-text-primary">
-                  {synopticImpact.nearestSystem.maxSustainedWindKmph}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -553,85 +557,102 @@ export default function SatelliteView() {
             Active Tropical Depressions & Low Pressure Systems (Pan-India)
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {ACTIVE_SYNOPTIC_SYSTEMS.map((sys) => (
-              <div
-                key={sys.id}
-                className="bg-surface border border-border rounded-xl p-4 space-y-3 shadow-sm hover:border-primary/40 transition-colors"
-              >
-                <div className="flex items-center justify-between border-b border-border pb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">🌀</span>
-                    <div>
-                      <h3 className="text-sm font-medium text-text-primary">{sys.name}</h3>
-                      <span className="text-[10px] text-text-secondary font-mono">{sys.categoryCode}</span>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                      sys.warningStatus === "Warning"
-                        ? "bg-red-100 text-red-800"
-                        : sys.warningStatus === "Alert"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-blue-100 text-blue-800"
-                    }`}
-                  >
-                    {sys.warningStatus}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                  <div>
-                    <span className="text-text-secondary block text-[10px]">Center:</span>
-                    <span className="font-mono text-text-primary">
-                      {sys.center[1]}°N, {sys.center[0]}°E
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-text-secondary block text-[10px]">Min Pressure:</span>
-                    <span className="font-medium text-text-primary">{sys.centralPressureHpa} hPa</span>
-                  </div>
-                  <div>
-                    <span className="text-text-secondary block text-[10px]">Movement:</span>
-                    <span className="font-medium text-text-primary">
-                      {sys.movement.direction} @ {sys.movement.speedKmph} km/h
-                    </span>
-                  </div>
-                  <div className="col-span-2 sm:col-span-3">
-                    <span className="text-text-secondary block text-[10px]">Peak Surface Winds:</span>
-                    <span className="font-medium text-text-primary">{sys.maxSustainedWindKmph}</span>
-                  </div>
-                  <div className="col-span-2 sm:col-span-3">
-                    <span className="text-text-secondary block text-[10px]">Cloud Top Temp:</span>
-                    <span className="font-medium text-text-primary">{sys.cloudTopTemp}</span>
-                  </div>
-                </div>
-
-                <p className="text-xs text-text-secondary leading-relaxed bg-bg/50 p-2.5 rounded-lg border border-border/60">
-                  {sys.advisoryText}
-                </p>
-
-                {sys.forecastTrack && sys.forecastTrack.length > 0 && (
-                  <div className="space-y-1.5 pt-1">
-                    <div className="text-[10px] uppercase tracking-wider text-text-secondary font-medium">
-                      Forecasted Track Progression
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center text-[10px]">
-                      {sys.forecastTrack.map((trk, i) => (
-                        <div key={i} className="p-1.5 rounded bg-surface border border-border">
-                          <div className="text-text-secondary">{trk.time}</div>
-                          <div className="font-mono font-medium text-text-primary">
-                            {trk.center[1]}°N, {trk.center[0]}°E
-                          </div>
-                          <div className="text-[9px] text-primary">{trk.category}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+          {ACTIVE_SYNOPTIC_SYSTEMS.length === 0 ? (
+            <div className="bg-surface border border-border rounded-xl p-5 text-center space-y-2">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-1">
+                🛡️
               </div>
-            ))}
-          </div>
+              <h3 className="text-sm font-semibold text-text-primary">
+                Official IMD RSMC Status: Normal
+              </h3>
+              <p className="text-xs text-text-secondary max-w-xl mx-auto leading-relaxed">
+                Zero active tropical cyclones, depressions, or deep depressions over the North Indian Ocean basin (Arabian Sea and Bay of Bengal) according to the latest official bulletins from IMD RSMC New Delhi.
+              </p>
+              <div className="text-[11px] text-text-secondary pt-1 font-mono">
+                Source: Regional Specialized Meteorological Centre (RSMC New Delhi / NWFC)
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {ACTIVE_SYNOPTIC_SYSTEMS.map((sys) => (
+                <div
+                  key={sys.id}
+                  className="bg-surface border border-border rounded-xl p-4 space-y-3 shadow-sm hover:border-primary/40 transition-colors"
+                >
+                  <div className="flex items-center justify-between border-b border-border pb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">🌀</span>
+                      <div>
+                        <h3 className="text-sm font-medium text-text-primary">{sys.name}</h3>
+                        <span className="text-[10px] text-text-secondary font-mono">{sys.categoryCode}</span>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                        sys.warningStatus === "Warning"
+                          ? "bg-red-100 text-red-800"
+                          : sys.warningStatus === "Alert"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {sys.warningStatus}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <span className="text-text-secondary block text-[10px]">Center:</span>
+                      <span className="font-mono text-text-primary">
+                        {sys.center[1]}°N, {sys.center[0]}°E
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-text-secondary block text-[10px]">Min Pressure:</span>
+                      <span className="font-medium text-text-primary">{sys.centralPressureHpa} hPa</span>
+                    </div>
+                    <div>
+                      <span className="text-text-secondary block text-[10px]">Movement:</span>
+                      <span className="font-medium text-text-primary">
+                        {sys.movement.direction} @ {sys.movement.speedKmph} km/h
+                      </span>
+                    </div>
+                    <div className="col-span-2 sm:col-span-3">
+                      <span className="text-text-secondary block text-[10px]">Peak Surface Winds:</span>
+                      <span className="font-medium text-text-primary">{sys.maxSustainedWindKmph}</span>
+                    </div>
+                    <div className="col-span-2 sm:col-span-3">
+                      <span className="text-text-secondary block text-[10px]">Cloud Top Temp:</span>
+                      <span className="font-medium text-text-primary">{sys.cloudTopTemp}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-text-secondary leading-relaxed bg-bg/50 p-2.5 rounded-lg border border-border/60">
+                    {sys.advisoryText}
+                  </p>
+
+                  {sys.forecastTrack && sys.forecastTrack.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      <div className="text-[10px] uppercase tracking-wider text-text-secondary font-medium">
+                        Forecasted Track Progression
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center text-[10px]">
+                        {sys.forecastTrack.map((trk, i) => (
+                          <div key={i} className="p-1.5 rounded bg-surface border border-border">
+                            <div className="text-text-secondary">{trk.time}</div>
+                            <div className="font-mono font-medium text-text-primary">
+                              {trk.center[1]}°N, {trk.center[0]}°E
+                            </div>
+                            <div className="text-[9px] text-primary">{trk.category}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

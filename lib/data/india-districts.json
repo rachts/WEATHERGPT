@@ -3305,8 +3305,9 @@
       },
       {
         "name": "Raigad",
-        "lat": 18.5158,
-        "lon": 73.1822,
+        "headquarters": "Alibag",
+        "lat": 18.6418,
+        "lon": 72.8722,
         "crops": [
           "Paddy",
           "Mango",

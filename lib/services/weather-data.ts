@@ -15,6 +15,7 @@ import { haversineDistance, degreesToCardinal } from "../utils/geo";
 import { isProduction, isDemo } from "../config/environment";
 import { DataProvenance, DataQuality } from "../types/provenance";
 import { DEFAULT_DISTRICT } from "../config/constants";
+import { normalizeImdTimestamp } from "../utils/time";
 
 export { UnknownDistrictError };
 
@@ -66,7 +67,7 @@ export interface NormalizedWeather {
   radarNowcast: {
     station: string;
     scanTime: string | null;
-    status: "LIVE" | "CACHED" | "DEMO" | "UNAVAILABLE";
+    status: "LIVE" | "ESTIMATED" | "CACHED" | "DEMO" | "UNAVAILABLE";
     summary: string;
     reflectivityBands: Array<{
       band: string;
@@ -389,7 +390,7 @@ async function fetchImdWeather(
   const sourceProduct = isFarStation
     ? `IMD Surface Observation (Regional Estimate: ${bestStation.station}, ${roundedDistance} km) via MoES GeoServer`
     : `IMD Surface Observation (Station: ${bestStation.station}, ${roundedDistance} km) via MoES GeoServer`;
-  const issueTime = bestStation.update_time || null;
+  const issueTime = bestStation.update_time ? normalizeImdTimestamp(bestStation.update_time).isoString : null;
   const nowIso = new Date().toISOString();
   const validUntil = new Date(Date.now() + 6 * 3600 * 1000).toISOString();
 
@@ -442,7 +443,12 @@ async function fetchImdWeather(
       currentPrecipitationMm: openMeteo?.current?.currentPrecipitationMm ?? null,
       rainUnit: "mm",
       pressure: pressureHpa,
-      cloudCover: bestStation.nebulosity != null ? Math.round((bestStation.nebulosity / 8) * 100) : null,
+      cloudCover:
+        bestStation.nebulosity != null
+          ? bestStation.nebulosity > 8
+            ? Math.min(100, Math.round(bestStation.nebulosity))
+            : Math.round((bestStation.nebulosity / 8) * 100)
+          : null,
       quality: imdQuality,
     },
     forecastDaily: dailyForecast,
@@ -452,8 +458,11 @@ async function fetchImdWeather(
           ? bestStation.station
           : `${bestStation.station} (Observatory fallback: ${stationNameFallback})`,
       scanTime: issueTime,
-      status: "LIVE",
-      summary: `IMD live observation telemetry active from ${bestStation.station} Observatory (${roundedDistance} km)`,
+      status: imdQuality === "ESTIMATED" ? "ESTIMATED" : "LIVE",
+      summary:
+        imdQuality === "ESTIMATED"
+          ? `IMD regional observation estimate from ${bestStation.station} Observatory (${roundedDistance} km)`
+          : `IMD live observation telemetry active from ${bestStation.station} Observatory (${roundedDistance} km)`,
       reflectivityBands: [],
     },
   };

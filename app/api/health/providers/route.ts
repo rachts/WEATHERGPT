@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { isRateLimited } from "@/lib/utils/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -10,10 +11,18 @@ interface ProviderStatus {
   message?: string;
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const correlationId = crypto.randomUUID();
-  const startTime = Date.now();
+  const clientIp = req.headers.get("x-forwarded-for") || "unknown-ip";
 
+  if (await isRateLimited(`health-providers:${clientIp}`, 30, 60_000)) {
+    return NextResponse.json(
+      { error: "Too many provider health check requests", requestId: correlationId },
+      { status: 429 }
+    );
+  }
+
+  const startTime = Date.now();
   const providers: ProviderStatus[] = [];
 
   // 1. IMD GeoServer SYNOP WFS endpoint

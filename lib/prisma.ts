@@ -3,9 +3,7 @@
 
 import { PrismaClient } from "@prisma/client";
 
-if (typeof process !== "undefined" && typeof process.setMaxListeners === "function") {
-  process.setMaxListeners(50);
-}
+
 
 const prismaClientSingleton = () => {
   return new PrismaClient({

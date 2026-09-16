@@ -14,11 +14,17 @@ import { isRateLimited } from "@/lib/utils/rate-limit";
 import { logger } from "@/lib/utils/logger";
 import { prisma } from "@/lib/prisma";
 
+import { findDistrictInfo } from "@/lib/utils/location";
+
 export const dynamic = "force-dynamic";
 
 const alertQuerySchema = z.object({
   district: z.string().min(1).max(100).default("Raigad"),
   state: z.string().max(100).optional(),
+});
+
+const isoDateString = z.string().refine((val) => !isNaN(Date.parse(val)), {
+  message: "Must be a valid ISO 8601 date string",
 });
 
 const alertIngestSchema = z.object({
@@ -35,12 +41,13 @@ const alertIngestSchema = z.object({
   normalizedBulletin: z.string().optional(),
   sourceProduct: z.string().default("IMD Mausam District Nowcast Portal (MoES)"),
   sourceUrl: z.string().url().optional(),
-  issueTime: z.string(),
-  validFrom: z.string(),
-  validTo: z.string(),
+  issueTime: isoDateString,
+  validFrom: isoDateString,
+  validTo: isoDateString,
   isActive: z.boolean().default(true),
-  recipientPhones: z.array(z.string().regex(/^\+?[1-9]\d{6,14}$/)).optional().default([]),
+  recipientPhones: z.array(z.string().regex(/^\+?[1-9]\d{6,14}$/)).max(50).optional().default([]),
 });
+
 
 export async function GET(req: NextRequest) {
   const correlationId = crypto.randomUUID();
@@ -86,14 +93,19 @@ export async function GET(req: NextRequest) {
     if (process.env.DATABASE_URL) {
       try {
         const now = new Date();
+        const canonicalDistrict = findDistrictInfo(district, state)?.name || district.trim();
         const records = await prisma.alert.findMany({
           where: {
-            district: { equals: district, mode: "insensitive" },
+            OR: [
+              { district: canonicalDistrict },
+              { district: district.trim() },
+            ],
             isActive: true,
             validTo: { gte: now },
           },
           orderBy: { issueTime: "desc" },
         });
+
 
         dbAlerts = records.map((r) => ({
           id: r.sourceId || r.id,
@@ -172,6 +184,20 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const correlationId = crypto.randomUUID();
 
+  // Origin protection: Block cross-origin browser drive-by injections
+  const origin = req.headers.get("origin");
+  if (origin) {
+    const allowed = [process.env.NEXT_PUBLIC_APP_URL, "http://localhost:3000", "http://127.0.0.1:3000"].filter(Boolean);
+    const isAllowed = allowed.some((a) => origin.startsWith(a!));
+    if (!isAllowed) {
+      logger.warn("Alert ingestion rejected: Untrusted cross-origin request", {
+        correlationId,
+        origin,
+      });
+      return new NextResponse(null, { status: 403 });
+    }
+  }
+
   // Public-safety lockdown: Gate endpoint behind ingestion secret with timing-safe comparison
   const configuredToken = process.env.ALERT_INGESTION_TOKEN;
   const authHeader = req.headers.get("authorization");
@@ -236,17 +262,21 @@ export async function POST(req: NextRequest) {
     }
 
     const alertData = parseResult.data;
-    const districtCode = alertData.districtCode || `IN-${alertData.district.toUpperCase()}`;
+    const dInfo = findDistrictInfo(alertData.district, alertData.state);
+    const canonicalDistrict = dInfo?.name || alertData.district.trim();
+    const districtCode = alertData.districtCode || dInfo?.districtCode || `IN-${canonicalDistrict.toUpperCase()}`;
     const alertHash = computeAlertHash(alertData.id, districtCode, alertData.issueTime, alertData.warningText);
 
     const fullAlert: IMDWarningProduct = {
       ...alertData,
+      district: canonicalDistrict,
       alertHash,
       sourceId: alertData.id,
       districtCode,
       rawBulletin: alertData.rawBulletin || alertData.warningText,
       normalizedBulletin: alertData.normalizedBulletin || alertData.warningText,
     };
+
 
     let isDuplicate = false;
     if (process.env.DATABASE_URL) {

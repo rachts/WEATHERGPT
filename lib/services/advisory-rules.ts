@@ -30,6 +30,10 @@ const CHEMICAL_DISCLAIMER_BY_LANG: Record<string, string> = {
   "ta-IN": "பூச்சிக்கொல்லி அல்லது பயிர் பாதுகாப்பு ரசாயனங்களைப் பயன்படுத்துவதற்கு முன் உள்ளூர் வேளாண் அறிவியல் மையம் (KVK) அல்லது வேளாண் துறை பரிந்துரையை அணுகவும்.",
   "mr-IN": "कीटकनाशके किंवा पीक-संरक्षण रसायने वापरण्यापूर्वी स्थानिक मान्यताप्राप्त कृषी विज्ञान केंद्र (KVK) किंवा कृषी विद्यापीठाचा अधिकृत सल्ला नक्की घ्या.",
   "bn-IN": "কীটনাশক বা অন্যান্য ফসল সুরক্ষা রাসায়নিক প্রয়োগ করার পূর্বে স্থানীয় অনুমোদিত কৃষি বিজ্ঞান কেন্দ্র (KVK) বা কৃষি বিশ্ববিদ্যালয়ের পরামর্শ নিন।",
+  "te-IN": "పురుగుమందులు లేదా పంట సంరక్షణ రసాయనాలను ఉపయోగించే ముందు స్థానిక కృషి విజ్ఞాన కేంద్రం (KVK) లేదా వ్యవసాయ విశ్వవిద్యాలయం సిఫార్సులను తప్పనిసరిగా సంప్రదించండి.",
+  "gu-IN": "જંતુનાશક દવાઓ અથવા પાક સંરક્ષણ રસાયણોનો ઉપયોગ કરતા પહેલા સ્થાનિક કૃષિ વિજ્ઞાન કેન્દ્ર (KVK) અથવા કૃષિ યુનિવર્સિટીની ભલામણ અચૂક લો.",
+  "kn-IN": "ಕೀಟನಾಶಕಗಳು ಅಥವಾ ಬೆಳೆ ಸಂರಕ್ಷಣಾ ರಾಸಾಯನಿಕಗಳನ್ನು ಬಳಸುವ ಮುನ್ನ ಸ್ಥಳೀಯ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (KVK) ಅಥವಾ ಕೃಷಿ ವಿಶ್ವವಿದ್ಯಾಲಯದ ಶಿಫಾರಸುಗಳನ್ನು ಸಂಪರ್ಕಿಸಿ.",
+  "pa-IN": "ਕੀਟਨਾਸ਼ਕਾਂ ਜਾਂ ਫ਼ਸਲ ਸੁਰੱਖਿਆ ਰਸਾਇਣਾਂ ਦੀ ਵਰਤੋਂ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਸਥਾਨਕ ਕ੍ਰਿਸ਼ੀ ਵਿਗਿਆਨ ਕੇਂਦਰ (KVK) ਜਾਂ ਖੇਤੀਬਾੜੀ ਯੂਨੀਵਰਸਿਟੀ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਜ਼ਰੂਰ ਲਵੋ।",
 };
 
 const ADVISORY_DICTIONARY: Record<string, Record<string, string>> = {
@@ -132,24 +136,28 @@ export function getDeterministicCropAdvisory(
   let sprayCondition: "SAFE" | "UNSAFE" | "CAUTION" = "SAFE";
   let sprayAdvisory = dict.safeToSpray;
 
-  if (weather.windSpeed !== null && weather.windSpeed > 15) {
+  if (weather.windSpeed !== null && weather.windSpeed > SPRAY_MAX_WIND_KMH) {
     sprayCondition = "UNSAFE";
     sprayAdvisory = dict.unsafeHighWind;
-  } else if (weather.rainfallForecastNext24h > 5) {
+  } else if (weather.rainfallForecastNext24h > SPRAY_MAX_RAIN_MM) {
     sprayCondition = "UNSAFE";
     sprayAdvisory = dict.unsafeRain;
-  } else if (weather.humidity !== null && weather.humidity > 90) {
+  } else if (weather.humidity !== null && weather.humidity > SPRAY_MAX_HUMIDITY_PCT) {
     sprayCondition = "CAUTION";
     sprayAdvisory = dict.cautionHighHumidity;
   }
 
   const normalizedCrop = crop.toLowerCase();
-  let irrigationAdvisory = dict.standingWaterPaddy;
-  let pestDiseaseAdvisory = "Monitor for leaf blast and stem borer under humid cloudy conditions.";
-
   const hasCropToken = (pattern: RegExp) => pattern.test(normalizedCrop);
 
-  if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:wheat|गेहूं|கோதுமை)(?:[^\p{L}\p{N}]|$)/iu)) {
+  // Default to balanced agronomic field moisture; apply paddy-specific water standing only if paddy is specified
+  let irrigationAdvisory = "Maintain balanced field soil moisture based on crop stage; keep active field drainage open to avoid waterlogging.";
+  let pestDiseaseAdvisory = "Scout fields regularly for regional pests; consult local KVK before chemical treatment.";
+
+  if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:paddy|rice|धान|चावल|भात|நெல்)(?:[^\p{L}\p{N}]|$)/iu)) {
+    irrigationAdvisory = dict.standingWaterPaddy;
+    pestDiseaseAdvisory = "Monitor for leaf blast and stem borer under humid cloudy conditions.";
+  } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:wheat|गेहूं|கோதுமை)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.wheatCrownRoot;
     pestDiseaseAdvisory = "Scout for yellow rust (stripe rust) pustules on leaves during cool mornings.";
   } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:cotton|कपास|பருத்தி)(?:[^\p{L}\p{N}]|$)/iu)) {

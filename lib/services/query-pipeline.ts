@@ -93,7 +93,7 @@ const CRISIS_PATTERNS = [
   /suicid/i,
   /kill myself/i,
   /end my life/i,
-  /want to die/i,
+  /(?:^|\s)want to die(?:\s|[.,!?]|$)/i,
   /hopeless/i,
   /आत्महत्या/i,
   /जान देना/i,
@@ -647,7 +647,7 @@ export async function processWeatherQuery(
             ? `আগামী ৭ দিনে প্রায় ${rainyCount} দিন বৃষ্টির সম্ভাবনা রয়েছে।`
             : `আগামী ৭ দিনে আবহাওয়া মূলত শুষ্ক থাকার পূর্বাভাস রয়েছে।`;
           const tempRange = overallMin !== null && overallMax !== null
-            ? `तापমাত্রা ${overallMin}°C থেকে ${overallMax}°C এর মধ্যে থাকার সম্ভাবনা।`
+            ? `তাপমাত্রা ${overallMin}°C থেকে ${overallMax}°C এর মধ্যে থাকার সম্ভাবনা।`
             : `তাপমাত্রার তথ্য আপডেট হচ্ছে।`;
           answerText = `${districtInfo.name} জেলার ৭ দিনের পূর্বাভাস: ${tempRange} ${summary}`;
           break;

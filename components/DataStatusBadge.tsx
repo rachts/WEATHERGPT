@@ -5,6 +5,7 @@ import { DataQuality, Provider } from "@/lib/types/provenance";
 
 export type BadgeState =
   | "LIVE"
+  | "ESTIMATED"
   | "CACHED"
   | "FALLBACK"
   | "DEMO"
@@ -27,10 +28,11 @@ export default function DataStatusBadge({
   observedAt,
   className = "",
 }: DataStatusBadgeProps) {
-  // Normalize status
-  let normStatus: BadgeState = "LIVE";
+  // Normalize status - never fall through unknown statuses to "LIVE"
+  let normStatus: BadgeState = "ESTIMATED";
   const s = String(status).toUpperCase();
   if (s === "OBSERVED" || s === "LIVE") normStatus = "LIVE";
+  else if (s === "ESTIMATED") normStatus = "ESTIMATED";
   else if (s === "CACHED") normStatus = "CACHED";
   else if (s === "FALLBACK") normStatus = "FALLBACK";
   else if (s === "DEMO") normStatus = "DEMO";
@@ -43,6 +45,11 @@ export default function DataStatusBadge({
       label: `LIVE — ${providerName || (provider === "IMD" ? "IMD MoES" : provider)}`,
       badgeClass: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30",
       dotClass: "bg-emerald-500 animate-pulse",
+    },
+    ESTIMATED: {
+      label: `ESTIMATED — ${providerName || "Distant Station"}`,
+      badgeClass: "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30",
+      dotClass: "bg-amber-500",
     },
     FALLBACK: {
       label: `FALLBACK — ${providerName || "Open-Meteo"}`,
@@ -78,7 +85,7 @@ export default function DataStatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide border shadow-xs transition-colors ${config.badgeClass} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide border shadow-sm transition-colors ${config.badgeClass} ${className}`}
       title={observedAt ? `Observed / Issued at: ${observedAt}` : undefined}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${config.dotClass}`} />
@@ -86,3 +93,4 @@ export default function DataStatusBadge({
     </span>
   );
 }
+

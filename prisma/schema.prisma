@@ -27,8 +27,8 @@ model SavedLocation {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   district   String   @default("Raigad")
   state      String   @default("Maharashtra")
-  latitude   Float    @default(18.5158)
-  longitude  Float    @default(73.1822)
+  latitude   Float    @default(18.6418)
+  longitude  Float    @default(72.8722)
   isPrimary  Boolean  @default(true)
   createdAt  DateTime @default(now())
 

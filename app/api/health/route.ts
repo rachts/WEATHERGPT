@@ -34,8 +34,13 @@ export async function GET() {
   if (upstashUrl && upstashToken) {
     const redisStart = Date.now();
     try {
-      const res = await fetch(`${upstashUrl}/ping`, {
-        headers: { Authorization: `Bearer ${upstashToken}` },
+      const res = await fetch(upstashUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${upstashToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(["PING"]),
         signal: AbortSignal.timeout(2000),
       });
       if (res.ok) {

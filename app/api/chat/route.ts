@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { streamText, createUIMessageStreamResponse, isStepCount, type ModelMessage } from "ai";
-import { getLanguageModel } from "@/lib/ai/models";
+import { getLanguageModel, MODEL_GENERATION_CONFIG } from "@/lib/ai/models";
 import { METEOROLOGIST_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import { getWeather } from "@/lib/ai/tools";
 import { getDistrictWeather } from "@/lib/services/weather-data";
@@ -89,8 +89,12 @@ async function generateDeterministicBriefing(
 
   let briefingText = "";
 
+  // Token-based Unicode intent matching (prevents 'grain', 'drain', 'train' false positives)
+  const isRainIntent = /(?:^|\s|[.,!?])(?:rain(?:ing|fall)?|बारिश|वर्षा|पाऊस|மழை)(?:\s|[.,!?]|$)/iu.test(queryLower);
+  const isTempIntent = /(?:^|\s|[.,!?])(?:temp(?:erature)?|तापमान|hot|cold|गरमी|थंड|வெப்பநிலை)(?:\s|[.,!?]|$)/iu.test(queryLower);
+
   // Synthesize conversational response based on user intent
-  if (queryLower.includes("rain") || queryLower.includes("बारिश") || queryLower.includes("वर्षा")) {
+  if (isRainIntent) {
     const rainMm = targetDay?.rainfallMm ?? null;
     const rainChance = targetDay?.pop ?? (rainMm != null && rainMm > 0 ? 70 : 10);
     if ((rainMm != null && rainMm > 5) || rainChance > 60) {
@@ -98,12 +102,13 @@ async function generateDeterministicBriefing(
     } else {
       briefingText = `For **${district}** (${state}) ${timeLabel}, primarily dry conditions are forecast. Rain probability remains low at **${rainChance}%** with ${rainMm != null && rainMm > 0 ? `${rainMm} mm drizzle` : "no significant precipitation expected"}. Weather conditions will remain favorable for harvesting and routine agricultural tasks.`;
     }
-  } else if (queryLower.includes("temp") || queryLower.includes("तापमान") || queryLower.includes("hot") || queryLower.includes("cold")) {
+  } else if (isTempIntent) {
     const min = targetDay?.tempMin ?? (current.temperature != null ? current.temperature - 4 : null);
     const max = targetDay?.tempMax ?? (current.temperature != null ? current.temperature + 3 : null);
     const tempRange = min != null && max != null ? `range between **${min}°C** and **${max}°C**` : (current.temperature != null ? `hover near **${current.temperature}°C**` : "remain seasonable");
     briefingText = `In **${district}** (${state}), temperatures ${timeLabel} are expected to ${tempRange} with ${targetDay?.condition?.toLowerCase() || current.condition?.toLowerCase() || "fair skies"}. Humidity will hover around **${current.humidity != null ? `${current.humidity}%` : "seasonal levels"}**.`;
   } else {
+
     // General comprehensive briefing
     const currentTempDisplay = current.temperature != null ? `a temperature of **${current.temperature}°C**` : "fair observation levels";
     const maxDayTemp = targetDay?.tempMax ?? current.temperature;
@@ -262,6 +267,7 @@ export async function POST(req: NextRequest) {
         system: systemPrompt,
         messages: messages as unknown as ModelMessage[],
         tools: { getWeather },
+        temperature: MODEL_GENERATION_CONFIG.temperature,
         stopWhen: isStepCount(3),
         onFinish: async ({ text }) => {
           await persistChatExchange(activeSessionId, userQuery, text, {

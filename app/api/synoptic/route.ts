@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ACTIVE_SYNOPTIC_SYSTEMS, getDistrictSynopticImpact } from "@/lib/services/synoptic";
+import {
+  fetchLiveSynopticReport,
+  getDistrictSynopticImpact,
+  ACTIVE_SYNOPTIC_SYSTEMS,
+} from "@/lib/services/synoptic";
 import { findDistrictInfo } from "@/lib/utils/location";
 import { isRateLimited } from "@/lib/utils/rate-limit";
 import { DEFAULT_DISTRICT, DEFAULT_STATE, DEFAULT_COORDINATES } from "@/lib/config/constants";
@@ -26,22 +30,42 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const district = searchParams.get("district") || DEFAULT_DISTRICT;
   const state = searchParams.get("state") || DEFAULT_STATE;
+  const isDemo = searchParams.get("demo") === "true";
 
-  const dInfo = findDistrictInfo(district);
+  // Disambiguate identical district names across states (e.g., Hamirpur UP vs Hamirpur HP)
+  const dInfo = findDistrictInfo(district, state);
   const lat = dInfo?.lat ?? parseFloat(searchParams.get("lat") || String(DEFAULT_COORDINATES.latitude));
   const lon = dInfo?.lon ?? parseFloat(searchParams.get("lon") || String(DEFAULT_COORDINATES.longitude));
 
-  const impact = getDistrictSynopticImpact(district, state, lat, lon);
+  const synopticReport = await fetchLiveSynopticReport(isDemo);
+  const impact = getDistrictSynopticImpact(district, state, lat, lon, synopticReport.systems);
 
   return NextResponse.json(
     {
       district,
       state,
       coordinates: { lat, lon },
-      systems: ACTIVE_SYNOPTIC_SYSTEMS,
+      systems: synopticReport.systems,
+      status: synopticReport.status,
+      summary: synopticReport.summary,
+      bulletinTitle: synopticReport.bulletinTitle,
+      bulletinUrl: synopticReport.bulletinUrl,
       localImpact: impact,
       generatedAt: new Date().toISOString(),
-      source: "India Meteorological Department (NWFC / RSMC New Delhi)",
+      issueTime: synopticReport.issueTime,
+      source: synopticReport.source,
+      provenance: {
+        source: synopticReport.source,
+        quality: synopticReport.quality,
+        issueTime: synopticReport.issueTime,
+      },
+      ...(isDemo
+        ? {
+            isDemo: true,
+            disclaimer:
+              "DEMO EVALUATION MODE: Displaying historical storm track benchmark for evaluation and drill testing. Not a live weather warning.",
+          }
+        : {}),
     },
     {
       status: 200,
@@ -51,3 +75,4 @@ export async function GET(request: NextRequest) {
     }
   );
 }
+

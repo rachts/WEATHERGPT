@@ -39,7 +39,7 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // strict-dynamic enables trusted scripts while providing backward compatibility with 'self' and 'unsafe-inline'
-              "script-src 'self' 'strict-dynamic' 'unsafe-inline' 'unsafe-eval' https: http:",
+              "script-src 'self' 'strict-dynamic' 'unsafe-inline' https:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https://mausam.imd.gov.in https://reactjs.imd.gov.in https://internal.imd.gov.in https://satellite.imd.gov.in https://gibs.earthdata.nasa.gov https://*.tile.openstreetmap.org https://tilecache.rainviewer.com https://*.basemaps.cartocdn.com",
@@ -57,9 +57,8 @@ const nextConfig = {
       {
         source: "/api/:path*",
         headers: [
-          { key: "Access-Control-Allow-Origin", value: "*" },
           { key: "Access-Control-Allow-Methods", value: "GET, POST, OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization, X-Requested-With, x-ingestion-token" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization, X-Requested-With" },
         ],
       },
     ];

@@ -32,7 +32,7 @@ function getSpeechSynthesisCapabilities() {
 
 // Suggested Inquiries & Quick-question Chips catalog
 const QUICK_QUESTION_CHIPS = [
-  "Suggested Inquiries: Will it rain in Kolkata tomorrow?",
+  "Suggested Inquiries: Will it rain in Raigad tomorrow?",
   "Suggested Inquiries: What about the day after?",
   "Suggested Inquiries: Is it safe to spray crops today?",
   "Suggested Inquiries: Show 7-day temperature outlook",

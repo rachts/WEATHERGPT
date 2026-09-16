@@ -11,7 +11,9 @@ const advisoryQuerySchema = z.object({
   crop: z.string().min(1).max(100).default("paddy"),
   district: z.string().min(1).max(100).default("Raigad"),
   state: z.string().max(100).optional(),
-  language: z.enum(["hi-IN", "ta-IN", "en-IN"]).default("en-IN"),
+  language: z
+    .enum(["en-IN", "hi-IN", "ta-IN", "mr-IN", "bn-IN", "te-IN", "gu-IN", "kn-IN", "pa-IN"])
+    .default("en-IN"),
 });
 
 export async function GET(req: NextRequest) {

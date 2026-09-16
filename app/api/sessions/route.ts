@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isRateLimited } from "@/lib/utils/rate-limit";
 import { logger } from "@/lib/utils/logger";
+import { createHash, timingSafeEqual } from "crypto";
 
 export const dynamic = "force-dynamic";
 
@@ -24,43 +25,57 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const sessionId = searchParams.get("sessionId");
+    const sessionId =
+      searchParams.get("sessionId") ||
+      req.headers.get("x-session-id") ||
+      req.cookies.get("weathergpt_session_id")?.value;
 
-    if (!process.env.DATABASE_URL) {
-      return NextResponse.json({ sessions: [], messages: [] });
-    }
-
-    if (sessionId) {
-      const session = await prisma.chatSession.findUnique({
-        where: { id: sessionId },
-        include: {
-          messages: {
-            orderBy: { createdAt: "asc" },
+    // Strict privacy scoping: Never leak stranger sessions
+    if (!sessionId || !sessionId.trim()) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "SESSION_ID_REQUIRED",
+            message:
+              "A valid sessionId is required via ?sessionId=, X-Session-Id header, or weathergpt_session_id cookie.",
+            requestId: correlationId,
           },
         },
-      });
-      return NextResponse.json({ session, messages: session?.messages ?? [] });
+        { status: 400 }
+      );
     }
 
-    const sessions = await prisma.chatSession.findMany({
-      take: 10,
-      orderBy: { updatedAt: "desc" },
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({ session: null, messages: [] });
+    }
+
+    const session = await prisma.chatSession.findUnique({
+      where: { id: sessionId.trim() },
       include: {
         messages: {
-          take: 1,
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: "asc" },
         },
       },
     });
 
-    return NextResponse.json({ sessions });
+    if (!session) {
+      return NextResponse.json(
+        {
+          session: null,
+          messages: [],
+          meta: { requestId: correlationId, message: "Session not found or expired." },
+        },
+        { status: 200 }
+      );
+    }
+
+    return NextResponse.json({ session, messages: session.messages });
   } catch (error) {
     logger.warn("Sessions API query notice", {
       correlationId,
       error: (error as Error).message,
     });
-    // Graceful fallback for offline / unconfigured database
-    return NextResponse.json({ sessions: [], messages: [] });
+    return NextResponse.json({ session: null, messages: [] });
   }
 }
 
@@ -74,6 +89,62 @@ export async function DELETE(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
+    const sessionId =
+      searchParams.get("sessionId") ||
+      req.headers.get("x-session-id") ||
+      req.cookies.get("weathergpt_session_id")?.value;
+
+    // Single-session deletion by client owner
+    if (sessionId && sessionId.trim()) {
+      if (!process.env.DATABASE_URL) {
+        return NextResponse.json({ success: true, deleted: true });
+      }
+
+      await prisma.chatSession.deleteMany({
+        where: { id: sessionId.trim() },
+      });
+
+      return NextResponse.json({
+        success: true,
+        deletedSessionId: sessionId.trim(),
+        requestId: correlationId,
+      });
+    }
+
+    // Global administrative pruning: Require administrative secret
+    const authHeader = req.headers.get("authorization");
+    const adminToken = process.env.ALERT_INGESTION_TOKEN;
+
+    if (!adminToken || !authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Administrative credentials required for global session pruning.",
+            requestId: correlationId,
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    const provided = authHeader.slice(7);
+    const hashProvided = createHash("sha256").update(provided).digest();
+    const hashAdmin = createHash("sha256").update(adminToken).digest();
+
+    if (!timingSafeEqual(hashProvided, hashAdmin)) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Invalid administrative credentials.",
+            requestId: correlationId,
+          },
+        },
+        { status: 401 }
+      );
+    }
+
     const maxAgeDays = parseInt(searchParams.get("maxAgeDays") || "30", 10);
     const { pruneOldChatSessions } = await import("@/lib/services/chat-session");
     const count = await pruneOldChatSessions(maxAgeDays);
@@ -85,14 +156,15 @@ export async function DELETE(req: NextRequest) {
       requestId: correlationId,
     });
   } catch (error) {
-    logger.error("Session pruning endpoint failure", {
+    logger.error("Session deletion endpoint failure", {
       correlationId,
       error: (error as Error).message,
     });
     return NextResponse.json(
-      { error: "Failed to prune sessions", requestId: correlationId },
+      { error: "Failed to delete or prune sessions", requestId: correlationId },
       { status: 500 }
     );
   }
 }
+
 
