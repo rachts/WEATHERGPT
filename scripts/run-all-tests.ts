@@ -320,6 +320,16 @@ async function runTests() {
     record("G20", "Zero Fabricated Values Policy (H3 & H6)", false, (err as Error).message);
   }
 
+  // --- GATE G21: SYNOP Station Maximum Distance Guard (H4) ---
+  try {
+    const { runStationDistanceTests } = await import("../tests/station-distance.test");
+    await runStationDistanceTests();
+    record("G21", "SYNOP Station Distance Guard (H4)", true,
+      "SYNOP observations beyond 50 km flagged as ESTIMATED with station distance surfaced in provenance metadata.");
+  } catch (err) {
+    record("G21", "SYNOP Station Distance Guard (H4)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

@@ -27,6 +27,9 @@ export interface NormalizedWeather {
     longitude: number;
   };
   sourceProduct: string;
+  stationName?: string;
+  stationDistanceKm?: number;
+  isStationEstimated?: boolean;
   issueTime: string | null;
   validUntil: string | null;
   isCachedFallback: boolean;
@@ -379,7 +382,11 @@ async function fetchImdWeather(
   }
 
   const roundedDistance = Math.round(bestDist);
-  const sourceProduct = `IMD Surface Observation (Station: ${bestStation.station}, ${roundedDistance} km) via MoES GeoServer`;
+  const isFarStation = roundedDistance > 50;
+  const imdQuality: DataQuality = isFarStation ? "ESTIMATED" : (isRainEstimated ? "ESTIMATED" : "OBSERVED");
+  const sourceProduct = isFarStation
+    ? `IMD Surface Observation (Regional Estimate: ${bestStation.station}, ${roundedDistance} km) via MoES GeoServer`
+    : `IMD Surface Observation (Station: ${bestStation.station}, ${roundedDistance} km) via MoES GeoServer`;
   const issueTime = bestStation.update_time || null;
   const nowIso = new Date().toISOString();
   const validUntil = new Date(Date.now() + 6 * 3600 * 1000).toISOString();
@@ -398,9 +405,9 @@ async function fetchImdWeather(
     retrievedAt: nowIso,
     validFrom: issueTime || nowIso,
     validUntil,
-    quality: "OBSERVED",
+    quality: imdQuality,
     isOfficial: true,
-    isFallback: false,
+    isFallback: isFarStation,
   };
 
   return {
@@ -410,6 +417,9 @@ async function fetchImdWeather(
     stateCode,
     coordinates: { latitude: lat, longitude: lon },
     sourceProduct,
+    stationName: bestStation.station,
+    stationDistanceKm: roundedDistance,
+    isStationEstimated: isFarStation,
     issueTime,
     validUntil,
     isCachedFallback: false,
@@ -431,7 +441,7 @@ async function fetchImdWeather(
       rainUnit: "mm",
       pressure: pressureHpa,
       cloudCover: bestStation.nebulosity != null ? Math.round((bestStation.nebulosity / 8) * 100) : null,
-      quality: isRainEstimated ? "ESTIMATED" : "OBSERVED",
+      quality: imdQuality,
     },
     forecastDaily: dailyForecast,
     radarNowcast: {

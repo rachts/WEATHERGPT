@@ -15,26 +15,32 @@ interface WeatherData {
   district: string;
   state: string;
   sourceProduct: string;
+  stationName?: string;
+  stationDistanceKm?: number;
+  isStationEstimated?: boolean;
   issueTime: string;
   isCachedFallback: boolean;
   provenance?: DataProvenance;
   current: {
-    temperature: number;
+    temperature: number | null;
     tempUnit: string;
-    humidity: number;
+    humidity: number | null;
     humidityUnit: string;
-    windSpeed: number;
-    windDirection: string;
+    windSpeed: number | null;
+    windDirection: string | null;
     windUnit: string;
     condition: string;
-    rainfallLast24h: number;
+    rainfallLast24h: number | null;
+    rainfallLast24hEstimate?: number | null;
+    isRainfallEstimated?: boolean;
     rainUnit: string;
+    quality?: string;
   };
   forecastDaily: Array<{
     day: string;
     condition: string;
-    tempMin: number;
-    tempMax: number;
+    tempMin: number | null;
+    tempMax: number | null;
   }>;
 }
 
@@ -314,13 +320,28 @@ export default function DashboardView() {
               {t.dashboard?.rain24h || "Precipitation"}
             </div>
             <div className="text-base text-text-primary font-medium mt-0.5">
-              {weather.current.rainfallLast24h !== null ? `${weather.current.rainfallLast24h} mm` : "N/A"}
+              {weather.current.rainfallLast24h !== null
+                ? `${weather.current.rainfallLast24h} mm`
+                : (weather.current.rainfallLast24hEstimate !== undefined && weather.current.rainfallLast24hEstimate !== null
+                  ? `${weather.current.rainfallLast24hEstimate} mm (est.)`
+                  : "N/A")}
             </div>
           </div>
         </div>
 
-        <div className="text-[11px] text-text-secondary pt-1 flex justify-between items-center">
-          <span>Source: {weather.sourceProduct}</span>
+        <div className="text-[11px] text-text-secondary pt-1 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span>Source: {weather.sourceProduct}</span>
+            {weather.stationDistanceKm !== undefined && (
+              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                weather.isStationEstimated
+                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                  : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              }`}>
+                {weather.stationName || "SYNOP Station"} • {weather.stationDistanceKm} km {weather.isStationEstimated ? "(ESTIMATED)" : "(OBSERVED)"}
+              </span>
+            )}
+          </div>
           <span>{formattedIssueTime} IST</span>
         </div>
       </div>
