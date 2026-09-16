@@ -17,17 +17,22 @@ export async function runPhase3Tests() {
   console.log("   PHASE 3 VERIFICATION TESTS (Hardening & Polish)      ");
   console.log("========================================================\n");
 
-  // Test 1: Build pipeline includes prisma generate & migrate deploy
+  // Test 1: Build pipeline script is safe for serverless (prisma generate only, migrations decoupled)
   console.log("[Test 1] Verifying build pipeline script configuration...");
   assert.ok(
     packageJson.scripts.build.includes("prisma generate"),
     "build script must include 'prisma generate'"
   );
   assert.ok(
-    packageJson.scripts.build.includes("prisma migrate deploy"),
-    "build script must include 'prisma migrate deploy'"
+    !packageJson.scripts.build.includes("prisma migrate deploy"),
+    "build script must NOT include 'prisma migrate deploy' (unsafe in serverless/CI builds)"
   );
-  console.log("  ✔ Build pipeline script includes prisma generate and prisma migrate deploy.");
+  assert.strictEqual(
+    packageJson.scripts["prisma:migrate:deploy"],
+    "prisma migrate deploy",
+    "dedicated 'prisma:migrate:deploy' script must exist for decoupled migration execution"
+  );
+  console.log("  ✔ Build pipeline script includes prisma generate, with migrations safely decoupled.");
 
   // Test 2: Next.js metadata API (robots.ts)
   console.log("\n[Test 2] Verifying robots.ts metadata generation...");

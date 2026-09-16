@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, Changes ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, Changes ]
 
 jobs:
   build-and-test:
@@ -23,6 +23,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run Prisma Migrations (Deploy Step)
+        if: ${{ secrets.DATABASE_URL != '' }}
+        run: npm run prisma:migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: TypeScript Typecheck
         run: npx tsc --noEmit
 
@@ -31,8 +40,13 @@ jobs:
 
       - name: Run Test Suite
         run: npm test
+        env:
+          ALERT_INGESTION_TOKEN: ${{ secrets.ALERT_INGESTION_TOKEN || 'weathergpt-ci-test-token-min-16-chars' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Next.js Production Build
         run: npm run build
         env:
           NEXT_PUBLIC_APP_URL: http://localhost:3000
+          ALERT_INGESTION_TOKEN: ${{ secrets.ALERT_INGESTION_TOKEN || 'weathergpt-ci-test-token-min-16-chars' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
