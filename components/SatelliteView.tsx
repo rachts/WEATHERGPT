@@ -10,6 +10,8 @@ import {
   DistrictSynopticImpact,
 } from "@/lib/services/synoptic";
 
+import { DEFAULT_DISTRICT, DEFAULT_STATE } from "@/lib/config/constants";
+
 type SatelliteSubMode = "gibs_map" | "imd_insat" | "depressions_tracker";
 type InsatProduct = "ir1" | "ctbt" | "vis" | "wv" | "ir1_loop" | "ctbt_loop";
 
@@ -18,7 +20,7 @@ export default function SatelliteView() {
   const [insatProduct, setInsatProduct] = useState<InsatProduct>("ctbt");
   const [showDepressions, setShowDepressions] = useState(true);
   const [showConvectiveRadius, setShowConvectiveRadius] = useState(true);
-  const [activeLocation, setActiveLocation] = useState({ district: "Kolkata", state: "West Bengal" });
+  const [activeLocation, setActiveLocation] = useState(() => getActiveLocation());
   const [synopticImpact, setSynopticImpact] = useState<DistrictSynopticImpact | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);

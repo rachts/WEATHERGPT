@@ -7,6 +7,11 @@
 
 import { AdvisoryRule, CropAdvisoryResult } from "../types/advisory";
 import { Evidence } from "../types/provenance";
+import { DEFAULT_DISTRICT } from "../config/constants";
+
+export const SPRAY_MAX_WIND_KMH = 15;
+export const SPRAY_MAX_RAIN_MM = 5;
+export const SPRAY_MAX_HUMIDITY_PCT = 90;
 
 export interface WeatherMetrics {
   temperature: number | null;
@@ -28,9 +33,9 @@ const CHEMICAL_DISCLAIMER_BY_LANG = {
 const ADVISORY_DICTIONARY = {
   "en-IN": {
     safeToSpray: "Safe for pesticide/fertilizer spraying (low wind, no imminent heavy rain).",
-    unsafeHighWind: "UNSAFE to spray pesticides. Wind speed exceeds 15 km/h causing chemical drift.",
-    unsafeRain: "UNSAFE to spray pesticides. Rain forecast exceeds 5 mm causing wash-off and chemical loss.",
-    cautionHighHumidity: "CAUTION: High humidity (>90%). Spray only systemic agrochemicals during dry morning hours.",
+    unsafeHighWind: `UNSAFE to spray pesticides. Wind speed exceeds ${SPRAY_MAX_WIND_KMH} km/h causing chemical drift.`,
+    unsafeRain: `UNSAFE to spray pesticides. Rain forecast exceeds ${SPRAY_MAX_RAIN_MM} mm causing wash-off and chemical loss.`,
+    cautionHighHumidity: `CAUTION: High humidity (>${SPRAY_MAX_HUMIDITY_PCT}%). Spray only systemic agrochemicals during dry morning hours.`,
     standingWaterPaddy: "Maintain 2 to 3 cm standing water in paddy fields during panicle stage.",
     drainageMango: "Ensure active drainage in mango root zones to prevent collar rot in high humidity.",
     postponeNitrogen: "Postpone urea/nitrogen top-dressing until showers recede to prevent runoff.",
@@ -44,9 +49,9 @@ const ADVISORY_DICTIONARY = {
   },
   "hi-IN": {
     safeToSpray: "कीटनाशक या उर्वरक छिड़काव के लिए सुरक्षित स्थिति (हवा की गति सामान्य, भारी बारिश की संभावना नहीं)।",
-    unsafeHighWind: "कीटनाशक छिड़काव के लिए असुरक्षित। हवा की गति 15 किमी/घंटे से अधिक होने से बहाव का खतरा है।",
-    unsafeRain: "छिड़काव के लिए असुरक्षित। 5 मिमी से अधिक वर्षा के पूर्वानुमान के कारण दवा धुलने का जोखिम है।",
-    cautionHighHumidity: "सावधानी: अत्यधिक आर्द्रता (>90%)। केवल सुबह के सूखे घंटों में प्रणालीगत (systemic) कीटनाशक का छिड़काव करें।",
+    unsafeHighWind: `कीटनाशक छिड़काव के लिए असुरक्षित। हवा की गति ${SPRAY_MAX_WIND_KMH} किमी/घंटे से अधिक होने से बहाव का खतरा है।`,
+    unsafeRain: `छिड़काव के लिए असुरक्षित। ${SPRAY_MAX_RAIN_MM} मिमी से अधिक वर्षा के पूर्वानुमान के कारण दवा धुलने का जोखिम है।`,
+    cautionHighHumidity: `सावधानी: अत्यधिक आर्द्रता (>${SPRAY_MAX_HUMIDITY_PCT}%)। केवल सुबह के सूखे घंटों में प्रणालीगत (systemic) कीटनाशक का छिड़काव करें।`,
     standingWaterPaddy: "धान के खेतों में 2 से 3 सेमी स्थिर जलस्तर बनाए रखें।",
     drainageMango: "आम के बगीचों में जलभराव रोकने के लिए उचित जल निकासी नालियां खुली रखें।",
     postponeNitrogen: "बारिश के दौरान यूरिया का छिड़काव स्थगित करें ताकि पोषक तत्व बह न जाएं।",
@@ -60,9 +65,9 @@ const ADVISORY_DICTIONARY = {
   },
   "ta-IN": {
     safeToSpray: "பூச்சிக்கொல்லி தெளிக்க உகந்த சூழல் (காற்றின் வேகம் குறைவு, அதிக மழை வாய்ப்பு இல்லை).",
-    unsafeHighWind: "பூச்சிக்கொல்லி தெளிக்க உகந்ததல்ல. காற்றின் வேகம் 15 கிமீ/மணிக்கு மேல் உள்ளதால் மருந்து வீணாகும்.",
-    unsafeRain: "தெளிக்க வேண்டாம். 5 மிமீ மேல் மழை எதிர்பார்க்கப்படுவதால் மருந்து அடித்துச் செல்லப்படும்.",
-    cautionHighHumidity: "எச்சரிக்கை: அதிக ஈரப்பதம் (>90%). காலை உலர்ந்த வேளையில் மட்டுமே உறிஞ்சும் வகை மருந்துகளை தெளிக்கவும்.",
+    unsafeHighWind: `பூச்சிக்கொல்லி தெளிக்க உகந்ததல்ல. காற்றின் வேகம் ${SPRAY_MAX_WIND_KMH} கிமீ/மணிக்கு மேல் உள்ளதால் மருந்து வீணாகும்.`,
+    unsafeRain: `தெளிக்க வேண்டாம். ${SPRAY_MAX_RAIN_MM} மிமீ மேல் மழை எதிர்பார்க்கப்படுவதால் மருந்து அடித்துச் செல்லப்படும்.`,
+    cautionHighHumidity: `எச்சரிக்கை: அதிக ஈரப்பதம் (>${SPRAY_MAX_HUMIDITY_PCT}%). காலை உலர்ந்த வேளையில் மட்டுமே உறிஞ்சும் வகை மருந்துகளை தெளிக்கவும்.`,
     standingWaterPaddy: "நெல் வயல்களில் 2-3 செமீ வரை நீர் தேங்க வைக்கவும்.",
     drainageMango: "மாந்தோப்புகளில் வேர் அழுகலைத் தடுக்க முறையான வடிகால் வசதி செய்யவும்.",
     postponeNitrogen: "மழை நேரத்தில் நைட்ரஜன் உரமிடுவதை தற்காலிகமாக தவிர்க்கவும்.",
@@ -82,7 +87,7 @@ const ADVISORY_DICTIONARY = {
  */
 export function getDeterministicCropAdvisory(
   crop: string = "paddy",
-  district: string = "Raigad",
+  district: string = DEFAULT_DISTRICT,
   weather: WeatherMetrics,
   language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN",
   issueTime?: string | null
@@ -137,7 +142,7 @@ export function getDeterministicCropAdvisory(
     pestDiseaseAdvisory = "Inspect leaf axils and trunk base for fungal infestation during damp spells.";
   } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:vegetable|tomato|सब्जी|தக்காளி)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.postponeNitrogen;
-    pestDiseaseAdvisory = "Provide vine staking against winds up to 20 km/h and check for damping-off.";
+    pestDiseaseAdvisory = `Provide vine staking against winds up to ${SPRAY_MAX_WIND_KMH} km/h and check for damping-off.`;
   }
 
   const actionSummary = `${sprayCondition}: ${sprayAdvisory} | ${irrigationAdvisory}`;
@@ -145,8 +150,9 @@ export function getDeterministicCropAdvisory(
 
   const evidence: Evidence = {
     sourceId: "ICAR_CRIDA_AGROMET_GUIDELINE_V2",
-    provider: "IMD",
-    product: "ICAR-CRIDA / IMD District Agromet Advisory",
+    provider: "OTHER",
+    providerName: "ICAR-CRIDA",
+    product: "ICAR-CRIDA District Agromet Advisory",
     retrievedAt: new Date().toISOString(),
     quality: "OBSERVED",
   };

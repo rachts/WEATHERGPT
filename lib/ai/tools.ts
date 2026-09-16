@@ -3,6 +3,7 @@
 
 import { z } from "zod";
 import { getDistrictWeather } from "@/lib/services/weather-data";
+import { DEFAULT_DISTRICT } from "@/lib/config/constants";
 
 export const getWeather = {
   description:
@@ -26,15 +27,16 @@ export const getWeather = {
     district,
     location,
     city,
+    state,
   }: {
     district?: string;
     location?: string;
     city?: string;
     state?: string;
   }) => {
-    const targetDistrict = district || location || city || "Kolkata";
+    const targetDistrict = district || location || city || DEFAULT_DISTRICT;
     try {
-      const data = await getDistrictWeather(targetDistrict);
+      const data = await getDistrictWeather({ district: targetDistrict, state });
       return {
         success: true,
         district: data.district,

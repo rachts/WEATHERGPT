@@ -330,6 +330,16 @@ async function runTests() {
     record("G21", "SYNOP Station Distance Guard (H4)", false, (err as Error).message);
   }
 
+  // --- GATE G22: Centralized Default District & Options Overload (H5, M5, M6, M10, M11, M12) ---
+  try {
+    const { runDefaultDistrictTests } = await import("../tests/default-district.test");
+    await runDefaultDistrictTests();
+    record("G22", "Centralized Default District & Options Overload (H5, M5, M6, M10, M11, M12)", true,
+      "Centralized default district to Raigad, forwarded state in tools, added M5 options overload, in-flight fallback dedup, and ICAR-CRIDA provenance.");
+  } catch (err) {
+    record("G22", "Centralized Default District & Options Overload (H5, M5, M6, M10, M11, M12)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

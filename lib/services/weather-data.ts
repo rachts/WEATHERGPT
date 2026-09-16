@@ -14,6 +14,7 @@ import { resolveDistrictOrThrow, UnknownDistrictError } from "../utils/location"
 import { haversineDistance, degreesToCardinal } from "../utils/geo";
 import { isProduction, isDemo } from "../config/environment";
 import { DataProvenance, DataQuality } from "../types/provenance";
+import { DEFAULT_DISTRICT } from "../config/constants";
 
 export { UnknownDistrictError };
 
@@ -98,6 +99,7 @@ let imdSynopInFlight: Promise<ImdSynopStation[]> | null = null;
 
 const districtMemoryCache = new Map<string, { data: NormalizedWeather; cachedAt: number }>();
 const inFlightRequests = new Map<string, Promise<NormalizedWeather | null>>();
+const openMeteoInFlightRequests = new Map<string, Promise<NormalizedWeather | null>>();
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL for live observations
 
@@ -468,33 +470,38 @@ export interface GetDistrictWeatherOptions {
  * If district is unknown: THROWS UnknownDistrictError (UNKNOWN_DISTRICT). Never silently falls back to Raigad!
  */
 export async function getDistrictWeather(
-  districtOrOptions: string | GetDistrictWeatherOptions = "Raigad",
-  stateOrForceFresh: string | boolean = false,
+  districtOrOptions: string | GetDistrictWeatherOptions = DEFAULT_DISTRICT,
+  stateOrOptionsOrForceFresh?: string | boolean | GetDistrictWeatherOptions,
   forceFreshOrSimulateImd: boolean = false,
   simulateImdOrNetwork: boolean = false,
   simulateNetworkFailure: boolean = false
 ): Promise<NormalizedWeather> {
-  let district = "Raigad";
+  let district = DEFAULT_DISTRICT;
   let state: string | undefined = undefined;
   let forceFresh = false;
   let simulateImdFailure = false;
   let simulateNetwork = false;
 
   if (typeof districtOrOptions === "object" && districtOrOptions !== null) {
-    district = districtOrOptions.district || "Raigad";
+    district = districtOrOptions.district || DEFAULT_DISTRICT;
     state = districtOrOptions.state;
     forceFresh = Boolean(districtOrOptions.forceFresh);
     simulateImdFailure = Boolean(districtOrOptions.simulateImdFailure);
     simulateNetwork = Boolean(districtOrOptions.simulateNetworkFailure);
   } else {
-    district = districtOrOptions;
-    if (typeof stateOrForceFresh === "string") {
-      state = stateOrForceFresh;
+    district = districtOrOptions || DEFAULT_DISTRICT;
+    if (typeof stateOrOptionsOrForceFresh === "object" && stateOrOptionsOrForceFresh !== null) {
+      state = stateOrOptionsOrForceFresh.state;
+      forceFresh = Boolean(stateOrOptionsOrForceFresh.forceFresh);
+      simulateImdFailure = Boolean(stateOrOptionsOrForceFresh.simulateImdFailure);
+      simulateNetwork = Boolean(stateOrOptionsOrForceFresh.simulateNetworkFailure);
+    } else if (typeof stateOrOptionsOrForceFresh === "string") {
+      state = stateOrOptionsOrForceFresh;
       forceFresh = Boolean(forceFreshOrSimulateImd);
       simulateImdFailure = Boolean(simulateImdOrNetwork);
       simulateNetwork = Boolean(simulateNetworkFailure);
     } else {
-      forceFresh = Boolean(stateOrForceFresh);
+      forceFresh = Boolean(stateOrOptionsOrForceFresh);
       simulateImdFailure = Boolean(forceFreshOrSimulateImd);
       simulateNetwork = Boolean(simulateImdOrNetwork);
     }
@@ -574,15 +581,22 @@ export async function getDistrictWeather(
 
   // 4. Documented Secondary Fallback: Open-Meteo (strictly marked FALLBACK)
   try {
-    const fallback = await fetchOpenMeteo(
-      lat,
-      lon,
-      displayName,
-      districtCode,
-      stateName,
-      stateCode,
-      stationName
-    );
+    let fallbackPromise = openMeteoInFlightRequests.get(normKey);
+    if (!fallbackPromise) {
+      fallbackPromise = fetchOpenMeteo(
+        lat,
+        lon,
+        displayName,
+        districtCode,
+        stateName,
+        stateCode,
+        stationName
+      );
+      openMeteoInFlightRequests.set(normKey, fallbackPromise);
+    }
+    const fallback = await fallbackPromise;
+    openMeteoInFlightRequests.delete(normKey);
+
     if (fallback) {
       districtMemoryCache.set(normKey, {
         data: fallback,
@@ -591,6 +605,7 @@ export async function getDistrictWeather(
       return fallback;
     }
   } catch {
+    openMeteoInFlightRequests.delete(normKey);
     // Fall through to cached data
   }
 

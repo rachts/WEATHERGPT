@@ -37,6 +37,7 @@ export interface DataProvenance {
 export interface Evidence {
   sourceId: string;
   provider: Provider;
+  providerName?: string;
   product: string;
   sourceUrl?: string;
   issuedAt?: string | null;

@@ -3,6 +3,7 @@
 
 import indiaDistrictsData from "../data/india-districts.json";
 import { haversineDistance } from "./geo";
+import { DEFAULT_DISTRICT, DEFAULT_STATE } from "../config/constants";
 
 export interface DistrictInfo {
   name: string;
@@ -272,14 +273,14 @@ export function getNearestDistrict(latitude: number, longitude: number): Distric
 export const LOCATION_CHANGE_EVENT = "weathergpt_location_changed";
 
 /**
- * Read the active district and state from client localStorage (defaulting to Raigad, Maharashtra)
+ * Read the active district and state from client localStorage (defaulting to DEFAULT_DISTRICT, DEFAULT_STATE)
  */
 export function getActiveLocation(): { district: string; state: string } {
   if (typeof window === "undefined") {
-    return { district: "Raigad", state: "Maharashtra" };
+    return { district: DEFAULT_DISTRICT, state: DEFAULT_STATE };
   }
-  const district = localStorage.getItem("weathergpt_district") || "Raigad";
-  const state = localStorage.getItem("weathergpt_state") || "Maharashtra";
+  const district = localStorage.getItem("weathergpt_district") || DEFAULT_DISTRICT;
+  const state = localStorage.getItem("weathergpt_state") || DEFAULT_STATE;
   return { district, state };
 }
 

@@ -3,6 +3,7 @@
 // Uncited answers are rejected & re-retrieved (max 2 retries) -> never shown.
 
 import seededBulletins from "../data/seeded-bulletins.json";
+import { DEFAULT_DISTRICT } from "../config/constants";
 
 export interface BulletinChunk {
   id: string;
@@ -22,7 +23,7 @@ export interface GroundedAnswer {
   retryCount: number;
 }
 
-export function getInsufficientDataString(district: string = "Raigad", language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"): string {
+export function getInsufficientDataString(district: string = DEFAULT_DISTRICT, language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"): string {
   if (language === "hi-IN") {
     return `${district} जिले के लिए इस विशिष्ट प्रश्न पर आधिकारिक आईएमडी बुलेटिन में पर्याप्त जानकारी उपलब्ध नहीं है। कृपया नवीनतम मौसम पूर्वानुमान देखें।`;
   }
@@ -33,15 +34,15 @@ export function getInsufficientDataString(district: string = "Raigad", language:
 }
 
 export const INSUFFICIENT_DATA_STRINGS = {
-  "en-IN": getInsufficientDataString("Raigad", "en-IN"),
-  "hi-IN": getInsufficientDataString("Raigad", "hi-IN"),
-  "ta-IN": getInsufficientDataString("Raigad", "ta-IN"),
+  "en-IN": getInsufficientDataString(DEFAULT_DISTRICT, "en-IN"),
+  "hi-IN": getInsufficientDataString(DEFAULT_DISTRICT, "hi-IN"),
+  "ta-IN": getInsufficientDataString(DEFAULT_DISTRICT, "ta-IN"),
 };
 
 /**
  * Retrieve relevant bulletin chunks using lexical & semantic matching
  */
-export function retrieveRelevantBulletins(query: string, district: string = "Raigad", topK: number = 2): BulletinChunk[] {
+export function retrieveRelevantBulletins(query: string, district: string = DEFAULT_DISTRICT, topK: number = 2): BulletinChunk[] {
   const qTerms = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
   const districtChunks = (seededBulletins as BulletinChunk[]).filter(
     b => b.district.toLowerCase() === district.toLowerCase()
@@ -84,7 +85,7 @@ export function verifyCitationGate(draft: { sourceProduct?: string; issueTime?: 
  */
 export async function generateGroundedResponse(
   query: string,
-  district: string = "Raigad",
+  district: string = DEFAULT_DISTRICT,
   language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"
 ): Promise<GroundedAnswer> {
   let retryCount = 0;

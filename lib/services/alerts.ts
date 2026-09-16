@@ -19,6 +19,7 @@ import {
   getImdParserHealth,
   ImdNowcastArea,
 } from "./imd-nowcast-parser";
+import { DEFAULT_DISTRICT } from "../config/constants";
 
 export type AlertSeverity = "Low" | "Moderate" | "High" | "Severe";
 
@@ -318,7 +319,7 @@ export function routeWarningDissemination(
  * Never serves alerts of another district!
  */
 export async function fetchLiveImdDistrictAlerts(
-  district: string = "Raigad",
+  district: string = DEFAULT_DISTRICT,
   state?: string
 ): Promise<IMDWarningProduct[]> {
   const districtInfo = findDistrictInfo(district, state);
@@ -403,7 +404,7 @@ export async function fetchLiveImdDistrictAlerts(
 /**
  * Retrieve active alerts for district (synchronous entry point)
  */
-export function getActiveDistrictAlerts(district: string = "Raigad", state?: string): IMDWarningProduct[] {
+export function getActiveDistrictAlerts(district: string = DEFAULT_DISTRICT, state?: string): IMDWarningProduct[] {
   const districtInfo = findDistrictInfo(district, state);
   const districtCode = districtInfo ? districtInfo.districtCode.toLowerCase() : district.trim().toLowerCase();
 

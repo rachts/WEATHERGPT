@@ -9,6 +9,7 @@
 import { getAllDistricts, DistrictInfo, findDistrictInfo } from "@/lib/utils/location";
 import { getDistrictWeather } from "@/lib/services/weather-data";
 import { logger } from "@/lib/utils/logger";
+import { DEFAULT_DISTRICT } from "@/lib/config/constants";
 
 // ============================================================================
 // STAGE 1: Detect language (Per message, not per session)
@@ -331,7 +332,7 @@ export interface DistrictMappingResult {
 
 export function mapToIMDDistrict(
   rawLocation: string | null,
-  fallbackDistrict = "Kolkata"
+  fallbackDistrict = DEFAULT_DISTRICT
 ): DistrictMappingResult {
   if (!rawLocation || !rawLocation.trim()) {
     return {

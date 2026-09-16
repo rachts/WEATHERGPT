@@ -12,6 +12,7 @@ import { getDeterministicCropAdvisory, CropAdvisoryResult } from "./advisory-rul
 import { fetchLiveImdDistrictAlerts } from "./alerts";
 import { findDistrictInfo, resolveDistrictOrThrow } from "../utils/location";
 import { Evidence } from "../types/provenance";
+import { DEFAULT_DISTRICT } from "../config/constants";
 
 export type WeatherIntent =
   | "current_weather"
@@ -285,7 +286,7 @@ function formatRainfallAnswer(
  */
 export async function processWeatherQuery(
   query: string,
-  district: string = "Raigad",
+  district: string = DEFAULT_DISTRICT,
   language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"
 ): Promise<QueryResponse> {
   // Step 1: Prompt-Injection Defense

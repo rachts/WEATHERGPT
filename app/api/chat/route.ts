@@ -10,6 +10,7 @@ import { detectCrisisMessage } from "@/lib/services/query-pipeline";
 import { isRateLimited, getRateLimitConfig } from "@/lib/utils/rate-limit";
 import { logger } from "@/lib/utils/logger";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_DISTRICT } from "@/lib/config/constants";
 import {
   detectMessageLanguage,
   extractLocationAndTime,
@@ -25,7 +26,7 @@ export const dynamic = "force-dynamic";
  */
 function resolveDistrictFromMessages(
   messages: Array<{ role: string; content: string }>,
-  defaultDistrict = "Raigad"
+  defaultDistrict = DEFAULT_DISTRICT
 ): string {
   const commonDistricts = [
     "Kolkata", "Raigad", "Mumbai", "Pune", "Ludhiana", "Chennai", "Delhi",
@@ -194,7 +195,7 @@ export async function POST(req: NextRequest) {
     // ------------------------------------------------------------------------
     // STAGE 3: Map to IMD district (Fuzzy match plus aliases)
     // ------------------------------------------------------------------------
-    const fallbackDistrict = resolveDistrictFromMessages(messages, rawBody.district || "Kolkata");
+    const fallbackDistrict = resolveDistrictFromMessages(messages, rawBody.district || DEFAULT_DISTRICT);
     const mapped = mapToIMDDistrict(extracted.rawLocation, fallbackDistrict);
     const activeDistrict = mapped.district;
 

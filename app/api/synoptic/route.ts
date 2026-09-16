@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ACTIVE_SYNOPTIC_SYSTEMS, getDistrictSynopticImpact } from "@/lib/services/synoptic";
 import { findDistrictInfo } from "@/lib/utils/location";
 import { isRateLimited } from "@/lib/utils/rate-limit";
+import { DEFAULT_DISTRICT, DEFAULT_STATE, DEFAULT_COORDINATES } from "@/lib/config/constants";
 
 export const runtime = "nodejs";
 
@@ -23,12 +24,12 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const district = searchParams.get("district") || "Kolkata";
-  const state = searchParams.get("state") || "West Bengal";
+  const district = searchParams.get("district") || DEFAULT_DISTRICT;
+  const state = searchParams.get("state") || DEFAULT_STATE;
 
   const dInfo = findDistrictInfo(district);
-  const lat = dInfo?.lat ?? parseFloat(searchParams.get("lat") || "22.57");
-  const lon = dInfo?.lon ?? parseFloat(searchParams.get("lon") || "88.36");
+  const lat = dInfo?.lat ?? parseFloat(searchParams.get("lat") || String(DEFAULT_COORDINATES.latitude));
+  const lon = dInfo?.lon ?? parseFloat(searchParams.get("lon") || String(DEFAULT_COORDINATES.longitude));
 
   const impact = getDistrictSynopticImpact(district, state, lat, lon);
 
