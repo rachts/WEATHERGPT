@@ -290,6 +290,16 @@ async function runTests() {
     record("G17", "IMD Nowcast Resilient Parser (C6, M3, M4)", false, (err as Error).message);
   }
 
+  // --- GATE G18: Marathi Indic Language Detection (H1) ---
+  try {
+    const { runMarathiDetectionTests } = await import("../tests/marathi-detection.test");
+    runMarathiDetectionTests();
+    record("G18", "Marathi Indic Language Detection (H1)", true,
+      "Unicode-aware word boundary detection correctly resolves Marathi without silent Hindi fallback.");
+  } catch (err) {
+    record("G18", "Marathi Indic Language Detection (H1)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

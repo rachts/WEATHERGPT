@@ -35,8 +35,10 @@ export function detectMessageLanguage(messageText: string): LanguageDetectionRes
 
   // Devanagari script: Hindi or Marathi
   if (/[\u0900-\u097F]/.test(text)) {
-    // Check for Marathi specific words
-    if (/\b(आहे|आहेत|कसा|कशी|कसे|पाऊस|पडू|शकतो|होईल|काय|सांगा)\b/i.test(text)) {
+    // Check for Marathi specific words using boundary or inclusion (never ASCII \b)
+    const marathiPattern = /(?:^|[\s,।?!])(आहे|आहेत|कसा|कशी|कसे|पाऊस|पडू|पडेल|शकतो|होईल|काय|सांगा|नाही|शेतकरी|पीक)(?:[\s,।?!]|$)/;
+    const marathiKeywords = ["आहे", "आहेत", "कसा", "कशी", "कसे", "पाऊस", "पडू", "पडेल", "शकतो", "होईल", "काय", "सांगा", "नाही", "शेतकरी", "पीक"];
+    if (marathiPattern.test(text) || marathiKeywords.some((w) => text.includes(w))) {
       return {
         code: "mr",
         name: "Marathi",
