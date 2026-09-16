@@ -4,6 +4,7 @@ import crypto, { timingSafeEqual } from "crypto";
 import {
   fetchLiveImdDistrictAlerts,
   routeWarningDissemination,
+  routeWarningDisseminationAsync,
   computeAlertHash,
   IMDWarningProduct,
   AlertSeverity,
@@ -306,7 +307,7 @@ export async function POST(req: NextRequest) {
         skipped: true,
       };
     } else {
-      dissemination = routeWarningDissemination(fullAlert, alertData.recipientPhones);
+      dissemination = await routeWarningDisseminationAsync(fullAlert, alertData.recipientPhones);
     }
 
     return NextResponse.json({

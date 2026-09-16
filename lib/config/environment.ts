@@ -23,6 +23,14 @@ export const environmentSchema = z.object({
   GEMINI_API_KEY: z.string().or(z.literal("")).optional(),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().or(z.literal("")).optional(),
   OPENAI_API_KEY: z.string().or(z.literal("")).optional(),
+  TWILIO_ACCOUNT_SID: z.string().or(z.literal("")).optional(),
+  TWILIO_AUTH_TOKEN: z.string().or(z.literal("")).optional(),
+  TWILIO_PHONE_NUMBER: z.string().or(z.literal("")).optional(),
+  TWILIO_FROM: z.string().or(z.literal("")).optional(),
+  SMS_GATEWAY_URL: z.string().url().or(z.literal("")).optional(),
+  SMS_GATEWAY_API_KEY: z.string().or(z.literal("")).optional(),
+  IVR_GATEWAY_URL: z.string().url().or(z.literal("")).optional(),
+  IVR_GATEWAY_API_KEY: z.string().or(z.literal("")).optional(),
 });
 
 export type ValidatedEnvironment = z.infer<typeof environmentSchema>;

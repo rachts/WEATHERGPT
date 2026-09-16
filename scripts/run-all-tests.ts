@@ -350,6 +350,16 @@ async function runTests() {
     record("G23", "Multilingual Coverage & Shared Crisis Engine (H7, M9)", false, (err as Error).message);
   }
 
+  // --- GATE G24: SMS & IVR Dissemination Suite (H8) ---
+  try {
+    const { runSmsIvrDisseminationTests } = await import("../tests/sms-ivr-dissemination.test");
+    await runSmsIvrDisseminationTests();
+    record("G24", "SMS & IVR Dissemination Suite (H8)", true,
+      "Integrated sandboxable SMS/IVR gateway with honest stubbing, structured logging, PII masking, retries, and delivery receipts.");
+  } catch (err) {
+    record("G24", "SMS & IVR Dissemination Suite (H8)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

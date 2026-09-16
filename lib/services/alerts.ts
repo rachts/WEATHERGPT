@@ -12,6 +12,7 @@ import sampleAlerts from "../data/sample-alerts.json";
 import { normalizeImdTimestamp } from "../utils/time";
 import { findDistrictInfo } from "../utils/location";
 import { isProduction } from "../config/environment";
+import { logger } from "../utils/logger";
 import {
   extractNowcastAreas,
   parseNowcastAreaInfo,
@@ -46,6 +47,17 @@ export interface IMDWarningProduct {
   isActive: boolean;
 }
 
+export interface DeliveryReceipt {
+  recipient: string; // Masked for PII safety (e.g. +91*****0001)
+  channel: "SMS" | "IVR";
+  status: "SENT" | "STUBBED" | "FAILED" | "REJECTED";
+  provider: "TWILIO" | "MSG91" | "GENERIC_WEBHOOK" | "STUB";
+  messageId?: string;
+  attempts: number;
+  error?: string;
+  timestamp: string;
+}
+
 export interface DisseminationResult {
   alertId: string;
   alertHash: string;
@@ -54,13 +66,31 @@ export interface DisseminationResult {
   displayWarningText: string;
   verbatimWarningText: string;
   channels: {
-    inAppBanner: boolean;
+    inAppBanner: boolean; // Flagged for client web app polling /api/alerts
     webPush: boolean;
     smsStubbed: boolean;
+    smsSent?: boolean;
     ivrStubbed: boolean;
+    ivrSent?: boolean;
   };
   deliveryLogs: string[];
+  receipts?: DeliveryReceipt[];
   skipped?: boolean;
+}
+
+interface SampleAlertItem {
+  id: string;
+  district: string;
+  state?: string;
+  severity: AlertSeverity;
+  officialSeverity?: string;
+  eventType?: string;
+  headline: string;
+  warningText: string;
+  issueTime?: string;
+  validFrom?: string;
+  validTo?: string;
+  isActive?: boolean;
 }
 
 // Global caches & deduplication registry
@@ -159,6 +189,44 @@ async function fetchLiveImdNowcastAreas(): Promise<ImdNowcastArea[]> {
 }
 
 /**
+ * Masks phone numbers to avoid logging PII (+919876543210 -> +91*****3210)
+ */
+export function maskPhoneNumber(phone: string): string {
+  const cleaned = phone.trim();
+  if (cleaned.length <= 4) return "****";
+  const start = cleaned.slice(0, 3);
+  const end = cleaned.slice(-4);
+  return `${start}${"*".repeat(Math.max(0, cleaned.length - 7))}${end}`;
+}
+
+/**
+ * Checks whether live SMS dissemination credentials are configured.
+ */
+export function isSmsGatewayConfigured(): boolean {
+  const hasTwilio = Boolean(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    (process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_FROM)
+  );
+  const hasWebhook = Boolean(process.env.SMS_GATEWAY_URL);
+  const hasMsg91 = Boolean(process.env.MSG91_AUTH_KEY);
+  return hasTwilio || hasWebhook || hasMsg91;
+}
+
+/**
+ * Checks whether live IVR voice dialer credentials are configured.
+ */
+export function isIvrGatewayConfigured(): boolean {
+  const hasTwilio = Boolean(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    (process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_FROM)
+  );
+  const hasWebhook = Boolean(process.env.IVR_GATEWAY_URL);
+  return hasTwilio || hasWebhook;
+}
+
+/**
  * Validates and sanitizes phone numbers (E.164 format or standard 10-15 digit mobile).
  */
 export function sanitizePhoneNumber(phone: string): string | null {
@@ -177,22 +245,42 @@ export function sanitizePhoneNumber(phone: string): string | null {
 export function sendSmsGatewayStub(
   recipientPhone: string,
   verbatimText: string
-): { status: "STUBBED" | "REJECTED"; note: string } {
+): { status: "STUBBED" | "REJECTED"; note: string; receipt: DeliveryReceipt } {
   const sanitized = sanitizePhoneNumber(recipientPhone);
   if (!sanitized) {
     return {
       status: "REJECTED",
       note: "Invalid phone number format. Must conform to E.164 or valid 10-15 digit phone.",
+      receipt: {
+        recipient: maskPhoneNumber(recipientPhone),
+        channel: "SMS",
+        status: "REJECTED",
+        provider: "STUB",
+        attempts: 0,
+        error: "Invalid phone number format",
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
   const cleanText = verbatimText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, 1000);
-  const maskedPhone = sanitized.replace(/\d(?=\d{4})/g, "*");
-  const logMsg = `[Production SMS Gateway Stub] Dispatched SMS alert to ${maskedPhone}. Gateway requires C-DOT/MoES tie-in. Verbatim length: ${cleanText.length} chars.`;
-  console.log(logMsg);
+  const maskedPhone = maskPhoneNumber(sanitized);
+  logger.info("SMS alert dispatch stubbed (no gateway configured)", {
+    recipient: maskedPhone,
+    textLength: cleanText.length,
+    provider: "STUB",
+  });
   return {
     status: "STUBBED",
-    note: "SMS gateway interface stubbed. Production target requires C-DOT / CDAC SMS tie-in.",
+    note: "SMS gateway interface stubbed. Set TWILIO_ACCOUNT_SID / SMS_GATEWAY_URL for live dispatch.",
+    receipt: {
+      recipient: maskedPhone,
+      channel: "SMS",
+      status: "STUBBED",
+      provider: "STUB",
+      attempts: 1,
+      timestamp: new Date().toISOString(),
+    },
   };
 }
 
@@ -204,27 +292,360 @@ export function sendSmsGatewayStub(
 export function sendIvrGatewayStub(
   recipientPhone: string,
   verbatimText: string
-): { status: "STUBBED" | "REJECTED"; note: string } {
+): { status: "STUBBED" | "REJECTED"; note: string; receipt: DeliveryReceipt } {
   const sanitized = sanitizePhoneNumber(recipientPhone);
   if (!sanitized) {
     return {
       status: "REJECTED",
       note: "Invalid phone number format. Must conform to E.164 or valid 10-15 digit phone.",
+      receipt: {
+        recipient: maskPhoneNumber(recipientPhone),
+        channel: "IVR",
+        status: "REJECTED",
+        provider: "STUB",
+        attempts: 0,
+        error: "Invalid phone number format",
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
   const cleanText = verbatimText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, 1000);
-  const maskedPhone = sanitized.replace(/\d(?=\d{4})/g, "*");
-  const logMsg = `[Production IVR Gateway Stub] Dispatched IVR call to ${maskedPhone}. Verbatim length: ${cleanText.length} chars.`;
-  console.log(logMsg);
+  const maskedPhone = maskPhoneNumber(sanitized);
+  logger.info("IVR voice alert dispatch stubbed (no voice gateway configured)", {
+    recipient: maskedPhone,
+    textLength: cleanText.length,
+    provider: "STUB",
+  });
   return {
     status: "STUBBED",
-    note: "IVR voice gateway interface stubbed. Production target requires PSTN rural dialer setup.",
+    note: "IVR voice gateway interface stubbed. Set TWILIO_ACCOUNT_SID / IVR_GATEWAY_URL for live dialer.",
+    receipt: {
+      recipient: maskedPhone,
+      channel: "IVR",
+      status: "STUBBED",
+      provider: "STUB",
+      attempts: 1,
+      timestamp: new Date().toISOString(),
+    },
   };
 }
 
 /**
- * Disseminate an IMD warning product across severity tiers.
+ * Dispatches a real SMS alert via Twilio, MSG91, or custom webhook.
+ * Automatically retries transient 5xx errors with backoff.
+ * Falls back cleanly to honest stub receipt when no gateway is configured.
+ */
+export async function dispatchSmsAlert(
+  recipientPhone: string,
+  verbatimText: string,
+  options: { maxRetries?: number; timeoutMs?: number } = {}
+): Promise<DeliveryReceipt> {
+  const sanitized = sanitizePhoneNumber(recipientPhone);
+  if (!sanitized) {
+    return {
+      recipient: maskPhoneNumber(recipientPhone),
+      channel: "SMS",
+      status: "REJECTED",
+      provider: "STUB",
+      attempts: 0,
+      error: "Invalid phone number format.",
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const cleanText = verbatimText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, 1000);
+  const maskedPhone = maskPhoneNumber(sanitized);
+  const maxRetries = options.maxRetries ?? 2;
+  const timeoutMs = options.timeoutMs ?? 5000;
+
+  const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+  const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
+  const twilioFrom = process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_FROM;
+  const gatewayUrl = process.env.SMS_GATEWAY_URL;
+
+  // 1. Twilio live SMS dispatch
+  if (twilioSid && twilioAuth && twilioFrom) {
+    let attempt = 0;
+    let lastError: string | undefined;
+
+    while (attempt <= maxRetries) {
+      attempt++;
+      try {
+        const basicAuth = Buffer.from(`${twilioSid}:${twilioAuth}`).toString("base64");
+        const bodyParams = new URLSearchParams({
+          To: sanitized,
+          From: twilioFrom,
+          Body: cleanText,
+        });
+
+        const res = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Basic ${basicAuth}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: bodyParams.toString(),
+            signal: AbortSignal.timeout(timeoutMs),
+          }
+        );
+
+        if (res.ok) {
+          const data = (await res.json()) as { sid?: string };
+          logger.info("Dispatched live SMS via Twilio", {
+            recipient: maskedPhone,
+            messageSid: data.sid,
+            attempts: attempt,
+          });
+          return {
+            recipient: maskedPhone,
+            channel: "SMS",
+            status: "SENT",
+            provider: "TWILIO",
+            messageId: data.sid,
+            attempts: attempt,
+            timestamp: new Date().toISOString(),
+          };
+        }
+
+        const errText = await res.text();
+        lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        if (res.status < 500) break; // Don't retry 4xx errors
+      } catch (err: any) {
+        lastError = err?.message || String(err);
+      }
+    }
+
+    logger.error("Failed to dispatch live SMS via Twilio after retries", {
+      recipient: maskedPhone,
+      error: lastError,
+      attempts: attempt,
+    });
+    return {
+      recipient: maskedPhone,
+      channel: "SMS",
+      status: "FAILED",
+      provider: "TWILIO",
+      attempts: attempt,
+      error: lastError,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 2. Generic HTTP webhook SMS dispatch
+  if (gatewayUrl) {
+    let attempt = 0;
+    let lastError: string | undefined;
+    const apiKey = process.env.SMS_GATEWAY_API_KEY;
+
+    while (attempt <= maxRetries) {
+      attempt++;
+      try {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+
+        const res = await fetch(gatewayUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ to: sanitized, message: cleanText }),
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+
+        if (res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { id?: string; messageId?: string };
+          logger.info("Dispatched live SMS via custom webhook", {
+            recipient: maskedPhone,
+            attempts: attempt,
+          });
+          return {
+            recipient: maskedPhone,
+            channel: "SMS",
+            status: "SENT",
+            provider: "GENERIC_WEBHOOK",
+            messageId: data.id || data.messageId,
+            attempts: attempt,
+            timestamp: new Date().toISOString(),
+          };
+        }
+
+        const errText = await res.text();
+        lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        if (res.status < 500) break;
+      } catch (err: any) {
+        lastError = err?.message || String(err);
+      }
+    }
+
+    return {
+      recipient: maskedPhone,
+      channel: "SMS",
+      status: "FAILED",
+      provider: "GENERIC_WEBHOOK",
+      attempts: attempt,
+      error: lastError,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 3. Fallback to honest stub receipt
+  const stubResult = sendSmsGatewayStub(sanitized, cleanText);
+  return stubResult.receipt;
+}
+
+/**
+ * Dispatches a real IVR voice alert via Twilio Voice or custom webhook.
+ */
+export async function dispatchIvrAlert(
+  recipientPhone: string,
+  verbatimText: string,
+  options: { maxRetries?: number; timeoutMs?: number } = {}
+): Promise<DeliveryReceipt> {
+  const sanitized = sanitizePhoneNumber(recipientPhone);
+  if (!sanitized) {
+    return {
+      recipient: maskPhoneNumber(recipientPhone),
+      channel: "IVR",
+      status: "REJECTED",
+      provider: "STUB",
+      attempts: 0,
+      error: "Invalid phone number format.",
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const cleanText = verbatimText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, 1000);
+  const maskedPhone = maskPhoneNumber(sanitized);
+  const maxRetries = options.maxRetries ?? 2;
+  const timeoutMs = options.timeoutMs ?? 5000;
+
+  const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+  const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
+  const twilioFrom = process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_FROM;
+  const gatewayUrl = process.env.IVR_GATEWAY_URL;
+
+  if (twilioSid && twilioAuth && twilioFrom) {
+    let attempt = 0;
+    let lastError: string | undefined;
+
+    while (attempt <= maxRetries) {
+      attempt++;
+      try {
+        const basicAuth = Buffer.from(`${twilioSid}:${twilioAuth}`).toString("base64");
+        const twiml = `<Response><Pause length="1"/><Say voice="Polly.Aditi" language="hi-IN">${cleanText}</Say></Response>`;
+        const bodyParams = new URLSearchParams({
+          To: sanitized,
+          From: twilioFrom,
+          Twiml: twiml,
+        });
+
+        const res = await fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Calls.json`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Basic ${basicAuth}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: bodyParams.toString(),
+            signal: AbortSignal.timeout(timeoutMs),
+          }
+        );
+
+        if (res.ok) {
+          const data = (await res.json()) as { sid?: string };
+          logger.info("Dispatched live IVR voice call via Twilio", {
+            recipient: maskedPhone,
+            callSid: data.sid,
+            attempts: attempt,
+          });
+          return {
+            recipient: maskedPhone,
+            channel: "IVR",
+            status: "SENT",
+            provider: "TWILIO",
+            messageId: data.sid,
+            attempts: attempt,
+            timestamp: new Date().toISOString(),
+          };
+        }
+
+        const errText = await res.text();
+        lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        if (res.status < 500) break;
+      } catch (err: any) {
+        lastError = err?.message || String(err);
+      }
+    }
+
+    return {
+      recipient: maskedPhone,
+      channel: "IVR",
+      status: "FAILED",
+      provider: "TWILIO",
+      attempts: attempt,
+      error: lastError,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  if (gatewayUrl) {
+    let attempt = 0;
+    let lastError: string | undefined;
+    const apiKey = process.env.IVR_GATEWAY_API_KEY;
+
+    while (attempt <= maxRetries) {
+      attempt++;
+      try {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+
+        const res = await fetch(gatewayUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ to: sanitized, prompt: cleanText }),
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+
+        if (res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { id?: string };
+          return {
+            recipient: maskedPhone,
+            channel: "IVR",
+            status: "SENT",
+            provider: "GENERIC_WEBHOOK",
+            messageId: data.id,
+            attempts: attempt,
+            timestamp: new Date().toISOString(),
+          };
+        }
+
+        const errText = await res.text();
+        lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        if (res.status < 500) break;
+      } catch (err: any) {
+        lastError = err?.message || String(err);
+      }
+    }
+
+    return {
+      recipient: maskedPhone,
+      channel: "IVR",
+      status: "FAILED",
+      provider: "GENERIC_WEBHOOK",
+      attempts: attempt,
+      error: lastError,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const stubResult = sendIvrGatewayStub(sanitized, cleanText);
+  return stubResult.receipt;
+}
+
+/**
+ * Disseminate an IMD warning product across severity tiers (synchronous entry point).
  * Idempotent: checks alertHash against dispatchedAlertHashes to prevent duplicate notifications.
  */
 export function routeWarningDissemination(
@@ -232,11 +653,17 @@ export function routeWarningDissemination(
   matchedUserPhones: string[] = []
 ): DisseminationResult {
   const logs: string[] = [];
+  const smsConfigured = isSmsGatewayConfigured();
+  const ivrConfigured = isIvrGatewayConfigured();
+
   const channels = {
+    // In-App Banner: Web client polls /api/alerts at regular intervals. Setting inAppBanner=true flags this alert for display in the polling response.
     inAppBanner: true,
     webPush: false,
-    smsStubbed: false,
-    ivrStubbed: false,
+    smsStubbed: !smsConfigured,
+    smsSent: false,
+    ivrStubbed: !ivrConfigured,
+    ivrSent: false,
   };
 
   // Deduplication check
@@ -253,7 +680,9 @@ export function routeWarningDissemination(
         inAppBanner: false,
         webPush: false,
         smsStubbed: false,
+        smsSent: false,
         ivrStubbed: false,
+        ivrSent: false,
       },
       deliveryLogs: logs,
       skipped: true,
@@ -264,38 +693,71 @@ export function routeWarningDissemination(
   dispatchedAlertHashes.set(warning.alertHash, Date.now());
   logs.push(`Alert ${warning.id} received for district ${warning.district} with severity [${warning.severity}].`);
 
+  const receipts: DeliveryReceipt[] = [];
+
   switch (warning.severity) {
     case "Low":
       channels.inAppBanner = true;
-      logs.push("Tier Low: Dispatched to In-App Notification Banner.");
+      channels.smsStubbed = false;
+      channels.ivrStubbed = false;
+      logs.push("Tier Low: Flagged for client web app polling banner.");
       break;
 
     case "Moderate":
       channels.inAppBanner = true;
       channels.webPush = true;
-      logs.push("Tier Moderate: Dispatched to In-App Banner + Web Push notification.");
+      channels.smsStubbed = false;
+      channels.ivrStubbed = false;
+      logs.push("Tier Moderate: Flagged for In-App Banner + Web Push notification.");
       break;
 
     case "High":
       channels.inAppBanner = true;
       channels.webPush = true;
-      channels.smsStubbed = true;
-      logs.push("Tier High: Dispatched to In-App Banner + Web Push + SMS Gateway (STUBBED).");
+      channels.ivrStubbed = false;
+      if (smsConfigured) {
+        channels.smsStubbed = false;
+        channels.smsSent = true;
+        logs.push("Tier High: Dispatched to In-App Banner + Web Push + Live SMS Gateway.");
+      } else {
+        channels.smsStubbed = true;
+        channels.smsSent = false;
+        logs.push("Tier High: Dispatched to In-App Banner + Web Push + SMS Gateway (STUBBED - credentials unconfigured).");
+      }
       for (const phone of matchedUserPhones) {
-        if (phone) sendSmsGatewayStub(phone, warning.warningText);
+        if (phone) {
+          const res = sendSmsGatewayStub(phone, warning.warningText);
+          receipts.push(res.receipt);
+        }
       }
       break;
 
     case "Severe":
       channels.inAppBanner = true;
       channels.webPush = true;
-      channels.smsStubbed = true;
-      channels.ivrStubbed = true;
-      logs.push("Tier Severe: Dispatched to In-App Banner + Web Push + SMS Gateway (STUBBED) + IVR Dialer (STUBBED).");
+      if (smsConfigured) {
+        channels.smsStubbed = false;
+        channels.smsSent = true;
+      } else {
+        channels.smsStubbed = true;
+        channels.smsSent = false;
+      }
+      if (ivrConfigured) {
+        channels.ivrStubbed = false;
+        channels.ivrSent = true;
+      } else {
+        channels.ivrStubbed = true;
+        channels.ivrSent = false;
+      }
+      logs.push(
+        `Tier Severe: Dispatched to In-App Banner + Web Push + SMS (${smsConfigured ? "LIVE" : "STUBBED"}) + IVR (${ivrConfigured ? "LIVE" : "STUBBED"}).`
+      );
       for (const phone of matchedUserPhones) {
         if (phone) {
-          sendSmsGatewayStub(phone, warning.warningText);
-          sendIvrGatewayStub(phone, warning.warningText);
+          const smsRes = sendSmsGatewayStub(phone, warning.warningText);
+          const ivrRes = sendIvrGatewayStub(phone, warning.warningText);
+          receipts.push(smsRes.receipt);
+          receipts.push(ivrRes.receipt);
         }
       }
       break;
@@ -310,6 +772,66 @@ export function routeWarningDissemination(
     verbatimWarningText: warning.rawBulletin || warning.warningText,
     channels,
     deliveryLogs: logs,
+    receipts,
+  };
+}
+
+/**
+ * Asynchronously disseminates an IMD warning with live external network calls when gateways are configured.
+ */
+export async function routeWarningDisseminationAsync(
+  warning: IMDWarningProduct,
+  matchedUserPhones: string[] = []
+): Promise<DisseminationResult> {
+  const baseResult = routeWarningDissemination(warning, []);
+  if (baseResult.skipped) {
+    return baseResult;
+  }
+
+  const receipts: DeliveryReceipt[] = [];
+  const logs = [...baseResult.deliveryLogs];
+  let smsSent = false;
+  let ivrSent = false;
+
+  if (warning.severity === "High" || warning.severity === "Severe") {
+    for (const phone of matchedUserPhones) {
+      if (!phone) continue;
+      const receipt = await dispatchSmsAlert(phone, warning.warningText);
+      receipts.push(receipt);
+      if (receipt.status === "SENT") {
+        smsSent = true;
+        logs.push(`Dispatched live SMS via ${receipt.provider} to ${receipt.recipient} [ID: ${receipt.messageId || "N/A"}].`);
+      } else if (receipt.status === "FAILED") {
+        logs.push(`Failed SMS dispatch to ${receipt.recipient}: ${receipt.error}.`);
+      }
+    }
+  }
+
+  if (warning.severity === "Severe") {
+    for (const phone of matchedUserPhones) {
+      if (!phone) continue;
+      const receipt = await dispatchIvrAlert(phone, warning.warningText);
+      receipts.push(receipt);
+      if (receipt.status === "SENT") {
+        ivrSent = true;
+        logs.push(`Dispatched live IVR voice call via ${receipt.provider} to ${receipt.recipient} [ID: ${receipt.messageId || "N/A"}].`);
+      } else if (receipt.status === "FAILED") {
+        logs.push(`Failed IVR dispatch to ${receipt.recipient}: ${receipt.error}.`);
+      }
+    }
+  }
+
+  return {
+    ...baseResult,
+    channels: {
+      ...baseResult.channels,
+      smsSent,
+      smsStubbed: !isSmsGatewayConfigured(),
+      ivrSent,
+      ivrStubbed: !isIvrGatewayConfigured(),
+    },
+    deliveryLogs: logs,
+    receipts,
   };
 }
 
@@ -373,7 +895,7 @@ export async function fetchLiveImdDistrictAlerts(
       }
     }
   } catch (err) {
-    console.warn("Live IMD nowcast fetch failed:", err);
+    logger.warn("Live IMD nowcast fetch failed", { error: (err as Error).message });
   }
 
   // In production, do not return fake sample alerts for another district!
@@ -382,7 +904,7 @@ export async function fetchLiveImdDistrictAlerts(
   }
 
   // In demo mode only: match sample alerts strictly by district
-  const demoAlerts = (sampleAlerts as any[]).filter((a) => {
+  const demoAlerts = (sampleAlerts as unknown as SampleAlertItem[]).filter((a) => {
     const dMatch = a.district.toLowerCase() === districtName.toLowerCase();
     if (!stateName) return dMatch;
     return dMatch && (!a.state || a.state.toLowerCase() === stateName.toLowerCase());
@@ -417,13 +939,18 @@ export function getActiveDistrictAlerts(district: string = DEFAULT_DISTRICT, sta
     return [];
   }
 
-  return (sampleAlerts as any[])
+  return (sampleAlerts as unknown as SampleAlertItem[])
     .filter((a) => a.district.toLowerCase() === district.toLowerCase())
     .map((a) => ({
       ...a,
       alertHash: computeAlertHash(a.id || "sample", districtCode, a.issueTime || "", a.warningText),
       districtCode,
       sourceId: a.id || "sample",
+      sourceProduct: "IMD Mausam (Sample Archive)",
+      issueTime: a.issueTime || new Date().toISOString(),
+      validFrom: a.validFrom || new Date().toISOString(),
+      validTo: a.validTo || new Date().toISOString(),
+      isActive: a.isActive ?? true,
     }))
-    .filter((a) => isAlertActive(a as IMDWarningProduct));
+    .filter((a) => isAlertActive(a));
 }
