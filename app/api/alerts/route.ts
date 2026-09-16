@@ -178,14 +178,24 @@ export async function POST(req: NextRequest) {
   const customHeaderToken = req.headers.get("x-ingestion-token");
   const providedToken = bearerToken || customHeaderToken;
 
-  let isAuthorized = false;
-  if (configuredToken && providedToken) {
-    // Hash both tokens to fixed 32-byte digests to prevent length-leak timing attacks
-    // and guarantee timingSafeEqual never throws on length mismatch
-    const hashProvided = crypto.createHash("sha256").update(providedToken).digest();
-    const hashConfigured = crypto.createHash("sha256").update(configuredToken).digest();
-    isAuthorized = timingSafeEqual(hashProvided, hashConfigured);
+  // Fail closed: If configuredToken is unset, empty, or insecure (< 16 chars), reject immediately.
+  // Never permit alert ingestion without explicit, cryptographically secure configuration.
+  if (!configuredToken || configuredToken.trim().length < 16) {
+    logger.error("Alert ingestion rejected: ALERT_INGESTION_TOKEN is not configured or insecure (< 16 chars). Failing closed.", {
+      correlationId,
+    });
+    return new NextResponse(null, { status: 404 });
   }
+
+  if (!providedToken) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  // Hash both tokens to fixed 32-byte digests to prevent length-leak timing attacks
+  // and guarantee timingSafeEqual never throws on length mismatch
+  const hashProvided = crypto.createHash("sha256").update(providedToken).digest();
+  const hashConfigured = crypto.createHash("sha256").update(configuredToken).digest();
+  const isAuthorized = timingSafeEqual(hashProvided, hashConfigured);
 
   if (!isAuthorized) {
     // Return 404 to avoid leaking existence of ingestion endpoint to unauthorized callers

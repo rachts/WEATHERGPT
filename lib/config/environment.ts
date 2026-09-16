@@ -11,7 +11,8 @@ export const environmentSchema = z.object({
   WEATHERGPT_MODE: z.enum(["production", "demo", "development", "test"]).optional(),
   ALERT_INGESTION_TOKEN: z
     .string()
-    .min(16, "ALERT_INGESTION_TOKEN must be at least 16 characters long for cryptographic security."),
+    .min(16, "ALERT_INGESTION_TOKEN must be at least 16 characters long for cryptographic security.")
+    .optional(),
   DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL.").or(z.literal("")).optional(),
   NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL must be a valid URL.").default("http://localhost:3000"),
   UPSTASH_REDIS_REST_URL: z.string().url().or(z.literal("")).optional(),
@@ -47,18 +48,18 @@ export interface AppConfig {
 export function assertEnvironmentValid(env: Record<string, string | undefined> = process.env): ValidatedEnvironment {
   const isProd = env.NODE_ENV === "production" || env.WEATHERGPT_MODE === "production";
 
-  // In production, ALERT_INGESTION_TOKEN is strictly mandatory
+  // In production, ALERT_INGESTION_TOKEN is strictly mandatory with zero defaults
   const schema = isProd
     ? environmentSchema.extend({
         ALERT_INGESTION_TOKEN: z
           .string()
-          .min(16, "ALERT_INGESTION_TOKEN is required in production (min 16 chars)."),
+          .min(16, "ALERT_INGESTION_TOKEN is required in production (min 16 chars). Never use a default or placeholder token."),
       })
     : environmentSchema.extend({
         ALERT_INGESTION_TOKEN: z
           .string()
           .min(16)
-          .default("weathergpt-local-dev-token-min-16-chars"),
+          .optional(),
       });
 
   const parseResult = schema.safeParse(env);
