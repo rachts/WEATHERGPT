@@ -24,13 +24,15 @@ export interface WeatherMetrics {
 
 export { type CropAdvisoryResult, type AdvisoryRule };
 
-const CHEMICAL_DISCLAIMER_BY_LANG = {
+const CHEMICAL_DISCLAIMER_BY_LANG: Record<string, string> = {
   "en-IN": "Consult the locally approved agricultural extension recommendation (KVK / State Agriculture University) before applying pesticides or other crop-protection chemicals. Adhere strictly to label directions and pre-harvest intervals.",
   "hi-IN": "कीटनाशक या अन्य फसल-सुरक्षा रसायनों का उपयोग करने से पहले स्थानीय अनुमोदित कृषि विज्ञान केंद्र (KVK) अथवा कृषि विभाग की आधिकारिक अनुशंसा अवश्य लें।",
-  "ta-IN": "பூச்சிக்கொல்லி அல்லது பயிர் பாதுகாப்பு ரசாயனங்களைப் பயன்படுத்துவதற்கு முன் உள்ளூர் வேளாண் அறிவியல் மையம் (KVK) அல்லது வேளாண் துறை பரிந்துரையை அணுகவும்."
+  "ta-IN": "பூச்சிக்கொல்லி அல்லது பயிர் பாதுகாப்பு ரசாயனங்களைப் பயன்படுத்துவதற்கு முன் உள்ளூர் வேளாண் அறிவியல் மையம் (KVK) அல்லது வேளாண் துறை பரிந்துரையை அணுகவும்.",
+  "mr-IN": "कीटकनाशके किंवा पीक-संरक्षण रसायने वापरण्यापूर्वी स्थानिक मान्यताप्राप्त कृषी विज्ञान केंद्र (KVK) किंवा कृषी विद्यापीठाचा अधिकृत सल्ला नक्की घ्या.",
+  "bn-IN": "কীটনাশক বা অন্যান্য ফসল সুরক্ষা রাসায়নিক প্রয়োগ করার পূর্বে স্থানীয় অনুমোদিত কৃষি বিজ্ঞান কেন্দ্র (KVK) বা কৃষি বিশ্ববিদ্যালয়ের পরামর্শ নিন।",
 };
 
-const ADVISORY_DICTIONARY = {
+const ADVISORY_DICTIONARY: Record<string, Record<string, string>> = {
   "en-IN": {
     safeToSpray: "Safe for pesticide/fertilizer spraying (low wind, no imminent heavy rain).",
     unsafeHighWind: `UNSAFE to spray pesticides. Wind speed exceeds ${SPRAY_MAX_WIND_KMH} km/h causing chemical drift.`,
@@ -79,6 +81,38 @@ const ADVISORY_DICTIONARY = {
     pulsesGroundnut: "நிலக்கடலையில் விழுது இறங்கும் போது ஜிப்சம் இடவும்; பயறு வகைகளில் காய் துளைப்பான் பூச்சியைக் கண்காணிக்கவும்.",
     sourceRuleName: "ஐசிஏஆர்-கேவிகே மற்றும் ஐஎம்டி வேளாண் வானிலை வழிகாட்டுதல்கள்",
   },
+  "mr-IN": {
+    safeToSpray: "कीटकनाशक किंवा खत फवारणीसाठी सुरक्षित स्थिती (कमी वारा, पावसाची शक्यता नाही).",
+    unsafeHighWind: `कीटकनाशक फवारणीसाठी असुरक्षित. वाऱ्याचा वेग ${SPRAY_MAX_WIND_KMH} किमी/तासापेक्षा जास्त असल्यामुळे औषध वाहून जाण्याचा धोका.`,
+    unsafeRain: `फवारणीसाठी असुरक्षित. ${SPRAY_MAX_RAIN_MM} मिमीपेक्षा जास्त पाऊस पडण्याचा अंदाज असल्यामुळे औषध धुऊन जाण्याचा धोका.`,
+    cautionHighHumidity: `सावधान: जास्त आर्द्रता (>${SPRAY_MAX_HUMIDITY_PCT}%). फक्त सकाळच्या कोरड्या वेळेत सिस्टेमिक औषधांची फवारणी करा.`,
+    standingWaterPaddy: "भाताच्या शेतात लोंबी येण्याच्या काळात २ ते ३ सेमी पाणी साठवून ठेवा.",
+    drainageMango: "आंब्याच्या बागेत मुळाजवळ पाणी साचू नये म्हणून चर काढून निचरा ठेवा.",
+    postponeNitrogen: "पाऊस थांबेपर्यंत युरिया खताचा वापर पुढे ढकला.",
+    wheatCrownRoot: "मुकुट मुळे फुटण्याच्या (CRI) अवस्थेत हलके पाणी द्या; सोसाट्याच्या वाऱ्यात पाणी देणे टाळा.",
+    cottonDrainage: "कपाशीमध्ये पाणी साचू नये म्हणून निचरा व्यवस्था ठेवा; बोंड अळीचे निरीक्षण करा.",
+    sugarcaneMulch: "ऊस पिकात पाचटाचे आच्छादन करा; खोडकिडीवर लक्ष ठेवा.",
+    mustardAphid: "ढगाळ हवामानात मावा आणि तांबेरा रोगाची तपासणी करा; फुलोऱ्यात जादा पाणी देऊ नका.",
+    teaPlucking: "७ ते १० दिवसांच्या अंतराने शेंडे खुडणी करा; करपा आणि लाल कोळी रोगाची तपासणी करा.",
+    pulsesGroundnut: "भुईमुगाला आऱ्या सुटताना जिप्सम द्या; डाळवर्गीय पिकांत शेंगअळीची पाहणी करा.",
+    sourceRuleName: "ICAR-KVK आणि IMD कृषी हवामान परिचालन मार्गदर्शक तत्त्वे",
+  },
+  "bn-IN": {
+    safeToSpray: "কীটনাশক বা সার স্প্রে করার জন্য নিরাপদ পরিস্থিতি (বাতাস স্বাভাবিক, ভারী বৃষ্টির সম্ভাবনা নেই)।",
+    unsafeHighWind: `স্প্রে করার জন্য অনিরাপদ। বাতাসের গতিবেগ ${SPRAY_MAX_WIND_KMH} কিমি/ঘণ্টার বেশি হওয়ায় ওষুধ ভেসে যাওয়ার ঝুঁকি।`,
+    unsafeRain: `স্প্রে করার জন্য অনিরাপদ। ${SPRAY_MAX_RAIN_MM} মিমি-এর বেশি বৃষ্টিপাতের পূর্বাভাসের কারণে ওষুধ ধুয়ে যাওয়ার আশঙ্কা।`,
+    cautionHighHumidity: `সতর্কতা: অতিরিক্ত আর্দ্রতা (>${SPRAY_MAX_HUMIDITY_PCT}%)। কেবল সকালের শুষ্ক সময়ে সিস্টেমিক ওষুধ স্প্রে করুন।`,
+    standingWaterPaddy: "ধানের জমিতে শিষ আসার সময় ২-৩ সেমি স্থির জল বজায় রাখুন।",
+    drainageMango: "আম বাগানে গোড়ায় জল জমা রোধ করতে উপযুক্ত নিকাশি ব্যবস্থা রাখুন।",
+    postponeNitrogen: "বৃষ্টির সময় ইউরিয়া সার প্রয়োগ স্থগিত রাখুন।",
+    wheatCrownRoot: "শীর্ষ শিকড় পর্যায়ে সেচ দিন; ঝোড়ো বাতাসের সময় ভারী সেচ এড়িয়ে চলুন।",
+    cottonDrainage: "তুলো ক্ষেতে জল নিষ্কাশনের ব্যবস্থা রাখুন; শুঁয়োপোকা ও কীটের নজরদারি করুন।",
+    sugarcaneMulch: "আখের সারির মাঝে শুকনো পাতার মালচিং করুন; মাজরা পোকা পর্যবেক্ষণ করুন।",
+    mustardAphid: "মেঘলা আবহাওয়ায় জাব পোকা ও সাদা মরচে রোগ পরীক্ষা করুন।",
+    teaPlucking: "৭ থেকে ১০ দিনের ব্যবধানে পাতা তুলুন; ব্লিস্টার ব্লাইট রোগ লক্ষ্য করুন।",
+    pulsesGroundnut: "বাদামে জিপসাম প্রয়োগ করুন; ডাল শস্যে শুঁয়োপোকার আক্রমণ পরীক্ষা করুন।",
+    sourceRuleName: "আইসিএআর-কেভিকে এবং আইএমডি কৃষি আবহাওয়া নির্দেশিকা",
+  },
 };
 
 /**
@@ -89,7 +123,7 @@ export function getDeterministicCropAdvisory(
   crop: string = "paddy",
   district: string = DEFAULT_DISTRICT,
   weather: WeatherMetrics,
-  language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN",
+  language: string = "en-IN",
   issueTime?: string | null
 ): CropAdvisoryResult {
   const lang = ADVISORY_DICTIONARY[language] ? language : "en-IN";

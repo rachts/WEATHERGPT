@@ -10,6 +10,7 @@ import { getAllDistricts, DistrictInfo, findDistrictInfo } from "@/lib/utils/loc
 import { getDistrictWeather } from "@/lib/services/weather-data";
 import { logger } from "@/lib/utils/logger";
 import { DEFAULT_DISTRICT } from "@/lib/config/constants";
+import { detectCrisisMessage } from "@/lib/services/query-pipeline";
 
 // ============================================================================
 // STAGE 1: Detect language (Per message, not per session)
@@ -157,12 +158,8 @@ export function extractLocationAndTime(
 ): ExtractedEntities {
   const query = (currentQuery || "").toLowerCase();
 
-  // Safety crisis detection
-  const distressTerms = [
-    "suicide", "kill myself", "end my life", "want to die", "mar jana", "khudkushi",
-    "atmahathya", "hopeless", "lost all my crops cannot live", "depressed and give up"
-  ];
-  if (distressTerms.some((term) => query.includes(term))) {
+  // Safety crisis detection (Stage 2 - shared multilingual pattern engine, M9)
+  if (detectCrisisMessage(currentQuery)) {
     return {
       rawLocation: null,
       timeHorizon: "none",

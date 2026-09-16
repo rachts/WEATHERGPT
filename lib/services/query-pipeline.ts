@@ -22,10 +22,35 @@ export type WeatherIntent =
   | "seven_day_outlook"
   | "safety_crisis";
 
+export type SupportedLanguage =
+  | "en-IN"
+  | "hi-IN"
+  | "ta-IN"
+  | "mr-IN"
+  | "bn-IN"
+  | "te-IN"
+  | "gu-IN"
+  | "kn-IN"
+  | "pa-IN";
+
+export function normalizeLanguageCode(code?: string): SupportedLanguage {
+  if (!code) return "en-IN";
+  const lower = code.toLowerCase().trim();
+  if (lower === "mr" || lower === "mr-in") return "mr-IN";
+  if (lower === "bn" || lower === "bn-in") return "bn-IN";
+  if (lower === "hi" || lower === "hi-in") return "hi-IN";
+  if (lower === "ta" || lower === "ta-in") return "ta-IN";
+  if (lower === "te" || lower === "te-in") return "te-IN";
+  if (lower === "gu" || lower === "gu-in") return "gu-IN";
+  if (lower === "kn" || lower === "kn-in") return "kn-IN";
+  if (lower === "pa" || lower === "pa-in") return "pa-IN";
+  return "en-IN";
+}
+
 export interface QueryResponse {
   answerText: string;
   intent: WeatherIntent;
-  language: "hi-IN" | "ta-IN" | "en-IN";
+  language: SupportedLanguage;
   dataCard?: {
     temperature?: string;
     humidity?: string;
@@ -63,7 +88,7 @@ export function isPromptInjection(input: string): boolean {
   return PROMPT_INJECTION_PATTERNS.some((re) => re.test(input));
 }
 
-// Crisis / distress detection phrases in English, Hindi, Tamil
+// Crisis / distress detection phrases in English, Hindi, Tamil, Marathi, Bengali, Telugu, Kannada, Gujarati, Punjabi
 const CRISIS_PATTERNS = [
   /suicid/i,
   /kill myself/i,
@@ -77,12 +102,33 @@ const CRISIS_PATTERNS = [
   /தற்கொலை/i,
   /சாக வேண்டும்/i,
   /உயிரை மாய்க்க/i,
+  /मरायचं आहे/i,
+  /मरायचे आहे/i,
+  /जीव द्यायचा/i,
+  /जीवन संपवा/i,
+  /আত্মহত্যা/i,
+  /মরতে চাই/i,
+  /জীবন শেষ/i,
+  /ఆత్మహత్య/i,
+  /చనిపోవాలనుకుంటున్నా/i,
+  /ಆತ್ಮಹತ್ಯೆ/i,
+  /ಸಾಯಬೇಕು/i,
+  /આત્મહત્યા/i,
+  /મરી જવું/i,
+  /ਖੁਦਕੁਸ਼ੀ/i,
+  /ਮਰਨਾ ਚਾਹੁੰਦਾ/i,
 ];
 
-const TELE_MANAS_RESPONSES = {
+const TELE_MANAS_RESPONSES: Record<SupportedLanguage, string> = {
   "en-IN": "We care deeply about your safety and well-being. Please remember that you are not alone and help is available. You can speak with a trained counselor at Tele MANAS by calling 14416 (or toll-free 1-800-891-4416). It is free, confidential, available 24/7, and offered in your language.",
   "hi-IN": "हम आपकी सुरक्षा और भलाई की गहरी चिंता करते हैं। कृपया याद रखें कि आप अकेले नहीं हैं और सहायता हमेशा उपलब्ध है। आप अभी टेली-मानस (Tele MANAS) हेल्पलाइन 14416 (या टोल-फ्री 1-800-891-4416) पर कॉल करके किसी प्रशिक्षित परामर्शदाता से बात कर सकते हैं। यह सेवा 24 घंटे, निःशुल्क, गोपनीय और आपकी भाषा में उपलब्ध है।",
   "ta-IN": "உங்கள் பாதுகாப்பும் நல்வாழ்வும் எங்களுக்கு மிக முக்கியம். நீங்கள் தனியாக இல்லை, உதவி எப்போதும் உள்ளது. இலவச டெலி-மானாஸ் (Tele MANAS) உதவி எண் 14416 (அல்லது 1-800-891-4416) ஐ அழைத்து உடனடியாக ஆலோசகரிடம் பேசலாம். இது 24 மணி நேரமும் இலவசமாகவும், ரகசியமாகவும், உங்கள் மொழியிலும் கிடைக்கும்.",
+  "mr-IN": "आम्हाला तुमच्या सुरक्षेची आणि आरोग्याची काळजी आहे. कृपया लक्षात ठेवा की तुम्ही एकटे नाही आहात आणि मदत उपलब्ध आहे. तुम्ही टेली-मानस (Tele MANAS) हेल्पलाइन 14416 (किंवा 1-800-891-4416) वर कॉल करून समुपदेशकांशी बोलू शकता. ही सेवा २४ तास मोफत, गोपनीय आणि आपल्या भाषेत उपलब्ध आहे.",
+  "bn-IN": "আমরা আপনার নিরাপত্তা এবং সুস্থতার বিষয়ে গভীরভাবে যত্নশীল। দয়া করে মনে রাখবেন যে আপনি একা নন এবং সাহায্য পাওয়া যায়। আপনি টেলি-মানস (Tele MANAS) হেল্পলাইন 14416 (বা 1-800-891-4416)-এ কল করে প্রশিক্ষিত কাউন্সেলরের সাথে কথা বলতে পারেন। এটি ২৪/৭ বিনামূল্যে, গোপনীয় এবং আপনার ভাষায় উপলব্ধ।",
+  "te-IN": "మీ భద్రత మరియు శ్రేయస్సు మాకు చాలా ముఖ్యం. మీరు ఒంటరిగా లేరని దయచేసి గుర్తుంచుకోండి. మీరు టెలి-మానస్ (Tele MANAS) హెల్ప్‌లైన్ 14416 (లేదా 1-800-891-4416) కు కాల్ చేసి కౌన్సెలర్‌తో మాట్లాడవచ్చు. ఇది 24/7 ఉచితంగా, గోప్యంగా మీ భాషలో లభిస్తుంది.",
+  "gu-IN": "અમે તમારી સુરક્ષા અને સુખાકારીની ઊંડી કાળજી રાખીએ છીએ. કૃપા કરીને યાદ રાખો કે તમે એકલા નથી અને મદદ ઉપલબ્ધ છે. તમે ટેલિ-માનસ (Tele MANAS) હેલ્પલાઇન 14416 (અથવા 1-800-891-4416) પર કૉલ કરી શકો છો. આ સેવા 24/7 મફત, ગુપ્ત અને તમારી ભાષામાં ઉપલબ્ધ છે.",
+  "kn-IN": "ನಿಮ್ಮ ಸುರಕ್ಷತೆ ಮತ್ತು ಯೋಗಕ್ಷೇಮ ನಮಗೆ ಅತ್ಯಂತ ಮುಖ್ಯ. ದಯವಿಟ್ಟು ನೆನಪಿಡಿ ನೀವು ಒಂಟಿಯಲ್ಲ, ಸಹಾಯ ಸದಾ ಲಭ್ಯವಿದೆ. ಟೆಲಿ-ಮಾನಸ್ (Tele MANAS) ಸಹಾಯವಾಣಿ 14416 (ಅಥವಾ 1-800-891-4416) ಗೆ ಕರೆ ಮಾಡಿ ಸಮಾಲೋಚಕರೊಂದಿಗೆ ಮಾತನಾಡಬಹುದು. ಇದು 24/7 ಉಚಿತ ಹಾಗೂ ಗೌಪ್ಯವಾಗಿರುತ್ತದೆ.",
+  "pa-IN": "ਅਸੀਂ ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਅਤੇ ਭਲਾਈ ਦੀ ਡੂੰਘੀ ਚਿੰਤਾ ਕਰਦੇ ਹਾਂ। ਕਿਰਪਾ ਕਰਕੇ ਯਾਦ ਰੱਖੋ ਕਿ ਤੁਸੀਂ ਇਕੱਲੇ ਨਹੀਂ ਹੋ ਅਤੇ ਮਦਦ ਉਪਲਬਧ ਹੈ। ਤੁਸੀਂ ਟੈਲੀ-ਮਾਨਸ (Tele MANAS) ਹੈਲਪਲਾਈਨ 14416 (ਜਾਂ 1-800-891-4416) 'ਤੇ ਕਾਲ ਕਰਕੇ ਸਲਾਹਕਾਰ ਨਾਲ ਗੱਲ ਕਰ ਸਕਦੇ ਹੋ।",
 };
 
 /**
@@ -145,6 +191,12 @@ const WARNING_KEYWORDS = [
   "warning", "alert", "cyclone", "danger", "storm", "flood", "gale",
   "चेतावनी", "अलर्ट", "तूफान", "बाढ़",
   "எச்சரிக்கை", "புயல்", "வெள்ளம்",
+  "इशारा", "वादळ", "पूर", "धोका",
+  "সতর্কতা", "ঘূর্ণিঝড়", "বন্যা",
+  "హెచ్చరిక", "తుఫాను",
+  "ચેતવણી", "વાવાઝોડું",
+  "ಎಚ್ಚರಿಕೆ",
+  "ਚੇਤਾਵਨੀ",
 ];
 const WARNING_PATTERNS = WARNING_KEYWORDS.map(compileTokenRegex);
 
@@ -153,6 +205,12 @@ const RAIN_KEYWORDS = [
   "rain", "rains", "raining", "rainfall", "precipitation", "shower", "showers", "downpour", "drizzle",
   "बारिश", "वर्षा", "बरसात", "बूंदाबांदी",
   "மழை", "தூறல்",
+  "पाऊस", "पडेल", "पावसाची", "धारा",
+  "বৃষ্টি", "বৃষ্টিপাত",
+  "వర్షం", "వాన",
+  "વરસાદ",
+  "ಮಳೆ",
+  "ਮੀਂਹ",
 ];
 const RAIN_PATTERNS = RAIN_KEYWORDS.map(compileTokenRegex);
 
@@ -161,6 +219,12 @@ const OUTLOOK_KEYWORDS = [
   "forecast", "outlook", "next week", "upcoming", "7 day", "seven day",
   "पूर्वानुमान", "आगामी", "अगले सात दिन",
   "முன்னறிவிப்பு", "அடுத்த வாரம்",
+  "अंदाज", "आठवडा", "७ दिवस",
+  "পূর্বাভাস", "সাত দিন",
+  "సూచన",
+  "આગાહી",
+  "ಮುನ್ಸೂಚನೆ",
+  "ਅਨੁਮਾਨ",
 ];
 const OUTLOOK_PATTERNS = OUTLOOK_KEYWORDS.map(compileTokenRegex);
 
@@ -170,14 +234,26 @@ const CROP_KEYWORDS = [
   "mango", "fertilizer", "fertilizers", "pest", "pests", "pesticide", "pesticides", "disease", "diseases", "farm", "farmer", "farming", "kisan",
   "फसल", "छिड़काव", "सिंचाई", "गेहूं", "धान", "कपास", "गन्ना", "खाद", "कीट",
   "பயிர்", "தெளிப்பு", "பாசனம்", "நெல்", "கோதுமை", "பருத்தி", "கரும்பு", "உரம்",
+  "पीक", "फवारणी", "पाणी", "खत", "शेतकरी",
+  "ফসল", "সেচ", "সার", "কীটনাশক", "কৃষক",
+  "పంట", "రైతు",
+  "પાક", "ખેડૂત",
+  "ಬೆಳೆ", "ರೈತ",
+  "ਫ਼ਸਲ", "ਕਿਸਾਨ",
 ];
 const CROP_PATTERNS = CROP_KEYWORDS.map(compileTokenRegex);
 
 // Current weather indicators (+2)
 const CURRENT_KEYWORDS = [
-  "today", "now", "temperature", "temp", "humidity", "wind", "winds", "current",
-  "आज", "अभी", "तापमान", "हवा", "आर्द्रता",
-  "இன்று", "இப்போது", "வெப்பநிலை", "காற்று",
+  "today", "now", "temperature", "temp", "humidity", "wind", "winds", "current", "weather",
+  "आज", "अभी", "तापमान", "हवा", "आर्द्रता", "मौसम",
+  "இன்று", "இப்போது", "வெப்பநிலை", "காற்று", "வானிலை",
+  "हवामान",
+  "আবহাওয়া",
+  "వాతావరణం",
+  "હવામાન",
+  "ಹವಾಮಾನ",
+  "ਮੌਸਮ",
 ];
 const CURRENT_PATTERNS = CURRENT_KEYWORDS.map(compileTokenRegex);
 
@@ -243,26 +319,54 @@ function formatRainfallAnswer(
   rainfallMm: number | null,
   condition: string,
   district: string,
-  language: "hi-IN" | "ta-IN" | "en-IN"
+  language: SupportedLanguage
 ): string {
   if (rainfallMm === null) {
-    if (language === "hi-IN") {
-      return `${district} के लिए वर्षा का कोई प्रेक्षित डेटा उपलब्ध नहीं है। वर्तमान स्थिति: ${condition}।`;
+    switch (language) {
+      case "hi-IN":
+        return `${district} के लिए वर्षा का कोई प्रेक्षित डेटा उपलब्ध नहीं है। वर्तमान स्थिति: ${condition}।`;
+      case "ta-IN":
+        return `${district} மாவட்டத்திற்கான மழைப்பொழிவு தரவு கிடைக்கவில்லை. தற்போதைய நிலை: ${condition}.`;
+      case "mr-IN":
+        return `${district} साठी पावसाचा कोणताही प्रेक्षित डेटा उपलब्ध नाही. सद्यस्थिती: ${condition}.`;
+      case "bn-IN":
+        return `${district} জেলার জন্য কোনো বৃষ্টির ডেটা উপলব্ধ নেই। বর্তমান অবস্থা: ${condition}।`;
+      case "te-IN":
+        return `${district} కొరకు వర్షపాతం డేటా అందుబాటులో లేదు. ప్రస్తుత పరిస్థితి: ${condition}.`;
+      case "gu-IN":
+        return `${district} માટે વરસાદનો કોઈ ઉપલબ્ધ ડેટા નથી. વર્તમાન સ્થિતિ: ${condition}.`;
+      case "kn-IN":
+        return `${district} ಗೆ ಮಳೆಯ ದತ್ತಾಂಶ ಲಭ್ಯವಿಲ್ಲ. ಪ್ರಸ್ತುತ ಸ್ಥಿತಿ: ${condition}.`;
+      case "pa-IN":
+        return `${district} ਲਈ ਮੀਂਹ ਦਾ ਕੋਈ ਡਾਟਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਮੌਜੂਦਾ ਸਥਿਤੀ: ${condition}।`;
+      case "en-IN":
+      default:
+        return `Rainfall data is currently unavailable for ${district}. Current condition: ${condition}.`;
     }
-    if (language === "ta-IN") {
-      return `${district} மாவட்டத்திற்கான மழைப்பொழிவு தரவு கிடைக்கவில்லை. தற்போதைய நிலை: ${condition}.`;
-    }
-    return `Rainfall data is currently unavailable for ${district}. Current condition: ${condition}.`;
   }
 
   if (rainfallMm === 0) {
-    if (language === "hi-IN") {
-      return `${district} में आज वर्षा की कोई संभावना नहीं है (0 मिमी)। मौसम मुख्यतः शुष्क रहेगा।`;
+    switch (language) {
+      case "hi-IN":
+        return `${district} में आज वर्षा की कोई संभावना नहीं है (0 मिमी)। मौसम मुख्यतः शुष्क रहेगा।`;
+      case "ta-IN":
+        return `${district}ல் இன்று மழை பெய்ய வாய்ப்பில்லை (0 மிமீ). பெரும்பாலும் வறண்ட வானிலை நிலவும்.`;
+      case "mr-IN":
+        return `${district} मध्ये आज पावसाची शक्यता नाही (0 मिमी). हवामान मुख्यतः कोरडे राहील.`;
+      case "bn-IN":
+        return `${district} জেলায় আজ কোনো বৃষ্টির সম্ভাবনা নেই (০ মিমি)। আবহাওয়া মূলত শুষ্ক থাকবে।`;
+      case "te-IN":
+        return `${district} లో ఈరోజు వర్షం పడే అవకాశం లేదు (0 మి.మీ). వాతావరణం పొడిగా ఉంటుంది.`;
+      case "gu-IN":
+        return `${district} માં આજે વરસાદની કોઈ શક્યતા નથી (0 મીમી). હવામાન મુખ્યત્વે સૂકું રહેશે.`;
+      case "kn-IN":
+        return `${district} ನಲ್ಲಿ ಇಂದು ಮಳೆಯ ಸಾಧ್ಯತೆಯಿಲ್ಲ (0 ಮಿಮೀ). ವಾತಾವರಣ ಒಣಗಿರುತ್ತದೆ.`;
+      case "pa-IN":
+        return `${district} ਵਿੱਚ ਅੱਜ ਮੀਂਹ ਦੀ ਕੋਈ ਸੰਭਾਵਨਾ ਨਹੀਂ ਹੈ (0 ਮਿਲੀਮੀਟਰ)। ਮੌਸਮ ਮੁੱਖ ਤੌਰ 'ਤੇ ਖੁਸ਼ਕ ਰਹੇਗਾ।`;
+      case "en-IN":
+      default:
+        return `No rain expected for ${district} today (0 mm). Dry conditions expected.`;
     }
-    if (language === "ta-IN") {
-      return `${district}ல் இன்று மழை பெய்ய வாய்ப்பில்லை (0 மிமீ). பெரும்பாலும் வறண்ட வானிலை நிலவும்.`;
-    }
-    return `No rain expected for ${district} today (0 mm). Dry conditions expected.`;
   }
 
   let classification = "Light Rain";
@@ -272,13 +376,27 @@ function formatRainfallAnswer(
   else if (rainfallMm <= 115.5) classification = "Heavy Rain";
   else classification = "Very Heavy Rain";
 
-  if (language === "hi-IN") {
-    return `${district} में 24 घंटे में ${rainfallMm} मिमी वर्षा का अनुमान है (${classification})। स्थिति: ${condition}।`;
+  switch (language) {
+    case "hi-IN":
+      return `${district} में 24 घंटे में ${rainfallMm} मिमी वर्षा का अनुमान है (${classification})। स्थिति: ${condition}।`;
+    case "ta-IN":
+      return `${district}ல் 24 மணி நேரத்தில் ${rainfallMm} மிமீ மழை எதிர்பார்க்கப்படுகிறது (${classification}). நிலை: ${condition}.`;
+    case "mr-IN":
+      return `${district} मध्ये 24 तासांत अंदाजे ${rainfallMm} मिमी पाऊस पडण्याची शक्यता आहे (${classification}). स्थिती: ${condition}.`;
+    case "bn-IN":
+      return `${district} জেলায় আগামী ২৪ ঘণ্টায় প্রায় ${rainfallMm} মিমি বৃষ্টির সম্ভাবনা রয়েছে (${classification})। অবস্থা: ${condition}।`;
+    case "te-IN":
+      return `${district} లో 24 గంటల్లో ${rainfallMm} మి.మీ వర్షపాతం అంచనా వేయబడింది (${classification}). పరిస్థితి: ${condition}.`;
+    case "gu-IN":
+      return `${district} માં 24 કલાકમાં ${rainfallMm} મીમી વરસાદની આગાહી છે (${classification}). સ્થિતિ: ${condition}.`;
+    case "kn-IN":
+      return `${district} ನಲ್ಲಿ 24 ಗಂಟೆಗಳಲ್ಲಿ ${rainfallMm} ಮಿಮೀ ಮಳೆ ಮುನ್ಸೂಚನೆ ಇದೆ (${classification}). ಸ್ಥಿತಿ: ${condition}.`;
+    case "pa-IN":
+      return `${district} ਵਿੱਚ 24 ਘੰਟਿਆਂ ਵਿੱਚ ${rainfallMm} ਮਿਲੀਮੀਟਰ ਮੀਂਹ ਦਾ ਅਨੁਮਾਨ ਹੈ (${classification})। ਸਥਿਤੀ: ${condition}।`;
+    case "en-IN":
+    default:
+      return `Rainfall forecast for ${district}: Expected precipitation around ${rainfallMm} mm (${classification}) with ${condition.toLowerCase()}.`;
   }
-  if (language === "ta-IN") {
-    return `${district}ல் 24 மணி நேரத்தில் ${rainfallMm} மிமீ மழை எதிர்பார்க்கப்படுகிறது (${classification}). நிலை: ${condition}.`;
-  }
-  return `Rainfall forecast for ${district}: Expected precipitation around ${rainfallMm} mm (${classification}) with ${condition.toLowerCase()}.`;
 }
 
 /**
@@ -287,8 +405,10 @@ function formatRainfallAnswer(
 export async function processWeatherQuery(
   query: string,
   district: string = DEFAULT_DISTRICT,
-  language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"
+  rawLanguage: string = "en-IN"
 ): Promise<QueryResponse> {
+  const language = normalizeLanguageCode(rawLanguage);
+
   // Step 1: Prompt-Injection Defense
   // If prompt injection attempted, refuse to override trusted domain data
   if (isPromptInjection(query)) {
@@ -354,12 +474,35 @@ export async function processWeatherQuery(
       issueTime = advisory.issueTime;
       evidence = advisory.evidence;
 
-      if (language === "hi-IN") {
-        answerText = `${advisory.crop} फसल हेतु सलाह (${districtInfo.name}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
-      } else if (language === "ta-IN") {
-        answerText = `${advisory.crop} பயிர் ஆலோசனை (${districtInfo.name}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
-      } else {
-        answerText = `Advisory for ${districtInfo.name} ${advisory.crop} Crops: ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} Note: ${advisory.chemicalDisclaimer}`;
+      switch (language) {
+        case "hi-IN":
+          answerText = `${advisory.crop} फसल हेतु सलाह (${districtInfo.name}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
+          break;
+        case "ta-IN":
+          answerText = `${advisory.crop} பயிர் ஆலோசனை (${districtInfo.name}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
+          break;
+        case "mr-IN":
+          answerText = `${advisory.crop} पिकासाठी सल्ला (${districtInfo.name}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
+          break;
+        case "bn-IN":
+          answerText = `${advisory.crop} ফসলের জন্য পরামর্শ (${districtInfo.name}): ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
+          break;
+        case "te-IN":
+          answerText = `${districtInfo.name} ${advisory.crop} పంట సలహా: ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
+          break;
+        case "gu-IN":
+          answerText = `${districtInfo.name} ${advisory.crop} પાક માટે સલાહ: ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
+          break;
+        case "kn-IN":
+          answerText = `${districtInfo.name} ${advisory.crop} ಬೆಳೆ ಸಲಹೆ: ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
+          break;
+        case "pa-IN":
+          answerText = `${districtInfo.name} ${advisory.crop} ਫ਼ਸਲ ਸੰਬੰਧੀ ਸਲਾਹ: ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} ${advisory.chemicalDisclaimer}`;
+          break;
+        case "en-IN":
+        default:
+          answerText = `Advisory for ${districtInfo.name} ${advisory.crop} Crops: ${advisory.sprayAdvisory} ${advisory.irrigationAdvisory} Note: ${advisory.chemicalDisclaimer}`;
+          break;
       }
 
       dataCard = {
@@ -394,12 +537,35 @@ export async function processWeatherQuery(
           quality: "OBSERVED",
         };
       } else {
-        if (language === "hi-IN") {
-          answerText = `वर्तमान में ${districtInfo.name} जिले के लिए कोई मौसम चेतावनी सक्रिय नहीं है।`;
-        } else if (language === "ta-IN") {
-          answerText = `தற்போது ${districtInfo.name} மாவட்டத்திற்கு தீவிர வானிலை எச்சரிக்கை எதுவும் இல்லை.`;
-        } else {
-          answerText = `No active weather warnings in effect for ${districtInfo.name} district at this time.`;
+        switch (language) {
+          case "hi-IN":
+            answerText = `वर्तमान में ${districtInfo.name} जिले के लिए कोई मौसम चेतावनी सक्रिय नहीं है।`;
+            break;
+          case "ta-IN":
+            answerText = `தற்போது ${districtInfo.name} மாவட்டத்திற்கு தீவிர வானிலை எச்சரிக்கை எதுவும் இல்லை.`;
+            break;
+          case "mr-IN":
+            answerText = `सध्या ${districtInfo.name} जिल्ह्यासाठी कोणतीही हवामान चेतावणी सक्रिय नाही.`;
+            break;
+          case "bn-IN":
+            answerText = `বর্তমানে ${districtInfo.name} জেলার জন্য কোনো আবহাওয়া সতর্কতা সক্রিয় নেই।`;
+            break;
+          case "te-IN":
+            answerText = `ప్రస్తుతం ${districtInfo.name} జిల్లాకు ఎలాంటి వాతావరణ హెచ్చరికలు లేవు.`;
+            break;
+          case "gu-IN":
+            answerText = `હાલમાં ${districtInfo.name} જિલ્લા માટે કોઈ હવામાન ચેતવણી સક્રિય નથી.`;
+            break;
+          case "kn-IN":
+            answerText = `ಪ್ರಸ್ತುತ ${districtInfo.name} ಜಿಲ್ಲೆಗೆ ಯಾವುದೇ ಹವಾಮಾನ ಎಚ್ಚರಿಕೆ ಸಕ್ರಿಯವಾಗಿಲ್ಲ.`;
+            break;
+          case "pa-IN":
+            answerText = `ਇਸ ਵੇਲੇ ${districtInfo.name} ਜ਼ਿਲ੍ਹੇ ਲਈ ਕੋਈ ਮੌਸਮ ਚੇਤਾਵਨੀ ਸਰਗਰਮ ਨਹੀਂ ਹੈ।`;
+            break;
+          case "en-IN":
+          default:
+            answerText = `No active weather warnings in effect for ${districtInfo.name} district at this time.`;
+            break;
         }
         sourceProduct = `IMD Nowcast (${districtInfo.state})`;
         dataCard = {
@@ -440,28 +606,103 @@ export async function processWeatherQuery(
       const overallMin = minTemps.length > 0 ? Math.min(...minTemps) : null;
       const overallMax = maxTemps.length > 0 ? Math.max(...maxTemps) : null;
       const rainyDays = weather.forecastDaily.filter(d => (d.rainfallMm ?? 0) > 1 || d.condition.toLowerCase().includes("rain") || d.condition.toLowerCase().includes("shower"));
+      const rainyCount = rainyDays.length;
+      const hasRain = rainyCount > 0;
 
-      let summaryEn = rainyDays.length > 0
-        ? `Expect approximately ${rainyDays.length} day(s) with precipitation over the 7-day period.`
-        : `Mainly dry conditions expected across the 7-day outlook.`;
-      let summaryHi = rainyDays.length > 0
-        ? `आगामी 7 दिनों में लगभग ${rainyDays.length} दिन वर्षा की संभावना है।`
-        : `आगामी 7 दिनों में मुख्यतः मौसम शुष्क रहने का अनुमान है।`;
-      let summaryTa = rainyDays.length > 0
-        ? `அடுத்த 7 நாட்களில் சுமார் ${rainyDays.length} நாட்கள் மழை பெய்ய வாய்ப்புள்ளது.`
-        : `அடுத்த 7 நாட்களில் பெரும்பாலும் வறண்ட வானிலை நிலவும்.`;
-
-      const tempRangeEn = overallMin !== null && overallMax !== null ? `Temperatures ranging between ${overallMin}°C and ${overallMax}°C.` : `Temperature trends currently updating.`;
-      const tempRangeHi = overallMin !== null && overallMax !== null ? `तापमान ${overallMin}°C से ${overallMax}°C के बीच रहने का अनुमान है।` : `तापमान डेटा अद्यतन हो रहा है।`;
-      const tempRangeTa = overallMin !== null && overallMax !== null ? `வெப்பநிலை ${overallMin}°C முதல் ${overallMax}°C வரை இருக்கும்.` : `வெப்பநிலை தகவல் புதுப்பிக்கப்படுகிறது.`;
-
-      if (language === "hi-IN") {
-        answerText = `${districtInfo.name} के लिए 7-दिवसीय पूर्वानुमान: ${tempRangeHi} ${summaryHi}`;
-      } else if (language === "ta-IN") {
-        answerText = `${districtInfo.name} 7 நாள் வானிலை: ${tempRangeTa} ${summaryTa}`;
-      } else {
-        answerText = `7-Day Outlook for ${districtInfo.name}: ${tempRangeEn} ${summaryEn}`;
+      switch (language) {
+        case "hi-IN": {
+          const summary = hasRain
+            ? `आगामी 7 दिनों में लगभग ${rainyCount} दिन वर्षा की संभावना है।`
+            : `आगामी 7 दिनों में मुख्यतः मौसम शुष्क रहने का अनुमान है।`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `तापमान ${overallMin}°C से ${overallMax}°C के बीच रहने का अनुमान है।`
+            : `तापमान डेटा अद्यतन हो रहा है।`;
+          answerText = `${districtInfo.name} के लिए 7-दिवसीय पूर्वानुमान: ${tempRange} ${summary}`;
+          break;
+        }
+        case "ta-IN": {
+          const summary = hasRain
+            ? `அடுத்த 7 நாட்களில் சுமார் ${rainyCount} நாட்கள் மழை பெய்ய வாய்ப்புள்ளது.`
+            : `அடுத்த 7 நாட்களில் பெரும்பாலும் வறண்ட வானிலை நிலவும்.`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `வெப்பநிலை ${overallMin}°C முதல் ${overallMax}°C வரை இருக்கும்.`
+            : `வெப்பநிலை தகவல் புதுப்பிக்கப்படுகிறது.`;
+          answerText = `${districtInfo.name} 7 நாள் வானிலை: ${tempRange} ${summary}`;
+          break;
+        }
+        case "mr-IN": {
+          const summary = hasRain
+            ? `पुढील ७ दिवसांत साधारण ${rainyCount} दिवस पावसाची शक्यता आहे.`
+            : `पुढील ७ दिवसांत हवामान मुख्यतः कोरडे राहण्याचा अंदाज आहे.`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `तापमान ${overallMin}°C ते ${overallMax}°C दरम्यान राहण्याचा अंदाज आहे.`
+            : `तापमान माहिती अद्यतनित होत आहे.`;
+          answerText = `${districtInfo.name} साठी ७ दिवसांचा हवामान अंदाज: ${tempRange} ${summary}`;
+          break;
+        }
+        case "bn-IN": {
+          const summary = hasRain
+            ? `আগামী ৭ দিনে প্রায় ${rainyCount} দিন বৃষ্টির সম্ভাবনা রয়েছে।`
+            : `আগামী ৭ দিনে আবহাওয়া মূলত শুষ্ক থাকার পূর্বাভাস রয়েছে।`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `तापমাত্রা ${overallMin}°C থেকে ${overallMax}°C এর মধ্যে থাকার সম্ভাবনা।`
+            : `তাপমাত্রার তথ্য আপডেট হচ্ছে।`;
+          answerText = `${districtInfo.name} জেলার ৭ দিনের পূর্বাভাস: ${tempRange} ${summary}`;
+          break;
+        }
+        case "te-IN": {
+          const summary = hasRain
+            ? `రాబోయే 7 రోజుల్లో సుమారు ${rainyCount} రోజులు వర్షం పడే అవకాశం ఉంది.`
+            : `రాబోయే 7 రోజుల్లో వాతావరణం పొడిగా ఉండే అవకాశం ఉంది.`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `ఉష్ణోగ్రతలు ${overallMin}°C నుండి ${overallMax}°C మధ్య ఉంటాయి.`
+            : `ఉష్ణోగ్రత వివరాలు నవీకరించబడుతున్నాయి.`;
+          answerText = `${districtInfo.name} 7 రోజుల వాతావరణ సూచన: ${tempRange} ${summary}`;
+          break;
+        }
+        case "gu-IN": {
+          const summary = hasRain
+            ? `આગામી 7 દિવસમાં આશરે ${rainyCount} દિવસ વરસાદની શક્યતા છે.`
+            : `આગામી 7 દિવસમાં હવામાન મુખ્યત્વે સૂકું રહેવાની ધારણા છે.`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `તાપમાન ${overallMin}°C થી ${overallMax}°C વચ્ચે રહેશે.`
+            : `તાપમાન ડેટા અપડેટ થઈ રહ્યો છે.`;
+          answerText = `${districtInfo.name} માટે 7 દિવસની આગાહી: ${tempRange} ${summary}`;
+          break;
+        }
+        case "kn-IN": {
+          const summary = hasRain
+            ? `ಮುಂದಿನ 7 ದಿನಗಳಲ್ಲಿ ಸುಮಾರು ${rainyCount} ದಿನ ಮಳೆಯಾಗುವ ಸಾಧ್ಯತೆಯಿದೆ.`
+            : `ಮುಂದಿನ 7 ದಿನಗಳಲ್ಲಿ ವಾತಾವರಣ ಮುಖ್ಯವಾಗಿ ಒಣಗಿರುತ್ತದೆ.`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `ತಾಪಮಾನ ${overallMin}°C ನಿಂದ ${overallMax}°C ವರೆಗೆ ಇರುತ್ತದೆ.`
+            : `ತಾಪಮಾನ ನವೀಕರಣಗೊಳ್ಳುತ್ತಿದೆ.`;
+          answerText = `${districtInfo.name} ಗೆ 7 ದಿನಗಳ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ: ${tempRange} ${summary}`;
+          break;
+        }
+        case "pa-IN": {
+          const summary = hasRain
+            ? `ਅਗਲੇ 7 ਦਿਨਾਂ ਵਿੱਚ ਲਗਭਗ ${rainyCount} ਦਿਨ ਮੀਂਹ ਪੈਣ ਦੀ ਸੰਭਾਵਨਾ ਹੈ।`
+            : `ਅਗਲੇ 7 ਦਿਨਾਂ ਵਿੱਚ ਮੌਸਮ ਮੁੱਖ ਤੌਰ 'ਤੇ ਖੁਸ਼ਕ ਰਹਿਣ ਦੀ ਉਮੀਦ ਹੈ।`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `ਤਾਪਮਾਨ ${overallMin}°C ਤੋਂ ${overallMax}°C ਦੇ ਵਿਚਕਾਰ ਰਹਿਣ ਦਾ ਅਨੁਮਾਨ ਹੈ।`
+            : `ਤਾਪਮਾਨ ਡਾਟਾ ਅੱਪਡੇਟ ਹੋ ਰਿਹਾ ਹੈ।`;
+          answerText = `${districtInfo.name} ਲਈ 7 ਦਿਨਾਂ ਦਾ ਮੌਸਮ ਅਨੁਮਾਨ: ${tempRange} ${summary}`;
+          break;
+        }
+        case "en-IN":
+        default: {
+          const summary = hasRain
+            ? `Expect approximately ${rainyCount} day(s) with precipitation over the 7-day period.`
+            : `Mainly dry conditions expected across the 7-day outlook.`;
+          const tempRange = overallMin !== null && overallMax !== null
+            ? `Temperatures ranging between ${overallMin}°C and ${overallMax}°C.`
+            : `Temperature trends currently updating.`;
+          answerText = `7-Day Outlook for ${districtInfo.name}: ${tempRange} ${summary}`;
+          break;
+        }
       }
+
       dataCard = {
         outlook: weather.forecastDaily.map((d) => ({
           day: d.day,
@@ -480,12 +721,35 @@ export async function processWeatherQuery(
       const hum = weather.current.humidity !== null ? `${weather.current.humidity}` : "N/A";
       const windDir = weather.current.windDirection || "Calm";
 
-      if (language === "hi-IN") {
-        answerText = `${districtInfo.name} में वर्तमान तापमान ${temp}°C है। मौसम: ${cond}। हवा ${wind} किमी/घंटा और आर्द्रता ${hum}% है।`;
-      } else if (language === "ta-IN") {
-        answerText = `${districtInfo.name}ல் தற்போதைய வெப்பநிலை ${temp}°C. வானிலை: ${cond}. காற்று வேகம் ${wind} கிமீ/மணி, ஈரப்பதம் ${hum}%.`;
-      } else {
-        answerText = `Current weather in ${districtInfo.name}: ${temp}°C, ${cond}. Wind speed is ${wind} km/h from ${windDir} with ${hum}% relative humidity.`;
+      switch (language) {
+        case "hi-IN":
+          answerText = `${districtInfo.name} में वर्तमान तापमान ${temp}°C है। मौसम: ${cond}। हवा ${wind} किमी/घंटा और आर्द्रता ${hum}% है।`;
+          break;
+        case "ta-IN":
+          answerText = `${districtInfo.name}ல் தற்போதைய வெப்பநிலை ${temp}°C. வானிலை: ${cond}. காற்று வேகம் ${wind} கிமீ/மணி, ஈரப்பதம் ${hum}%.`;
+          break;
+        case "mr-IN":
+          answerText = `${districtInfo.name} मध्ये सध्याचे तापमान ${temp}°C आहे. हवामान: ${cond}. वाऱ्याचा वेग ${wind} किमी/तास आणि आर्द्रता ${hum}% आहे.`;
+          break;
+        case "bn-IN":
+          answerText = `${districtInfo.name} জেলায় বর্তমান তাপমাত্রা ${temp}°C। আবহাওয়া: ${cond}। বাতাসের গতিবেগ ${wind} কিমি/ঘণ্টা এবং আর্দ্রতা ${hum}%।`;
+          break;
+        case "te-IN":
+          answerText = `${districtInfo.name} లో ప్రస్తుత ఉష్ణోగ్రత ${temp}°C. వాతావరణం: ${cond}. గాలి వేగం ${wind} కి.మీ/గం, తేమ ${hum}%.`;
+          break;
+        case "gu-IN":
+          answerText = `${districtInfo.name} માં વર્તમાન તાપમાન ${temp}°C છે. હવામાન: ${cond}. પવનની ગતિ ${wind} કિમી/કલાક અને ભેજ ${hum}% છે.`;
+          break;
+        case "kn-IN":
+          answerText = `${districtInfo.name} ನಲ್ಲಿ ಪ್ರಸ್ತುತ ತಾಪಮಾನ ${temp}°C ಆಗಿದೆ. ಹವಾಮಾನ: ${cond}. ಗಾಳಿಯ ವೇಗ ${wind} ಕಿ.ಮೀ/ಗಂ ಮತ್ತು ತೇವಾಂಶ ${hum}%.`;
+          break;
+        case "pa-IN":
+          answerText = `${districtInfo.name} ਵਿੱਚ ਮੌਜੂਦਾ ਤਾਪਮਾਨ ${temp}°C ਹੈ। ਮੌਸਮ: ${cond}। ਹਵਾ ਦੀ ਰਫ਼ਤਾਰ ${wind} ਕਿਮੀ/ਘੰਟਾ ਅਤੇ ਨਮੀ ${hum}% ਹੈ।`;
+          break;
+        case "en-IN":
+        default:
+          answerText = `Current weather in ${districtInfo.name}: ${temp}°C, ${cond}. Wind speed is ${wind} km/h from ${windDir} with ${hum}% relative humidity.`;
+          break;
       }
 
       dataCard = {

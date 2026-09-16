@@ -340,6 +340,16 @@ async function runTests() {
     record("G22", "Centralized Default District & Options Overload (H5, M5, M6, M10, M11, M12)", false, (err as Error).message);
   }
 
+  // --- GATE G23: Multilingual Coverage & Shared Crisis Engine (H7, M9) ---
+  try {
+    const { runMultilingualPipelineTests } = await import("../tests/multilingual-pipeline.test");
+    await runMultilingualPipelineTests();
+    record("G23", "Multilingual Coverage & Shared Crisis Engine (H7, M9)", true,
+      "Extended deterministic dictionary to all 9 supported languages and shared multilingual crisis detection engine.");
+  } catch (err) {
+    record("G23", "Multilingual Coverage & Shared Crisis Engine (H7, M9)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");

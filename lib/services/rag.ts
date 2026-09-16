@@ -23,12 +23,18 @@ export interface GroundedAnswer {
   retryCount: number;
 }
 
-export function getInsufficientDataString(district: string = DEFAULT_DISTRICT, language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"): string {
+export function getInsufficientDataString(district: string = DEFAULT_DISTRICT, language: string = "en-IN"): string {
   if (language === "hi-IN") {
     return `${district} जिले के लिए इस विशिष्ट प्रश्न पर आधिकारिक आईएमडी बुलेटिन में पर्याप्त जानकारी उपलब्ध नहीं है। कृपया नवीनतम मौसम पूर्वानुमान देखें।`;
   }
   if (language === "ta-IN") {
     return `${district} மாவட்டத்திற்கான இந்த குறிப்பிட்ட கேள்விக்கு அதிகாரப்பூர்வ வானிலை அறிக்கையில் போதிய விவரங்கள் இல்லை. அண்மைய அறிவிப்பை பார்க்கவும்.`;
+  }
+  if (language === "mr-IN") {
+    return `${district} जिल्ह्यासाठी या विशिष्ट प्रश्नावर अधिकृत आयएमडी बुलेटिनमध्ये पुरेशी माहिती उपलब्ध नाही. कृपया नवीनतम हवामान अंदाज तपासा.`;
+  }
+  if (language === "bn-IN") {
+    return `${district} জেলার জন্য এই নির্দিষ্ট প্রশ্নে সরকারি আইএমডি বুলেটিনে পর্যাপ্ত তথ্য নেই। অনুগ্রহ করে সাম্প্রতিক আবহাওয়া পূর্বাভাস দেখুন।`;
   }
   return `Official IMD bulletin data is currently insufficient for this specific inquiry in ${district} district. Please check the latest 24-hour nowcast or consult local agromet advisories.`;
 }
@@ -37,6 +43,8 @@ export const INSUFFICIENT_DATA_STRINGS = {
   "en-IN": getInsufficientDataString(DEFAULT_DISTRICT, "en-IN"),
   "hi-IN": getInsufficientDataString(DEFAULT_DISTRICT, "hi-IN"),
   "ta-IN": getInsufficientDataString(DEFAULT_DISTRICT, "ta-IN"),
+  "mr-IN": getInsufficientDataString(DEFAULT_DISTRICT, "mr-IN"),
+  "bn-IN": getInsufficientDataString(DEFAULT_DISTRICT, "bn-IN"),
 };
 
 /**
@@ -86,7 +94,7 @@ export function verifyCitationGate(draft: { sourceProduct?: string; issueTime?: 
 export async function generateGroundedResponse(
   query: string,
   district: string = DEFAULT_DISTRICT,
-  language: "hi-IN" | "ta-IN" | "en-IN" = "en-IN"
+  language: string = "en-IN"
 ): Promise<GroundedAnswer> {
   let retryCount = 0;
   const maxRetries = 2;
