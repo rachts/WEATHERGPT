@@ -172,9 +172,12 @@ export async function POST(req: NextRequest) {
       const stream = new ReadableStream({
         start(controller) {
           const id = crypto.randomUUID();
+          controller.enqueue({ type: "start" });
+          controller.enqueue({ type: "start-step" });
           controller.enqueue({ type: "text-start", id });
           controller.enqueue({ type: "text-delta", id, delta: crisisText });
           controller.enqueue({ type: "text-end", id });
+          controller.enqueue({ type: "finish-step" });
           controller.enqueue({ type: "finish", finishReason: "stop" });
           controller.close();
         },
