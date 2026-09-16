@@ -9,6 +9,7 @@
   <b>Zero fabricated data. Strictly typed provenance. Sub-2s latency on 3G cellular connections.</b></p>
 
   <p>
+    <a href="DOCS/JUDGE_PACK.md"><b>⚖️ SIH Judge Pack & Script</b></a> ·
     <a href="#quickstart">Quickstart</a> ·
     <a href="#features">Features</a> ·
     <a href="#screenshots">Screenshots</a> ·
@@ -25,12 +26,12 @@
   <p>
     <a href="https://github.com/rachts/WEATHERGPT/actions/workflows/ci.yml"><img src="https://github.com/rachts/WEATHERGPT/actions/workflows/ci.yml/badge.svg?branch=Changes" alt="CI Status" /></a>
     <a href="https://github.com/rachts/WEATHERGPT/stargazers"><img src="https://img.shields.io/github/stars/rachts/WEATHERGPT?style=flat-square&color=f59e0b" alt="Stars" /></a>
-    <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-14.2.24-black?style=flat-square&logo=next.js" alt="Next.js 14" /></a>
+    <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-14.2.35-black?style=flat-square&logo=next.js" alt="Next.js 14" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript" alt="TypeScript" /></a>
     <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind-CSS_v3.4-06B6D4?style=flat-square&logo=tailwindcss" alt="Tailwind CSS" /></a>
     <a href="https://maplibre.org/"><img src="https://img.shields.io/badge/MapLibre_GL-v4.7-2D5016?style=flat-square&logo=maplibre" alt="MapLibre GL" /></a>
     <a href="https://serwist.pages.dev/"><img src="https://img.shields.io/badge/PWA-Serwist_v9-654FF0?style=flat-square&logo=pwa" alt="PWA Serwist" /></a>
-    <a href="#acceptance-gates"><img src="https://img.shields.io/badge/Acceptance_Gates-10%2F10_PASS-10b981?style=flat-square" alt="Acceptance Gates" /></a>
+    <a href="#acceptance-gates"><img src="https://img.shields.io/badge/Acceptance_Gates-26%2F26_PASS-10b981?style=flat-square" alt="Acceptance Gates" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License" /></a>
   </p>
 

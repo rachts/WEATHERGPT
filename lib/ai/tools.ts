@@ -46,6 +46,7 @@ export const getWeather = tool({
         sourceProduct: data.sourceProduct,
         issueTime: data.issueTime,
         validUntil: data.validUntil,
+        provenance: data.provenance,
         isCachedFallback: data.isCachedFallback,
       };
     } catch (err) {

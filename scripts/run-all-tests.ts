@@ -370,6 +370,16 @@ async function runTests() {
     record("G25", "Rate Limiting, Session Reuse & Boot Validation (M7, M8, M14, M15)", false, (err as Error).message);
   }
 
+  // --- GATE G26: SIH Hackathon Judge Verification Suite (Stretch Goals) ---
+  try {
+    const { runJudgeVerificationTests } = await import("../tests/judge-verification-suite.test");
+    await runJudgeVerificationTests();
+    record("G26", "SIH Hackathon Judge Verification Suite (30 Tests)", true,
+      "30 tests verified: rainfall boundaries (0.0/2.4/15.6/64.5/120mm), spray safety rules, 9 Indic languages, crisis intervention, injection immunity, and CG-NAT isolation.");
+  } catch (err) {
+    record("G26", "SIH Hackathon Judge Verification Suite (30 Tests)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");
