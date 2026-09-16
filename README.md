@@ -23,6 +23,7 @@
   </p>
 
   <p>
+    <a href="https://github.com/rachts/WEATHERGPT/actions/workflows/ci.yml"><img src="https://github.com/rachts/WEATHERGPT/actions/workflows/ci.yml/badge.svg?branch=Changes" alt="CI Status" /></a>
     <a href="https://github.com/rachts/WEATHERGPT/stargazers"><img src="https://img.shields.io/github/stars/rachts/WEATHERGPT?style=flat-square&color=f59e0b" alt="Stars" /></a>
     <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-14.2.24-black?style=flat-square&logo=next.js" alt="Next.js 14" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript" alt="TypeScript" /></a>
