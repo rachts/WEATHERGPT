@@ -108,34 +108,34 @@ export function getDeterministicCropAdvisory(
   let irrigationAdvisory = dict.standingWaterPaddy;
   let pestDiseaseAdvisory = "Monitor for leaf blast and stem borer under humid cloudy conditions.";
 
-  if (normalizedCrop.includes("wheat") || normalizedCrop.includes("गेहूं") || normalizedCrop.includes("கோதுமை")) {
+  const hasCropToken = (pattern: RegExp) => pattern.test(normalizedCrop);
+
+  if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:wheat|गेहूं|கோதுமை)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.wheatCrownRoot;
     pestDiseaseAdvisory = "Scout for yellow rust (stripe rust) pustules on leaves during cool mornings.";
-  } else if (normalizedCrop.includes("cotton") || normalizedCrop.includes("कपास") || normalizedCrop.includes("பருத்தி")) {
+  } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:cotton|कपास|பருத்தி)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.cottonDrainage;
     pestDiseaseAdvisory = "Pheromone trap monitoring for pink bollworm; consult local KVK if ETL exceeds 5%.";
-  } else if (normalizedCrop.includes("cane") || normalizedCrop.includes("sugarcane") || normalizedCrop.includes("गन्ना") || normalizedCrop.includes("கரும்பு")) {
+  } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:sugarcane|cane|गन्ना|கரும்பு)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.sugarcaneMulch;
     // REPLACED UNSUPPORTED CHEMICAL CHLORPYRIFOS WITH SAFE EXTENSION GUIDANCE (Req 23)
     pestDiseaseAdvisory = "Inspect root zones for white grub; consult local Krishi Vigyan Kendra (KVK) for approved soil treatment.";
-  } else if (normalizedCrop.includes("mustard") || normalizedCrop.includes("सरसों") || normalizedCrop.includes("கடுகு")) {
+  } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:mustard|सरसों|கடுகு)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.mustardAphid;
     pestDiseaseAdvisory = "Monitor for mustard aphid and white rust under persistent cloud cover.";
-  } else if (normalizedCrop.includes("tea") || normalizedCrop.includes("चाय") || normalizedCrop.includes("தேயிலை")) {
+  } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:tea|चाय|தேயிலை)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.teaPlucking;
     pestDiseaseAdvisory = "Inspect upper canopy for blister blight and red spider mite after heavy mist.";
-  } else if (normalizedCrop.includes("groundnut") || normalizedCrop.includes("pulse") || normalizedCrop.includes("peanut") || normalizedCrop.includes("दाल") || normalizedCrop.includes("मूंगफली")) {
+  } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:groundnut|pulse|peanut|दाल|मूंगफली)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.pulsesGroundnut;
     pestDiseaseAdvisory = "Scout for spodoptera and pod borers; avoid chemical spray during bee pollination hours.";
   } else if (
-    normalizedCrop.includes("mango") ||
-    normalizedCrop.includes("fruit") ||
-    normalizedCrop.includes("आम") ||
+    hasCropToken(/(?:^|[^\p{L}\p{N}])(?:mango|fruit|आम)(?:[^\p{L}\p{N}]|$)/iu) ||
     ["மாம்பழம்", "மாங்காய்", "மாந்தோப்பு", "மாமரம்"].some(m => normalizedCrop.includes(m))
   ) {
     irrigationAdvisory = dict.drainageMango;
     pestDiseaseAdvisory = "Inspect leaf axils and trunk base for fungal infestation during damp spells.";
-  } else if (normalizedCrop.includes("vegetable") || normalizedCrop.includes("tomato") || normalizedCrop.includes("सब्जी") || normalizedCrop.includes("தக்காளி")) {
+  } else if (hasCropToken(/(?:^|[^\p{L}\p{N}])(?:vegetable|tomato|सब्जी|தக்காளி)(?:[^\p{L}\p{N}]|$)/iu)) {
     irrigationAdvisory = dict.postponeNitrogen;
     pestDiseaseAdvisory = "Provide vine staking against winds up to 20 km/h and check for damping-off.";
   }

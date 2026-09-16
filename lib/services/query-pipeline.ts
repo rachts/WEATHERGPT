@@ -93,32 +93,92 @@ export function detectCrisisMessage(input: string): boolean {
 }
 
 /**
+ * Compiles a Unicode-aware token boundary regular expression.
+ * Prevents false-positive substring matches:
+ * - "rain" in "grain", "drain", "drainage", "train"
+ * - "cane" in "hurricane", "volcano"
+ * - "wind" in "window", "unwind"
+ * - "now" in "know", "snow"
+ * - "rice" in "price"
+ * - "tea" in "team", "steam"
+ */
+export function compileTokenRegex(term: string): RegExp {
+  const escaped = term
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\s+/g, "[\\s-]+");
+  return new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}(?:[^\\p{L}\\p{N}]|$)`, "iu");
+}
+
+const CROP_EXTRACTION_MAP: Array<{ crop: string; patterns: RegExp[] }> = [
+  { crop: "wheat", patterns: ["wheat", "गेहूं", "கோதுமை"].map(compileTokenRegex) },
+  { crop: "cotton", patterns: ["cotton", "कपास", "பருத்தி"].map(compileTokenRegex) },
+  { crop: "sugarcane", patterns: ["sugarcane", "cane", "गन्ना", "கரும்பு"].map(compileTokenRegex) },
+  { crop: "mustard", patterns: ["mustard", "सरसों", "கடுகு"].map(compileTokenRegex) },
+  { crop: "tea", patterns: ["tea", "चाय", "தேயிலை"].map(compileTokenRegex) },
+  { crop: "groundnut", patterns: ["groundnut", "pulse", "peanut", "मूंगफली", "दाल"].map(compileTokenRegex) },
+  {
+    crop: "mango",
+    patterns: [
+      ...["mango", "mangoes", "fruit", "fruits", "आम", "மாம்பழம்", "மாங்காய்", "மாந்தோப்பு", "மாமரம்"].map(compileTokenRegex),
+      /(?:^|\s)மா(?:\s|$)/u,
+    ],
+  },
+  { crop: "vegetable", patterns: ["vegetable", "vegetables", "tomato", "tomatoes", "सब्जी", "தக்காளி"].map(compileTokenRegex) },
+  { crop: "paddy", patterns: ["paddy", "rice", "धान", "நெல்"].map(compileTokenRegex) },
+];
+
+/**
  * Extract crop mentioned in user inquiry, or fallback to district primary crop
  */
 export function extractCropFromQuery(q: string, fallbackCrop: string = "paddy"): string {
-  const lower = q.toLowerCase();
-  if (lower.includes("wheat") || lower.includes("गेहूं") || lower.includes("கோதுமை")) return "wheat";
-  if (lower.includes("cotton") || lower.includes("कपास") || lower.includes("பருத்தி")) return "cotton";
-  if (lower.includes("sugarcane") || lower.includes("cane") || lower.includes("गन्ना") || lower.includes("கரும்பு")) return "sugarcane";
-  if (lower.includes("mustard") || lower.includes("सरसों") || lower.includes("கடுகு")) return "mustard";
-  if (lower.includes("tea") || lower.includes("चाय") || lower.includes("தேயிலை")) return "tea";
-  if (lower.includes("groundnut") || lower.includes("pulse") || lower.includes("peanut") || lower.includes("मूंगफली") || lower.includes("दाल")) return "groundnut";
-
-  const tamilMangoTokens = ["மாம்பழம்", "மாங்காய்", "மாந்தோப்பு", "மாமரம்"];
-  if (
-    lower.includes("mango") ||
-    lower.includes("fruit") ||
-    lower.includes("आम") ||
-    tamilMangoTokens.some(t => lower.includes(t)) ||
-    /(?:^|\s)மா(?:\s|$)/.test(lower)
-  ) {
-    return "mango";
+  for (const { crop, patterns } of CROP_EXTRACTION_MAP) {
+    if (patterns.some((p) => p.test(q))) {
+      return crop;
+    }
   }
-
-  if (lower.includes("vegetable") || lower.includes("tomato") || lower.includes("सब्जी") || lower.includes("தக்காளி")) return "vegetable";
-  if (lower.includes("paddy") || lower.includes("rice") || lower.includes("धान") || lower.includes("நெல்")) return "paddy";
   return fallbackCrop;
 }
+
+// Warning indicators (+4)
+const WARNING_KEYWORDS = [
+  "warning", "alert", "cyclone", "danger", "storm", "flood", "gale",
+  "चेतावनी", "अलर्ट", "तूफान", "बाढ़",
+  "எச்சரிக்கை", "புயல்", "வெள்ளம்",
+];
+const WARNING_PATTERNS = WARNING_KEYWORDS.map(compileTokenRegex);
+
+// Rainfall indicators (+4 for explicit rain queries)
+const RAIN_KEYWORDS = [
+  "rain", "rains", "raining", "rainfall", "precipitation", "shower", "showers", "downpour", "drizzle",
+  "बारिश", "वर्षा", "बरसात", "बूंदाबांदी",
+  "மழை", "தூறல்",
+];
+const RAIN_PATTERNS = RAIN_KEYWORDS.map(compileTokenRegex);
+
+// 7-day outlook indicators (+4)
+const OUTLOOK_KEYWORDS = [
+  "forecast", "outlook", "next week", "upcoming", "7 day", "seven day",
+  "पूर्वानुमान", "आगामी", "अगले सात दिन",
+  "முன்னறிவிப்பு", "அடுத்த வாரம்",
+];
+const OUTLOOK_PATTERNS = OUTLOOK_KEYWORDS.map(compileTokenRegex);
+
+// Crop / Advisory indicators (+3)
+const CROP_KEYWORDS = [
+  "crop", "crops", "spray", "spraying", "irrigation", "irrigate", "paddy", "wheat", "cotton", "cane", "sugarcane",
+  "mango", "fertilizer", "fertilizers", "pest", "pests", "pesticide", "pesticides", "disease", "diseases", "farm", "farmer", "farming", "kisan",
+  "फसल", "छिड़काव", "सिंचाई", "गेहूं", "धान", "कपास", "गन्ना", "खाद", "कीट",
+  "பயிர்", "தெளிப்பு", "பாசனம்", "நெல்", "கோதுமை", "பருத்தி", "கரும்பு", "உரம்",
+];
+const CROP_PATTERNS = CROP_KEYWORDS.map(compileTokenRegex);
+
+// Current weather indicators (+2)
+const CURRENT_KEYWORDS = [
+  "today", "now", "temperature", "temp", "humidity", "wind", "winds", "current",
+  "आज", "अभी", "तापमान", "हवा", "आर्द्रता",
+  "இன்று", "இப்போது", "வெப்பநிலை", "காற்று",
+];
+const CURRENT_PATTERNS = CURRENT_KEYWORDS.map(compileTokenRegex);
 
 /**
  * Resolve intent deterministically with multi-intent scoring
@@ -137,55 +197,24 @@ export function resolveIntent(query: string): WeatherIntent {
   let scoreOutlook = 0;
   let scoreCurrent = 0;
 
-  // Warning indicators (+4)
-  const warningKeywords = [
-    "warning", "alert", "cyclone", "danger", "storm", "flood", "gale",
-    "चेतावनी", "अलर्ट", "तूफान", "बाढ़",
-    "எச்சரிக்கை", "புயல்", "வெள்ளம்",
-  ];
-  for (const kw of warningKeywords) {
-    if (q.includes(kw)) scoreWarning += 4;
+  for (const pat of WARNING_PATTERNS) {
+    if (pat.test(q)) scoreWarning += 4;
   }
 
-  // Rainfall indicators (+4 for explicit rain queries)
-  const rainKeywords = [
-    "rain", "raining", "precipitation", "shower", "downpour", "drizzle",
-    "बारिश", "वर्षा", "बरसात", "बूंदाबांदी",
-    "மழை", "தூறல்",
-  ];
-  for (const kw of rainKeywords) {
-    if (q.includes(kw)) scoreRainfall += 4;
+  for (const pat of RAIN_PATTERNS) {
+    if (pat.test(q)) scoreRainfall += 4;
   }
 
-  // 7-day outlook indicators (+4)
-  const outlookKeywords = [
-    "forecast", "outlook", "next week", "upcoming", "7 day", "seven day",
-    "पूर्वानुमान", "आगामी", "अगले सात दिन",
-    "முன்னறிவிப்பு", "அடுத்த வாரம்",
-  ];
-  for (const kw of outlookKeywords) {
-    if (q.includes(kw)) scoreOutlook += 4;
+  for (const pat of OUTLOOK_PATTERNS) {
+    if (pat.test(q)) scoreOutlook += 4;
   }
 
-  // Crop / Advisory indicators (+3)
-  const cropKeywords = [
-    "crop", "spray", "irrigation", "paddy", "wheat", "cotton", "cane", "sugarcane",
-    "mango", "fertilizer", "pest", "disease", "farm", "kisan",
-    "फसल", "छिड़काव", "सिंचाई", "गेहूं", "धान", "कपास", "गन्ना", "खाद", "कीट",
-    "பயிர்", "தெளிப்பு", "பாசனம்", "நெல்", "கோதுமை", "பருத்தி", "கரும்பு", "உரம்",
-  ];
-  for (const kw of cropKeywords) {
-    if (q.includes(kw)) scoreCrop += 3;
+  for (const pat of CROP_PATTERNS) {
+    if (pat.test(q)) scoreCrop += 3;
   }
 
-  // Current weather indicators (+2)
-  const currentKeywords = [
-    "today", "now", "temperature", "humidity", "wind", "current",
-    "आज", "अभी", "तापमान", "हवा", "आर्द्रता",
-    "இன்று", "இப்போது", "வெப்பநிலை", "காற்று",
-  ];
-  for (const kw of currentKeywords) {
-    if (q.includes(kw)) scoreCurrent += 2;
+  for (const pat of CURRENT_PATTERNS) {
+    if (pat.test(q)) scoreCurrent += 2;
   }
 
   const scores = [

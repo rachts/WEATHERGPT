@@ -300,6 +300,16 @@ async function runTests() {
     record("G18", "Marathi Indic Language Detection (H1)", false, (err as Error).message);
   }
 
+  // --- GATE G19: Intent Matching & Substring Collision Guard (H2) ---
+  try {
+    const { runIntentMatchingTests } = await import("../tests/intent-matching.test");
+    await runIntentMatchingTests();
+    record("G19", "Intent Matching & Substring Collision Guard (H2)", true,
+      "Unicode token boundary matching eliminates substring false positives (grain/drain/train vs rain, hurricane vs cane, price vs rice).");
+  } catch (err) {
+    record("G19", "Intent Matching & Substring Collision Guard (H2)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");
