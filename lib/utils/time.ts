@@ -32,23 +32,44 @@ export function normalizeImdTimestamp(raw: any): NormalizedTimestamp {
   }
 
   // Handle numeric timestamps (Unix seconds vs Unix ms)
-  if (typeof raw === "number" || (!isNaN(Number(raw)) && !String(raw).includes("-") && !String(raw).includes(":"))) {
+  // M13: Only treat as epoch when strictly digits of length 9 to 13 within plausible range
+  if (typeof raw === "number" || (typeof raw === "string" && /^\d{9,13}$/.test(raw.trim()))) {
     const num = Number(raw);
     const ms = num < 1e11 ? num * 1000 : num;
-    const d = new Date(ms);
-    if (!isNaN(d.getTime())) {
-      return {
-        isoString: d.toISOString(),
-        date: d,
-        isFallback: false,
-        isValid: true,
-      };
+    // Plausible epoch range: 1990-01-01 (631152000000) to 2100-01-01 (4102444800000)
+    if (ms >= 631152000000 && ms <= 4102444800000) {
+      const d = new Date(ms);
+      if (!isNaN(d.getTime())) {
+        return {
+          isoString: d.toISOString(),
+          date: d,
+          isFallback: false,
+          isValid: true,
+        };
+      }
     }
   }
 
-  // Handle ISO / RFC string dates
+  // Handle String dates (ISO, RFC, and IMD DD-MM-YYYY format)
   if (typeof raw === "string") {
     const cleanStr = raw.trim().replace(/^['"]|['"]$/g, "");
+
+    // Check for DD-MM-YYYY or DD/MM/YYYY with optional time (standard IMD nowcast format in IST)
+    const ddmmyyyyMatch = cleanStr.match(/^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?/);
+    if (ddmmyyyyMatch) {
+      const [, day, month, year, hours = "00", minutes = "00", seconds = "00"] = ddmmyyyyMatch;
+      const isoCandidate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+05:30`;
+      const d = new Date(isoCandidate);
+      if (!isNaN(d.getTime())) {
+        return {
+          isoString: d.toISOString(),
+          date: d,
+          isFallback: false,
+          isValid: true,
+        };
+      }
+    }
+
     const d = new Date(cleanStr);
     if (!isNaN(d.getTime())) {
       return {

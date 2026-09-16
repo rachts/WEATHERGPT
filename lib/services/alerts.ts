@@ -12,6 +12,13 @@ import sampleAlerts from "../data/sample-alerts.json";
 import { normalizeImdTimestamp } from "../utils/time";
 import { findDistrictInfo } from "../utils/location";
 import { isProduction } from "../config/environment";
+import {
+  extractNowcastAreas,
+  parseNowcastAreaInfo,
+  findBestMatchingNowcastArea,
+  getImdParserHealth,
+  ImdNowcastArea,
+} from "./imd-nowcast-parser";
 
 export type AlertSeverity = "Low" | "Moderate" | "High" | "Severe";
 
@@ -34,6 +41,7 @@ export interface IMDWarningProduct {
   issueTime: string;
   validFrom: string;
   validTo: string;
+  validUntilEstimated?: boolean;
   isActive: boolean;
 }
 
@@ -52,14 +60,6 @@ export interface DisseminationResult {
   };
   deliveryLogs: string[];
   skipped?: boolean;
-}
-
-interface ImdNowcastArea {
-  title: string;
-  id: string;
-  color: string;
-  info: string;
-  balloonText?: string;
 }
 
 // Global caches & deduplication registry
@@ -142,11 +142,7 @@ async function fetchLiveImdNowcastAreas(): Promise<ImdNowcastArea[]> {
         return imdNowcastAreasCache ? imdNowcastAreasCache.areas : [];
       }
       const text = await res.text();
-      const match = text.match(/\"areas\":\s*(\[\s*\{[\s\S]*?\}\s*\])/);
-      if (!match) {
-        return imdNowcastAreasCache ? imdNowcastAreasCache.areas : [];
-      }
-      const areas: ImdNowcastArea[] = JSON.parse(match[1]);
+      const areas = extractNowcastAreas(text);
       if (Array.isArray(areas) && areas.length > 0) {
         imdNowcastAreasCache = { areas, cachedAt: Date.now() };
       }
@@ -341,87 +337,12 @@ export async function fetchLiveImdDistrictAlerts(
   try {
     const areas = await fetchLiveImdNowcastAreas();
     if (areas.length > 0) {
-      const cleanDistrict = districtName.toUpperCase().replace(/\s+DISTRICT\b/i, "").trim();
-      const cleanState = stateName ? stateName.toUpperCase().trim() : "";
-
-      const candidateAreas = areas.filter((a) => {
-        const titleUpper = a.title.toUpperCase().trim();
-        return (
-          titleUpper === cleanDistrict ||
-          cleanDistrict.includes(titleUpper) ||
-          titleUpper.includes(cleanDistrict)
-        );
-      });
-
-      let selectedArea: ImdNowcastArea | undefined = candidateAreas[0];
-      if (cleanState && candidateAreas.length > 1) {
-        const stateMatch = candidateAreas.find((a) => {
-          const infoUpper = (a.info || "").toUpperCase();
-          const balloonUpper = (a.balloonText || "").toUpperCase();
-          const idUpper = (a.id || "").toUpperCase();
-          return (
-            infoUpper.includes(cleanState) ||
-            balloonUpper.includes(cleanState) ||
-            idUpper.includes(cleanState)
-          );
-        });
-        if (stateMatch) selectedArea = stateMatch;
-      }
+      const selectedArea = findBestMatchingNowcastArea(areas, districtName, stateName);
 
       if (selectedArea) {
-        const color = selectedArea.color.toUpperCase();
-        let severity: AlertSeverity = "Low";
-        let officialSeverity = "Green";
-
-        if (color === "#FF0000") {
-          severity = "Severe";
-          officialSeverity = "Red";
-        } else if (color === "#FFA500") {
-          severity = "High";
-          officialSeverity = "Orange";
-        } else if (color === "#FFFF00") {
-          severity = "Moderate";
-          officialSeverity = "Yellow";
-        }
-
-        const rawInfo = selectedArea.info || "";
-        const issueMatch = rawInfo.match(/Time of issue<\/b>:\s*<p>([^<]+)<\/p>/i);
-        const validMatch = rawInfo.match(/Valid upto<\/b>:\s*([^<]+)<\/p>/i);
-        const bulletMatches = Array.from(rawInfo.matchAll(/<p>([^<]+)<\/p>/g))
-          .map((m) => m[1].trim())
-          .filter(
-            (t) =>
-              !t.toLowerCase().includes("time of issue") &&
-              !t.toLowerCase().includes("valid upto") &&
-              !t.toLowerCase().includes("hrs")
-          );
-
-        const normalizedSummary = bulletMatches.join(". ");
-        const validityNote = validMatch ? ` (Valid upto: ${validMatch[1].trim()})` : "";
-        const displayWarningText = normalizedSummary ? `${normalizedSummary}${validityNote}` : "No severe weather warning active.";
-
-        let headline = `${severity} Alert: ${districtName} Nowcast Bulletin`;
-        if (severity === "Low") {
-          headline = `No Severe Warning Issued for ${districtName}`;
-        } else if (severity === "Severe") {
-          headline = `Severe Weather Warning: ${districtName} Sector`;
-        }
-
-        const normalizedIssue = normalizeImdTimestamp(issueMatch ? issueMatch[1].trim() : null);
-        const issueIso = normalizedIssue.isoString;
-        const validFromIso = issueIso;
-        
-        // Calculate validTo ISO timestamp (typically +3 hours for IMD nowcast if valid upto string)
-        let validToIso = new Date(Date.now() + 3 * 3600 * 1000).toISOString();
-        if (validMatch) {
-          const parsedValid = normalizeImdTimestamp(validMatch[1].trim());
-          if (parsedValid.isValid) {
-            validToIso = parsedValid.isoString;
-          }
-        }
-
+        const parsed = parseNowcastAreaInfo(selectedArea.info, selectedArea.color, districtName);
         const sourceId = `imd_nowcast_${selectedArea.id || districtCode}`;
-        const alertHash = computeAlertHash(sourceId, districtCode, issueIso, displayWarningText);
+        const alertHash = computeAlertHash(sourceId, districtCode, parsed.issueIso, parsed.warningText);
 
         const liveAlert: IMDWarningProduct = {
           id: sourceId,
@@ -430,17 +351,18 @@ export async function fetchLiveImdDistrictAlerts(
           districtCode,
           district: districtName,
           state: stateName,
-          severity,
-          officialSeverity,
-          headline,
-          warningText: displayWarningText,
-          rawBulletin: rawInfo,
-          normalizedBulletin: normalizedSummary,
+          severity: parsed.severity,
+          officialSeverity: parsed.officialSeverity,
+          headline: parsed.headline,
+          warningText: parsed.warningText,
+          rawBulletin: parsed.rawBulletin,
+          normalizedBulletin: parsed.normalizedBulletin,
           sourceProduct: "IMD Mausam District Nowcast Portal (MoES)",
           sourceUrl: "https://mausam.imd.gov.in/responsive/districtWiseNowcast.php",
-          issueTime: issueIso,
-          validFrom: validFromIso,
-          validTo: validToIso,
+          issueTime: parsed.issueIso,
+          validFrom: parsed.validFromIso,
+          validTo: parsed.validToIso,
+          validUntilEstimated: parsed.validUntilEstimated,
           isActive: true,
         };
 

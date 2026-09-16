@@ -280,6 +280,16 @@ async function runTests() {
     record("G16", "Phase 3 Hardening & Polish", false, (err as Error).message);
   }
 
+  // --- GATE G17: IMD Nowcast Resilient Parser & Health Degradation (C6, M3, M4) ---
+  try {
+    const { runNowcastParserTests } = await import("../tests/imd-nowcast-parser.test");
+    await runNowcastParserTests();
+    record("G17", "IMD Nowcast Resilient Parser (C6, M3, M4)", true,
+      "Resilient regex extraction across markup variations, validUntilEstimated flag, scored district disambiguation, and 3+ failure health degradation verified.");
+  } catch (err) {
+    record("G17", "IMD Nowcast Resilient Parser (C6, M3, M4)", false, (err as Error).message);
+  }
+
   console.log("\n========================================================");
   console.log(`TOTAL GATES: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("========================================================\n");
