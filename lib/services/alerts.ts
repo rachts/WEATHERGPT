@@ -51,6 +51,7 @@ export interface DisseminationResult {
     ivrStubbed: boolean;
   };
   deliveryLogs: string[];
+  skipped?: boolean;
 }
 
 interface ImdNowcastArea {
@@ -65,7 +66,26 @@ interface ImdNowcastArea {
 let imdNowcastAreasCache: { areas: ImdNowcastArea[]; cachedAt: number } | null = null;
 let imdNowcastInFlight: Promise<ImdNowcastArea[]> | null = null;
 const liveDistrictAlertsCache = new Map<string, { alerts: IMDWarningProduct[]; cachedAt: number }>();
-const dispatchedAlertHashes = new Set<string>();
+const dispatchedAlertHashes = new Map<string, number>(); // alertHash -> timestamp
+const MAX_DISPATCHED_HASHES = 5000;
+const HASH_TTL_MS = 24 * 60 * 60 * 1000; // 24-hour TTL pruning
+
+function pruneDispatchedAlertHashes(): void {
+  const now = Date.now();
+  dispatchedAlertHashes.forEach((timestamp, hash) => {
+    if (now - timestamp > HASH_TTL_MS) {
+      dispatchedAlertHashes.delete(hash);
+    }
+  });
+  if (dispatchedAlertHashes.size > MAX_DISPATCHED_HASHES) {
+    const overflow = dispatchedAlertHashes.size - MAX_DISPATCHED_HASHES;
+    let count = 0;
+    for (const key of Array.from(dispatchedAlertHashes.keys())) {
+      if (count++ >= overflow) break;
+      dispatchedAlertHashes.delete(key);
+    }
+  }
+}
 
 /**
  * Computes deterministic SHA-256 hash for alert deduplication and idempotency
@@ -232,12 +252,19 @@ export function routeWarningDissemination(
       severity: warning.severity,
       displayWarningText: warning.warningText,
       verbatimWarningText: warning.rawBulletin || warning.warningText,
-      channels,
+      channels: {
+        inAppBanner: false,
+        webPush: false,
+        smsStubbed: false,
+        ivrStubbed: false,
+      },
       deliveryLogs: logs,
+      skipped: true,
     };
   }
 
-  dispatchedAlertHashes.add(warning.alertHash);
+  pruneDispatchedAlertHashes();
+  dispatchedAlertHashes.set(warning.alertHash, Date.now());
   logs.push(`Alert ${warning.id} received for district ${warning.district} with severity [${warning.severity}].`);
 
   switch (warning.severity) {

@@ -6,9 +6,12 @@ import {
   routeWarningDissemination,
   computeAlertHash,
   IMDWarningProduct,
+  AlertSeverity,
+  DisseminationResult,
 } from "@/lib/services/alerts";
 import { isRateLimited } from "@/lib/utils/rate-limit";
 import { logger } from "@/lib/utils/logger";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +79,60 @@ export async function GET(req: NextRequest) {
     }
 
     const { district, state } = parseResult.data;
-    const alerts = await fetchLiveImdDistrictAlerts(district, state);
+    const liveAlerts = await fetchLiveImdDistrictAlerts(district, state);
+
+    let dbAlerts: IMDWarningProduct[] = [];
+    if (process.env.DATABASE_URL) {
+      try {
+        const now = new Date();
+        const records = await prisma.alert.findMany({
+          where: {
+            district: { equals: district, mode: "insensitive" },
+            isActive: true,
+            validTo: { gte: now },
+          },
+          orderBy: { issueTime: "desc" },
+        });
+
+        dbAlerts = records.map((r) => ({
+          id: r.sourceId || r.id,
+          alertHash: r.alertHash || "",
+          sourceId: r.sourceId || r.id,
+          districtCode: r.districtCode || "",
+          district: r.district,
+          state: r.state || undefined,
+          severity: r.severity as AlertSeverity,
+          officialSeverity: r.officialSeverity || undefined,
+          eventType: r.eventType || undefined,
+          headline: r.headline,
+          warningText: r.warningText,
+          rawBulletin: r.rawBulletin || undefined,
+          normalizedBulletin: r.normalizedBulletin || undefined,
+          sourceProduct: r.sourceProduct,
+          sourceUrl: r.sourceUrl || undefined,
+          issueTime: r.issueTime.toISOString(),
+          validFrom: r.validFrom.toISOString(),
+          validTo: r.validTo.toISOString(),
+          isActive: r.isActive,
+        }));
+      } catch (dbErr) {
+        logger.warn("Failed to retrieve alerts from database, relying on live IMD nowcast", {
+          requestId: correlationId,
+          error: (dbErr as Error).message,
+        });
+      }
+    }
+
+    // Deduplicate union by alertHash
+    const seenHashes = new Set<string>();
+    const alerts: IMDWarningProduct[] = [];
+    for (const alert of [...dbAlerts, ...liveAlerts]) {
+      const hash = alert.alertHash || computeAlertHash(alert.id, alert.districtCode, alert.issueTime, alert.warningText);
+      if (!seenHashes.has(hash)) {
+        seenHashes.add(hash);
+        alerts.push({ ...alert, alertHash: hash });
+      }
+    }
 
     return NextResponse.json(
       {
@@ -181,7 +237,67 @@ export async function POST(req: NextRequest) {
       normalizedBulletin: alertData.normalizedBulletin || alertData.warningText,
     };
 
-    const dissemination = routeWarningDissemination(fullAlert, alertData.recipientPhones);
+    let isDuplicate = false;
+    if (process.env.DATABASE_URL) {
+      try {
+        await prisma.alert.create({
+          data: {
+            alertHash,
+            sourceId: fullAlert.sourceId,
+            districtCode: fullAlert.districtCode,
+            district: fullAlert.district,
+            state: fullAlert.state,
+            severity: fullAlert.severity,
+            officialSeverity: fullAlert.officialSeverity,
+            eventType: fullAlert.eventType,
+            headline: fullAlert.headline,
+            warningText: fullAlert.warningText,
+            rawBulletin: fullAlert.rawBulletin,
+            normalizedBulletin: fullAlert.normalizedBulletin,
+            sourceProduct: fullAlert.sourceProduct,
+            sourceUrl: fullAlert.sourceUrl,
+            issueTime: new Date(fullAlert.issueTime),
+            validFrom: new Date(fullAlert.validFrom),
+            validTo: new Date(fullAlert.validTo),
+            isActive: fullAlert.isActive,
+          },
+        });
+      } catch (dbErr: any) {
+        if (dbErr.code === "P2002") {
+          // Unique constraint violation on alertHash -> already ingested
+          isDuplicate = true;
+        } else {
+          logger.warn("Database alert persistence error, falling back to process dedup", {
+            correlationId,
+            error: dbErr.message,
+          });
+        }
+      }
+    }
+
+    let dissemination: DisseminationResult;
+    if (isDuplicate) {
+      dissemination = {
+        alertId: fullAlert.id,
+        alertHash,
+        district: fullAlert.district,
+        severity: fullAlert.severity,
+        displayWarningText: fullAlert.warningText,
+        verbatimWarningText: fullAlert.rawBulletin || fullAlert.warningText,
+        channels: {
+          inAppBanner: false,
+          webPush: false,
+          smsStubbed: false,
+          ivrStubbed: false,
+        },
+        deliveryLogs: [
+          `Alert ${fullAlert.id} (hash: ${alertHash.slice(0, 8)}) was already persisted in database. Skipping duplicate notification.`,
+        ],
+        skipped: true,
+      };
+    } else {
+      dissemination = routeWarningDissemination(fullAlert, alertData.recipientPhones);
+    }
 
     return NextResponse.json({
       data: {

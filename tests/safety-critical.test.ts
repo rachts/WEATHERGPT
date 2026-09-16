@@ -197,8 +197,13 @@ async function runSafetyCriticalTests() {
     // Second dispatch (should be detected as duplicate)
     const d2 = routeWarningDissemination(testAlert, ["+919800000001"]);
 
-    assert.ok(d2.deliveryLogs.some((l) => l.includes("Skipping duplicate notification")));
-    console.log("[PASS] Test 10: Alert deduplication via sha256 hash prevents duplicate dispatches.");
+    assert.ok(d2.deliveryLogs.some((l: string) => l.includes("Skipping duplicate notification")));
+    assert.strictEqual(d2.skipped, true, "Duplicate alert must have skipped: true");
+    assert.strictEqual(d2.channels.inAppBanner, false, "Duplicate alert must have inAppBanner: false");
+    assert.strictEqual(d2.channels.webPush, false, "Duplicate alert must have webPush: false");
+    assert.strictEqual(d2.channels.smsStubbed, false, "Duplicate alert must have smsStubbed: false");
+    assert.strictEqual(d2.channels.ivrStubbed, false, "Duplicate alert must have ivrStubbed: false");
+    console.log("[PASS] Test 10: Alert deduplication via sha256 hash prevents duplicate dispatches (all channels false, skipped=true).");
     passed++;
   } catch (err: any) {
     console.error("[FAIL] Test 10:", err.message);
