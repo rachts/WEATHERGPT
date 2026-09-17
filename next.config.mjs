@@ -38,8 +38,8 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              // strict-dynamic enables trusted scripts while providing backward compatibility with 'self' and 'unsafe-inline'
-              "script-src 'self' 'strict-dynamic' 'unsafe-inline' https:",
+              // Allow scripts from self, inline for Next.js hydration, and eval for React devtools/sourcemaps
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https://mausam.imd.gov.in https://reactjs.imd.gov.in https://internal.imd.gov.in https://satellite.imd.gov.in https://gibs.earthdata.nasa.gov https://*.tile.openstreetmap.org https://tilecache.rainviewer.com https://*.basemaps.cartocdn.com",

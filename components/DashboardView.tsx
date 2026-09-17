@@ -72,10 +72,19 @@ export default function DashboardView() {
       const resolvedState = state || districtInfo?.state || "Maharashtra";
       const primaryCrop = (districtInfo?.crops && districtInfo.crops.length > 0) ? districtInfo.crops[0].toLowerCase() : "paddy";
 
+      const fetchSignal = (ms = 8000) => {
+        if (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal) {
+          return AbortSignal.timeout(ms);
+        }
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), ms);
+        return controller.signal;
+      };
+
       const [weatherRes, alertsRes, advisoryRes] = await Promise.all([
-        fetch(`/api/weather?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}`),
-        fetch(`/api/alerts?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}`),
-        fetch(`/api/advisory?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}&crop=${encodeURIComponent(primaryCrop)}`),
+        fetch(`/api/weather?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}`, { signal: fetchSignal(8000) }),
+        fetch(`/api/alerts?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}`, { signal: fetchSignal(8000) }),
+        fetch(`/api/advisory?district=${encodeURIComponent(district)}&state=${encodeURIComponent(resolvedState)}&crop=${encodeURIComponent(primaryCrop)}`, { signal: fetchSignal(8000) }),
       ]);
 
       if (weatherRes.ok) {

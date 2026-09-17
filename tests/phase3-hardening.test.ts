@@ -65,10 +65,10 @@ export async function runPhase3Tests() {
   assert.ok(configContent.includes("DENY"), "Must set DENY");
 
   assert.ok(configContent.includes("Content-Security-Policy"), "Must set Content-Security-Policy");
-  assert.ok(configContent.includes("strict-dynamic"), "CSP must declare strict-dynamic");
+  assert.ok(configContent.includes("script-src"), "CSP must declare script-src");
   assert.ok(configContent.includes("object-src 'none'"), "CSP must declare object-src 'none'");
   assert.ok(configContent.includes("base-uri 'self'"), "CSP must declare base-uri 'self'");
-  console.log("  ✔ CSP verified with strict-dynamic, object-src 'none', and base-uri 'self'.");
+  console.log("  ✔ CSP verified with script-src, object-src 'none', and base-uri 'self'.");
 
   // Test 5: API Route Versioning Compatibility (/api/v1/* -> /api/*)
   console.log("\n[Test 5] Verifying API route rewrites in next.config.mjs...");

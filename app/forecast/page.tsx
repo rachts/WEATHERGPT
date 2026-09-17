@@ -35,7 +35,15 @@ export default function ForecastPage() {
       try {
         setLoading(true);
         setOfflineError(false);
-        const res = await fetch(`/api/weather?district=${encodeURIComponent(district)}`);
+        const timeoutSignal = (ms = 8000) => {
+          if (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal) {
+            return AbortSignal.timeout(ms);
+          }
+          const controller = new AbortController();
+          setTimeout(() => controller.abort(), ms);
+          return controller.signal;
+        };
+        const res = await fetch(`/api/weather?district=${encodeURIComponent(district)}`, { signal: timeoutSignal(8000) });
         if (res.ok) {
           const rawData = await res.json();
           const data = rawData.data || rawData;
