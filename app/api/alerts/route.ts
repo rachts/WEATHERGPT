@@ -303,14 +303,15 @@ export async function POST(req: NextRequest) {
             isActive: fullAlert.isActive,
           },
         });
-      } catch (dbErr: any) {
-        if (dbErr.code === "P2002") {
+      } catch (dbErr: unknown) {
+        const errObj = dbErr as { code?: string; message?: string };
+        if (errObj.code === "P2002") {
           // Unique constraint violation on alertHash -> already ingested
           isDuplicate = true;
         } else {
           logger.warn("Database alert persistence error, falling back to process dedup", {
             correlationId,
-            error: dbErr.message,
+            error: errObj.message || String(dbErr),
           });
         }
       }

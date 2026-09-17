@@ -10,7 +10,7 @@ export interface NormalizedTimestamp {
   isValid: boolean;
 }
 
-export function normalizeImdTimestamp(raw: any): NormalizedTimestamp {
+export function normalizeImdTimestamp(raw: unknown): NormalizedTimestamp {
   if (raw === null || raw === undefined || raw === "") {
     const now = new Date();
     return {

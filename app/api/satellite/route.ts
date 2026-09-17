@@ -55,8 +55,9 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, max-age=180, s-maxage=180, stale-while-revalidate=300",
       },
     });
-  } catch (err: any) {
-    logger.error("Satellite proxy fetch error", { correlationId, error: err?.message || String(err) });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    logger.error("Satellite proxy fetch error", { correlationId, error: errorMsg });
     return NextResponse.json(
       { error: "Failed to fetch IMD satellite image", correlationId },
       { status: 504 }

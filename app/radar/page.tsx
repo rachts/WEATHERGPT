@@ -126,9 +126,9 @@ export default function RadarPage() {
   const [isLiveStream, setIsLiveStream] = useState(false);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const stationMarkerRef = useRef<any>(null);
-  const userMarkerRef = useRef<any>(null);
+  const mapInstanceRef = useRef<import("maplibre-gl").Map | null>(null);
+  const stationMarkerRef = useRef<import("maplibre-gl").Marker | null>(null);
+  const userMarkerRef = useRef<import("maplibre-gl").Marker | null>(null);
 
   const activeStation = RADAR_STATIONS.find((s) => s.id === selectedStationId) || RADAR_STATIONS[0];
 
@@ -226,8 +226,8 @@ export default function RadarPage() {
       if (stationMarkerRef.current) {
         stationMarkerRef.current.setLngLat(station.center);
       }
-      const ringsSource = map.getSource("radar-rings");
-      if (ringsSource) {
+      const ringsSource = map.getSource("radar-rings") as import("maplibre-gl").GeoJSONSource | undefined;
+      if (ringsSource && typeof ringsSource.setData === "function") {
         ringsSource.setData(generateRadarRangeGeoJson(station.center));
       }
     }
@@ -235,7 +235,7 @@ export default function RadarPage() {
 
   // Playback timer loop
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (isPlaying && radarFrames.length > 0) {
       interval = setInterval(() => {
         setCurrentTimeIndex((prev) => (prev + 1) % radarFrames.length);
@@ -281,7 +281,7 @@ export default function RadarPage() {
 
     let isMounted = true;
     let resizeObs: ResizeObserver | null = null;
-    let mapInstance: any = null;
+    let mapInstance: import("maplibre-gl").Map | null = null;
 
     async function initMap() {
       try {

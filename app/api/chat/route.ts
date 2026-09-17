@@ -21,7 +21,27 @@ import {
 import { detectCrisisMessage } from "@/lib/services/query-pipeline";
 import { getOrCreateChatSession, persistChatExchange } from "@/lib/services/chat-session";
 
+import { z } from "zod";
+
 export const dynamic = "force-dynamic";
+
+const chatMessageSchema = z.object({
+  role: z.enum(["user", "assistant", "system"]).default("user"),
+  content: z.unknown().transform((val) => {
+    if (typeof val === "string") return val;
+    if (val && typeof val === "object" && "text" in val && typeof (val as { text: unknown }).text === "string") {
+      return (val as { text: string }).text;
+    }
+    return String(val ?? "");
+  }),
+});
+
+const chatRequestSchema = z.object({
+  messages: z.array(chatMessageSchema).optional(),
+  query: z.string().optional(),
+  sessionId: z.string().optional(),
+  district: z.string().optional(),
+});
 
 /**
  * Extracts a district name mentioned in conversation history, or returns fallback.
@@ -134,9 +154,9 @@ export async function POST(req: NextRequest) {
   const headerSessionId = req.headers.get("x-session-id") || req.nextUrl?.searchParams?.get("sessionId") || undefined;
 
   try {
-    let rawBody: any = {};
+    let unvalidatedJson: unknown;
     try {
-      rawBody = await req.json();
+      unvalidatedJson = await req.json();
     } catch {
       return NextResponse.json(
         { error: "Invalid JSON request body.", requestId: correlationId },
@@ -144,8 +164,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const parsed = chatRequestSchema.safeParse(unvalidatedJson);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "INVALID_REQUEST_PAYLOAD",
+            message: parsed.error.issues.map((i) => i.message).join(", "),
+            requestId: correlationId,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    const body = parsed.data;
     const clientSessionId =
-      (typeof rawBody?.sessionId === "string" && rawBody.sessionId.trim()) || headerSessionId;
+      (typeof body.sessionId === "string" && body.sessionId.trim()) || headerSessionId;
 
     // Rate limiting: keyed by sessionId + clientIp to protect rural users behind shared carrier NAT (M8)
     const rateLimitConfig = getRateLimitConfig("ai");
@@ -166,13 +201,13 @@ export async function POST(req: NextRequest) {
     // Normalizing messages from either standard useChat body or legacy payload
     let messages: Array<{ role: "user" | "assistant" | "system"; content: string }> = [];
 
-    if (Array.isArray(rawBody.messages) && rawBody.messages.length > 0) {
-      messages = rawBody.messages.map((m: any) => ({
-        role: m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user",
-        content: typeof m.content === "string" ? m.content : String(m.content || ""),
+    if (body.messages && body.messages.length > 0) {
+      messages = body.messages.map((m) => ({
+        role: m.role,
+        content: m.content,
       }));
-    } else if (typeof rawBody.query === "string" && rawBody.query.trim()) {
-      messages = [{ role: "user", content: rawBody.query.trim() }];
+    } else if (body.query && body.query.trim()) {
+      messages = [{ role: "user", content: body.query.trim() }];
     } else {
       return NextResponse.json(
         { error: "A non-empty query or messages array is required.", requestId: correlationId },
@@ -231,7 +266,7 @@ export async function POST(req: NextRequest) {
     // ------------------------------------------------------------------------
     // STAGE 3: Map to IMD district (Fuzzy match plus aliases)
     // ------------------------------------------------------------------------
-    const fallbackDistrict = resolveDistrictFromMessages(messages, rawBody.district || DEFAULT_DISTRICT);
+    const fallbackDistrict = resolveDistrictFromMessages(messages, body.district || DEFAULT_DISTRICT);
     const mapped = mapToIMDDistrict(extracted.rawLocation, fallbackDistrict);
     const activeDistrict = mapped.district;
 

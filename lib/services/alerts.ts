@@ -413,8 +413,8 @@ export async function dispatchSmsAlert(
         const errText = await res.text();
         lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
         if (res.status < 500) break; // Don't retry 4xx errors
-      } catch (err: any) {
-        lastError = err?.message || String(err);
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
       }
     }
 
@@ -473,8 +473,8 @@ export async function dispatchSmsAlert(
         const errText = await res.text();
         lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
         if (res.status < 500) break;
-      } catch (err: any) {
-        lastError = err?.message || String(err);
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
       }
     }
 
@@ -593,8 +593,8 @@ export async function dispatchIvrAlert(
         const errText = await res.text();
         lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
         if (res.status < 500) break;
-      } catch (err: any) {
-        lastError = err?.message || String(err);
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
       }
     }
 
@@ -643,8 +643,8 @@ export async function dispatchIvrAlert(
         const errText = await res.text();
         lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
         if (res.status < 500) break;
-      } catch (err: any) {
-        lastError = err?.message || String(err);
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
       }
     }
 

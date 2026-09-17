@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { generateGroundedResponse } from "@/lib/services/rag";
 import { isRateLimited } from "@/lib/utils/rate-limit";
 import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
+
+const ragRequestSchema = z.object({
+  query: z.string().min(1, "Query is required").max(500, "Query exceeds maximum allowed length of 500 characters"),
+  district: z.string().min(1).max(100).default("Raigad"),
+  language: z.enum(["hi-IN", "ta-IN", "en-IN"]).default("en-IN"),
+});
 
 export async function POST(req: NextRequest) {
   const correlationId = crypto.randomUUID();
@@ -17,22 +24,28 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
-    const query = typeof body.query === "string" ? body.query.trim() : "";
-    const district = typeof body.district === "string" ? body.district : "Raigad";
-    const language = (body.language || "en-IN") as "hi-IN" | "ta-IN" | "en-IN";
-
-    if (!query) {
-      return NextResponse.json({ error: "Query is required", correlationId }, { status: 400 });
-    }
-
-    if (query.length > 500) {
+    let unvalidatedJson: unknown;
+    try {
+      unvalidatedJson = await req.json();
+    } catch {
       return NextResponse.json(
-        { error: "Query exceeds maximum allowed length of 500 characters", correlationId },
+        { error: "Invalid JSON request body.", correlationId },
         { status: 400 }
       );
     }
 
+    const parseResult = ragRequestSchema.safeParse(unvalidatedJson);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        {
+          error: parseResult.error.issues[0]?.message || "Invalid request payload",
+          correlationId,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { query, district, language } = parseResult.data;
     const result = await generateGroundedResponse(query, district, language);
     return NextResponse.json(result);
   } catch (error) {

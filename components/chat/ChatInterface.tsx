@@ -7,17 +7,57 @@ import ReactMarkdown from "react-markdown";
 import { getActiveLocation } from "@/lib/utils/location";
 import { useTranslation } from "@/lib/i18n/context";
 
-function getSpeechRecognition(): any {
-  if (typeof window === "undefined") return null;
-  return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
+interface SpeechRecognitionEvent {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+    };
+  };
 }
 
-function extractMessageText(message: any): string {
+interface SpeechRecognitionInstance {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+interface WindowWithSpeech extends Window {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+}
+
+function getSpeechRecognition(): SpeechRecognitionConstructor | null {
+  if (typeof window === "undefined") return null;
+  const win = window as unknown as WindowWithSpeech;
+  return win.SpeechRecognition || win.webkitSpeechRecognition || null;
+}
+
+interface ChatMessagePart {
+  type: string;
+  text?: string;
+}
+
+interface ChatMessageLike {
+  content?: string;
+  parts?: ChatMessagePart[];
+}
+
+function extractMessageText(message: ChatMessageLike): string {
   if (typeof message.content === "string") return message.content;
   if (Array.isArray(message.parts)) {
     return message.parts
-      .filter((p: any) => p.type === "text" && typeof p.text === "string")
-      .map((p: any) => p.text)
+      .filter((p): p is ChatMessagePart & { text: string } => p.type === "text" && typeof p.text === "string")
+      .map((p) => p.text)
       .join("");
   }
   return "";
@@ -61,7 +101,7 @@ export default function ChatInterface() {
   const [judgeMode, setJudgeMode] = useState(false);
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, stop, status } = useChat({
@@ -145,7 +185,7 @@ export default function ChatInterface() {
       recognition.onend = () => setVoiceActive(false);
       recognition.onerror = () => setVoiceActive(false);
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0]?.[0]?.transcript;
         if (transcript) {
           setInput(transcript);

@@ -7,7 +7,7 @@
 // 5. Generate localized reply (One LLM call, native language)
 
 import { getAllDistricts, DistrictInfo, findDistrictInfo } from "@/lib/utils/location";
-import { getDistrictWeather } from "@/lib/services/weather-data";
+import { getDistrictWeather, type NormalizedWeather } from "@/lib/services/weather-data";
 import { logger } from "@/lib/utils/logger";
 import { DEFAULT_DISTRICT } from "@/lib/config/constants";
 import { detectCrisisMessage } from "@/lib/services/query-pipeline";
@@ -464,7 +464,7 @@ function levenshteinDistance(a: string, b: string): number {
 export interface IMDFetchedData {
   needed: boolean;
   district: string;
-  data: any | null;
+  data: NormalizedWeather | null;
   error?: string;
 }
 

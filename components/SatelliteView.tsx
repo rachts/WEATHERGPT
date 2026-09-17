@@ -80,7 +80,7 @@ export default function SatelliteView() {
   // Initialize MapLibre for TrueColor Earth Observation
   useEffect(() => {
     let isMounted = true;
-    let maplibregl: any;
+    let maplibregl: typeof import("maplibre-gl");
 
     async function initMap() {
       try {

@@ -8,7 +8,25 @@ interface CacheEntry<T> {
   expiresAt: number;
 }
 
-const memoryCache = new Map<string, CacheEntry<any>>();
+const MAX_MEMORY_CACHE_ENTRIES = 1000;
+const memoryCache = new Map<string, CacheEntry<unknown>>();
+
+function pruneMemoryCache(now: number): void {
+  // 1. Remove expired items
+  for (const [k, entry] of memoryCache.entries()) {
+    if (entry.expiresAt <= now) {
+      memoryCache.delete(k);
+    }
+  }
+
+  // 2. If still exceeding limit, evict oldest inserted entries (FIFO/LRU)
+  if (memoryCache.size >= MAX_MEMORY_CACHE_ENTRIES) {
+    const keysToEvict = Array.from(memoryCache.keys()).slice(0, Math.floor(MAX_MEMORY_CACHE_ENTRIES * 0.2));
+    for (const key of keysToEvict) {
+      memoryCache.delete(key);
+    }
+  }
+}
 
 export async function cacheGet<T>(key: string): Promise<T | null> {
   const now = Date.now();
@@ -37,6 +55,9 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
         if (json.result !== null && json.result !== undefined) {
           const parsed = typeof json.result === "string" ? JSON.parse(json.result) : json.result;
           // Store in L1 for 60s
+          if (memoryCache.size >= MAX_MEMORY_CACHE_ENTRIES) {
+            pruneMemoryCache(now);
+          }
           memoryCache.set(key, { value: parsed, expiresAt: now + 60_000 });
           return parsed as T;
         }
@@ -53,7 +74,10 @@ export async function cacheSet<T>(key: string, value: T, ttlSeconds: number = 30
   const now = Date.now();
   const ttlMs = ttlSeconds * 1000;
 
-  // 1. Write to L1 Memory Cache
+  // 1. Write to L1 Memory Cache with capacity guard
+  if (memoryCache.size >= MAX_MEMORY_CACHE_ENTRIES) {
+    pruneMemoryCache(now);
+  }
   memoryCache.set(key, { value, expiresAt: now + ttlMs });
 
   // 2. Write to L2 Upstash Redis if configured
