@@ -50,3 +50,6 @@ jobs:
           NEXT_PUBLIC_APP_URL: http://localhost:3000
           ALERT_INGESTION_TOKEN: ${{ secrets.ALERT_INGESTION_TOKEN || 'weathergpt-ci-test-token-min-16-chars' }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Verify Docker Container Build
+        run: docker build -t weathergpt:ci .

@@ -625,7 +625,7 @@ export async function getDistrictWeather(
   }
 
   // 5. If cached data exists from a previous fetch, return it with CACHED status
-  if (cachedEntry) {
+  if (cachedEntry && !simulateImdFailure) {
     return {
       ...cachedEntry.data,
       isCachedFallback: true,
@@ -689,7 +689,7 @@ function buildDemoWeatherData(
       condition: "Observation Unavailable",
       rainfallLast24h: null,
       rainfallLast24hEstimate: null,
-      isRainfallEstimated: false,
+      isRainfallEstimated: true,
       currentPrecipitationMm: null,
       rainUnit: "mm",
       pressure: null,
