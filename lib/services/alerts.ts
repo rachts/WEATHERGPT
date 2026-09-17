@@ -8,7 +8,6 @@
 // - Zero silent cross-district alert substitution (Raigad alerts never served for other districts)
 
 import crypto from "node:crypto";
-import sampleAlerts from "../data/sample-alerts.json";
 import { normalizeImdTimestamp } from "../utils/time";
 import { findDistrictInfo } from "../utils/location";
 import { isProduction } from "../config/environment";
@@ -919,29 +918,8 @@ export async function fetchLiveImdDistrictAlerts(
     logger.warn("Live IMD nowcast fetch failed", { error: (err as Error).message });
   }
 
-  // In production, do not return fake sample alerts for another district!
-  if (isProduction()) {
-    return [];
-  }
-
-  // In demo mode only: match sample alerts strictly by district
-  const demoAlerts = (sampleAlerts as unknown as SampleAlertItem[]).filter((a) => {
-    const dMatch = a.district.toLowerCase() === districtName.toLowerCase();
-    if (!stateName) return dMatch;
-    return dMatch && (!a.state || a.state.toLowerCase() === stateName.toLowerCase());
-  }).map((a) => {
-    const hash = computeAlertHash(a.id || "sample", districtCode, a.issueTime || new Date().toISOString(), a.warningText);
-    return {
-      ...a,
-      alertHash: hash,
-      districtCode,
-      sourceId: a.id || "sample",
-      rawBulletin: a.warningText,
-      normalizedBulletin: a.warningText,
-    } as IMDWarningProduct;
-  }).filter((a) => isAlertActive(a));
-
-  return demoAlerts;
+  // Honest return: no active alerts found for this district
+  return [];
 }
 
 /**
@@ -956,22 +934,5 @@ export function getActiveDistrictAlerts(district: string = DEFAULT_DISTRICT, sta
     return cached.alerts.filter((a) => isAlertActive(a));
   }
 
-  if (isProduction()) {
-    return [];
-  }
-
-  return (sampleAlerts as unknown as SampleAlertItem[])
-    .filter((a) => a.district.toLowerCase() === district.toLowerCase())
-    .map((a) => ({
-      ...a,
-      alertHash: computeAlertHash(a.id || "sample", districtCode, a.issueTime || "", a.warningText),
-      districtCode,
-      sourceId: a.id || "sample",
-      sourceProduct: "IMD Mausam (Sample Archive)",
-      issueTime: a.issueTime || new Date().toISOString(),
-      validFrom: a.validFrom || new Date().toISOString(),
-      validTo: a.validTo || new Date().toISOString(),
-      isActive: a.isActive ?? true,
-    }))
-    .filter((a) => isAlertActive(a));
+  return [];
 }

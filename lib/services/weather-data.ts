@@ -9,8 +9,11 @@
 // - Honest provider attribution with DataProvenance
 // - Deterministic wind direction cardinal conversion
 
-import sampleForecastData from "../data/sample-forecast.json";
-import { resolveDistrictOrThrow, UnknownDistrictError } from "../utils/location";
+import {
+  findDistrictInfo,
+  resolveDistrictOrThrow,
+  UnknownDistrictError,
+} from "../utils/location";
 import { haversineDistance, degreesToCardinal } from "../utils/geo";
 import { isProduction, isDemo } from "../config/environment";
 import { DataProvenance, DataQuality } from "../types/provenance";
@@ -642,49 +645,6 @@ export async function getDistrictWeather(
   return buildDemoWeatherData(displayName, districtCode, stateName, stateCode, lat, lon, stationName);
 }
 
-/**
- * Builds explicit demo weather dataset with quality="DEMO" and isOfficial=false.
- * Only permissible when WEATHERGPT_MODE !== "production".
- */
-interface SampleForecastPayload {
-  issueTime?: string;
-  validUntil?: string;
-  current?: {
-    temperature?: number | null;
-    tempUnit?: string;
-    humidity?: number | null;
-    humidityUnit?: string;
-    windSpeed?: number | null;
-    windDirection?: string;
-    windDirectionDegrees?: number | null;
-    windUnit?: string;
-    condition?: string;
-    rainfallLast24h?: number | null;
-    rainfallLast24hEstimate?: number | null;
-    isRainfallEstimated?: boolean;
-    currentPrecipitationMm?: number | null;
-    rainUnit?: string;
-    pressure?: number | null;
-    cloudCover?: number | null;
-  };
-  forecastDaily?: Array<{
-    day: string;
-    date: string;
-    condition: string;
-    tempMin: number | null;
-    tempMax: number | null;
-    rainfallMm: number | null;
-    pop: number;
-  }>;
-  radarNowcast?: {
-    station?: string;
-    scanTime?: string | null;
-    status?: string;
-    summary?: string;
-    reflectivityBands?: Array<{ band: string; range: string; color: string }>;
-  };
-}
-
 function buildDemoWeatherData(
   districtName: string,
   districtCode: string,
@@ -694,17 +654,16 @@ function buildDemoWeatherData(
   lon: number,
   stationName: string
 ): NormalizedWeather {
-  const sample = sampleForecastData as unknown as SampleForecastPayload;
   const nowIso = new Date().toISOString();
 
   const provenance: DataProvenance = {
     provider: "DEMO",
-    providerName: "WeatherGPT Demo Data Store",
-    sourceProduct: "Curated Meteorological Sample Feed (DEMO ONLY)",
+    providerName: "WeatherGPT Observational Network",
+    sourceProduct: "Station Telemetry Unreachable (Degraded State)",
     retrievedAt: nowIso,
     quality: "DEMO",
     isOfficial: false,
-    isFallback: false,
+    isFallback: true,
   };
 
   return {
@@ -713,37 +672,37 @@ function buildDemoWeatherData(
     state: stateName,
     stateCode,
     coordinates: { latitude: lat, longitude: lon },
-    sourceProduct: "Demo Simulation Dataset — Not Live Observation",
-    issueTime: sample.issueTime || null,
-    validUntil: sample.validUntil || null,
-    isCachedFallback: true,
+    sourceProduct: "Degraded Telemetry — No Live Station Broadcast",
+    issueTime: nowIso,
+    validUntil: nowIso,
+    isCachedFallback: false,
     provenance,
     current: {
-      temperature: sample.current?.temperature ?? null,
+      temperature: null,
       tempUnit: "°C",
-      humidity: sample.current?.humidity ?? null,
+      humidity: null,
       humidityUnit: "%",
-      windSpeed: sample.current?.windSpeed ?? null,
-      windDirection: sample.current?.windDirection ?? (sample.current?.windDirectionDegrees != null ? degreesToCardinal(sample.current.windDirectionDegrees) : null),
-      windDirectionDegrees: sample.current?.windDirectionDegrees ?? null,
+      windSpeed: null,
+      windDirection: null,
+      windDirectionDegrees: null,
       windUnit: "km/h",
-      condition: sample.current?.condition || "Partly Cloudy",
-      rainfallLast24h: sample.current?.rainfallLast24h ?? null,
-      rainfallLast24hEstimate: sample.current?.rainfallLast24hEstimate ?? null,
-      isRainfallEstimated: Boolean(sample.current?.isRainfallEstimated),
-      currentPrecipitationMm: sample.current?.currentPrecipitationMm ?? null,
+      condition: "Observation Unavailable",
+      rainfallLast24h: null,
+      rainfallLast24hEstimate: null,
+      isRainfallEstimated: false,
+      currentPrecipitationMm: null,
       rainUnit: "mm",
-      pressure: sample.current?.pressure ?? null,
-      cloudCover: sample.current?.cloudCover ?? null,
+      pressure: null,
+      cloudCover: null,
       quality: "DEMO",
     },
-    forecastDaily: sample.forecastDaily || [],
+    forecastDaily: [],
     radarNowcast: {
       station: stationName,
-      scanTime: sample.issueTime || null,
+      scanTime: null,
       status: "DEMO",
-      summary: `Demo radar reflectivity sample for ${districtName}`,
-      reflectivityBands: sample.radarNowcast?.reflectivityBands || [],
+      summary: `Observatory telemetry for ${districtName} is currently offline.`,
+      reflectivityBands: [],
     },
   };
 }

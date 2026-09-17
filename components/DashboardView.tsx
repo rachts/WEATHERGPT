@@ -10,6 +10,7 @@ import LocationModal from "@/components/LocationModal";
 import DataStatusBadge from "@/components/DataStatusBadge";
 import type { DataProvenance } from "@/lib/types/provenance";
 import { useTranslation } from "@/lib/i18n/context";
+import { useRealtimeWeather } from "@/lib/hooks/useRealtimeWeather";
 
 interface WeatherData {
   district: string;
@@ -63,6 +64,30 @@ export default function DashboardView() {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isOfflineFallback, setIsOfflineFallback] = useState(false);
   const [offlineError, setOfflineError] = useState(false);
+
+  // Real-time telemetry streaming over Server-Sent Events (SSE)
+  const { isConnected } = useRealtimeWeather({
+    district: activeLoc.district,
+    state: activeLoc.state,
+    enabled: true,
+    onUpdate: (telemetry) => {
+      if (telemetry.weather) {
+        setWeather(telemetry.weather as unknown as WeatherData);
+        setIsOfflineFallback(false);
+      }
+      if (Array.isArray(telemetry.alerts)) {
+        setAlerts(
+          telemetry.alerts.map((a) => ({
+            id: a.id,
+            severity: a.severity,
+            headline: a.headline,
+            warningText: a.warningText,
+            issueTime: a.issueTime,
+          }))
+        );
+      }
+    },
+  });
 
   const loadData = useCallback(async (district: string, state?: string) => {
     try {
@@ -224,6 +249,15 @@ export default function DashboardView() {
               providerName={weather.provenance?.providerName}
               observedAt={formattedIssueTime}
             />
+            {isConnected && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                </span>
+                Live SSE
+              </span>
+            )}
             <span className="text-xs text-text-secondary">
               {t.dashboard?.issued || "Issued"}: {formattedIssueTime} IST
             </span>
