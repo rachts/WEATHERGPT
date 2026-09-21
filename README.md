@@ -52,7 +52,7 @@
 <br/>
 
 <div align="center">
-  <img src="./public/screenshots/02_home_dashboard.png" alt="WeatherGPT Kisan Dashboard displaying real-time Raigad district weather telemetry, temperature 32.8°C, humidity 72%, IMD issue timestamp, and ICAR-CRIDA deterministic agronomic advisory banner" width="100%"/>
+  <img src="./public/screenshots/02_home_dashboard_desktop.png" alt="WeatherGPT Kisan Dashboard displaying real-time Raigad district weather telemetry, temperature 30°C, humidity 81%, IMD Alibag station observation, and ICAR-CRIDA deterministic agronomic advisory banner" width="100%"/>
 </div>
 
 > **Weather information in India is scattered across fragmented portals, static PDF bulletins, raw satellite feeds, and complex GIS viewers. Rural farmers cannot afford to parse meteorological jargon when an Arabian Sea cyclone or pre-monsoon hailstorm threatens their standing crops.** WeatherGPT bridges the critical last-mile gap: ask in spoken Hindi, Tamil, or English, and receive institutional IMD meteorological telemetry, deterministic crop spray/irrigation windows, live TrueColor satellite imagery, and life-critical alerts in under 2 seconds on a 3G network.
@@ -69,12 +69,12 @@
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="./public/screenshots/02_home_dashboard.png" alt="Hyperlocal Kisan Dashboard showing live temperature 32.8°C, humidity 72%, surface wind 14 km/h, precipitation probability, active warning banner, nowcast summary, and ICAR-CRIDA agromet advisory window" width="100%"/>
+      <img src="./public/screenshots/02_home_dashboard.png" alt="Hyperlocal Kisan Dashboard showing live temperature 30°C, humidity 81%, surface wind 14.8 km/h, IMD Alibag station observation, and ICAR-CRIDA agromet spray advisory" width="100%"/>
       <br/><b>Hyperlocal Kisan Dashboard</b><br/>
       <sub>Live telemetry (temp, humidity, surface wind, precipitation probability), active warning banner, nowcast summary, and ICAR agromet advisory window.</sub>
     </td>
     <td align="center" width="50%">
-      <img src="./public/screenshots/03_chat_active.png" alt="Multilingual Voice Conversational Assistant interface showing query in Hindi and English with on-device Web Speech capture, TTS read-aloud, and verified IMD product citations" width="100%"/>
+      <img src="./public/screenshots/03_chat_active.png" alt="Multilingual Conversational Assistant interface showing voice/text query in Hindi and English with grounded IMD forecast and Verified IMD Grounding badge" width="100%"/>
       <br/><b>Multilingual Conversational Assistant</b><br/>
       <sub>Voice-first natural language interaction in Hindi, Tamil, and English with on-device Web Speech capture, TTS read-aloud, and verified IMD product citations.</sub>
     </td>
