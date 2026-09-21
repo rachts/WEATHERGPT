@@ -244,7 +244,18 @@ export default function ChatInterface() {
         <div className="flex items-center space-x-2">
           <button
             type="button"
-            onClick={() => setJudgeMode((prev) => !prev)}
+            id="judge-mode-toggle-btn"
+            onClick={async () => {
+              const next = !judgeMode;
+              setJudgeMode(next);
+              if (next) {
+                try {
+                  await fetch(`/api/alerts?district=${encodeURIComponent(activeLoc.district)}&judgeMode=true`);
+                } catch (e) {
+                  console.error("Judge mode alert injection error:", e);
+                }
+              }
+            }}
             className={`px-2.5 py-1 text-xs rounded-md border font-medium transition cursor-pointer flex items-center space-x-1.5 ${
               judgeMode
                 ? "bg-amber-100 text-amber-900 border-amber-300 shadow-xs"
@@ -287,10 +298,10 @@ export default function ChatInterface() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
               <span className="text-xs font-semibold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">
-                ⚖️ SIH Hackathon Judge Mode
+                ⚖️ SIH Hackathon Judge Mode Active
               </span>
               <span className="text-[11px] text-amber-800">
-                Scripted 3-Day Evaluation Scenarios with Zero-Hallucination Provenance
+                Red Tier Alert Injected · Live Gateway Logs Active in Terminal
               </span>
             </div>
             <button
@@ -301,7 +312,29 @@ export default function ChatInterface() {
               ✕ Close
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <button
+              type="button"
+              id="judge-inject-cyclone-scenario-btn"
+              onClick={async () => {
+                try {
+                  await fetch(`/api/alerts?district=${encodeURIComponent(activeLoc.district)}&judgeMode=true`);
+                } catch {}
+                const prompt = `Check rainfall alert status and heavy rain warning for ${activeLoc.district}`;
+                setInput(prompt);
+                sendMessage({ text: prompt });
+              }}
+              disabled={isLoading}
+              className="text-left p-2.5 bg-red-50 hover:bg-red-100/80 border border-red-300 rounded-lg transition shadow-xs cursor-pointer group"
+            >
+              <div className="flex items-center justify-between text-[11px] font-bold text-red-900 mb-1">
+                <span>🚨 Red Alert Demo</span>
+                <span className="text-[10px] text-red-700 group-hover:underline">Inject →</span>
+              </div>
+              <p className="text-xs text-red-950 font-medium line-clamp-1">Severe Cyclonic Storm</p>
+              <p className="text-[10px] text-red-800 mt-1">Triggers Red Tier UI & SMS/IVR gateway logs in terminal.</p>
+            </button>
+
             {JUDGE_SCENARIOS.map((s, idx) => (
               <button
                 key={idx}

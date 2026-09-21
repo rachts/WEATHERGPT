@@ -134,9 +134,8 @@ async function fetchImdSynopStations(): Promise<ImdSynopStation[]> {
         return imdSynopCache ? imdSynopCache.stations : [];
       }
       const data = await res.json();
-      if (!data?.features || !Array.isArray(data.features)) {
-        logger.warn("IMD GeoServer returned invalid or empty GeoJSON features");
-        return imdSynopCache ? imdSynopCache.stations : [];
+      if (!data?.features || !Array.isArray(data.features) || data.features.length < 10) {
+        throw new Error("Incomplete IMD payload");
       }
 
       const stations: ImdSynopStation[] = [];
@@ -261,7 +260,7 @@ async function fetchOpenMeteo(
       provider: "OPEN_METEO",
       providerName: "Open-Meteo Weather API",
       sourceUrl: "https://open-meteo.com",
-      sourceProduct: "Open-Meteo Numerical Weather Prediction Model",
+      sourceProduct: "Open-Meteo Numerical Weather Prediction Model (Fallback)",
       retrievedAt: nowIso,
       validFrom: nowIso,
       validUntil: validUntilIso,
@@ -276,7 +275,7 @@ async function fetchOpenMeteo(
       state: stateName,
       stateCode,
       coordinates: { latitude: lat, longitude: lon },
-      sourceProduct: "Open-Meteo Numerical Weather Model (Secondary Fallback)",
+      sourceProduct: "Open-Meteo Numerical Weather Model (Fallback)",
       issueTime: nowIso,
       validUntil: validUntilIso,
       isCachedFallback: false,

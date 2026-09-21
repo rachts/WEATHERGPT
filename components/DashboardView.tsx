@@ -208,11 +208,48 @@ export default function DashboardView() {
 
   if (loading && !weather) {
     return (
-      <div className="py-12 flex flex-col items-center justify-center">
-        <div className="top-loading-bar"></div>
-        <p className="text-sm text-text-secondary mt-4">
-          {t.dashboard?.loading || "Loading IMD weather feed..."}
-        </p>
+      <div className="py-4 space-y-5 animate-pulse" aria-busy="true" aria-label="Fetching live IMD telemetry">
+        {/* District & Status Header Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-2">
+            <div className="h-7 w-52 bg-border/60 rounded-lg" />
+            <div className="h-4 w-72 bg-border/40 rounded-md" />
+          </div>
+          <div className="h-6 w-32 bg-border/40 rounded-full" />
+        </div>
+
+        {/* Live Ingestion Status Banner Skeleton */}
+        <div className="flex items-center gap-2.5 p-3 bg-surface-alt border border-border rounded-xl">
+          <span className="w-2.5 h-2.5 rounded-full bg-primary animate-ping" />
+          <span className="text-xs font-medium text-text-secondary">
+            Fetching live IMD telemetry from regional observatory...
+          </span>
+        </div>
+
+        {/* Hero Telemetry Card Skeleton */}
+        <div className="bg-surface-alt border border-border rounded-2xl p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="h-12 w-28 bg-border/60 rounded-lg" />
+              <div className="h-4 w-36 bg-border/40 rounded-md" />
+            </div>
+            <div className="h-12 w-28 bg-border/40 rounded-xl" />
+          </div>
+          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border">
+            <div className="h-16 bg-surface rounded-xl" />
+            <div className="h-16 bg-surface rounded-xl" />
+            <div className="h-16 bg-surface rounded-xl" />
+          </div>
+        </div>
+
+        {/* Agromet Advisory Skeleton */}
+        <div className="bg-surface-alt border border-border rounded-2xl p-6 space-y-3">
+          <div className="h-5 w-48 bg-border/60 rounded-md" />
+          <div className="space-y-2 pt-1">
+            <div className="h-4 w-full bg-border/40 rounded-md" />
+            <div className="h-4 w-4/5 bg-border/40 rounded-md" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -229,7 +266,7 @@ export default function DashboardView() {
         </p>
         <button
           onClick={() => loadData(activeLoc.district)}
-          className="mt-4 px-4 py-2 bg-primary text-white text-xs rounded-lg font-medium hover:bg-primary/90 transition-colors"
+          className="mt-4 px-4 py-2 bg-primary text-white text-xs rounded-lg font-medium hover:bg-primary/90 transition-colors cursor-pointer"
         >
           Retry Connection
         </button>
@@ -265,11 +302,25 @@ export default function DashboardView() {
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <DataStatusBadge
-              status={isOfflineFallback ? "OFFLINE" : (weather.provenance?.quality || (weather.isCachedFallback ? "CACHED" : "LIVE"))}
+              status={
+                isOfflineFallback
+                  ? "OFFLINE"
+                  : (weather.sourceProduct?.includes("Fallback") || weather.provenance?.isFallback || weather.provenance?.quality === "FALLBACK")
+                  ? "FALLBACK"
+                  : (weather.provenance?.quality || (weather.isCachedFallback ? "CACHED" : "LIVE"))
+              }
               provider={weather.provenance?.provider}
               providerName={weather.provenance?.providerName}
               observedAt={formattedIssueTime}
             />
+            {(isOfflineFallback || isBrowserOffline || weather.isCachedFallback) && (
+              <span
+                id="offline-stale-data-badge"
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30"
+              >
+                ⚠️ Offline Mode: Showing cached data from {formattedIssueTime}
+              </span>
+            )}
             {isConnected && (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                 <span className="relative flex h-1.5 w-1.5">
@@ -290,7 +341,7 @@ export default function DashboardView() {
       </div>
 
       {/* Offline Cached Data Banner (Airplane Mode & Disconnection Resilience) */}
-      {(isBrowserOffline || isOfflineFallback) && (
+      {(isBrowserOffline || isOfflineFallback || weather.isCachedFallback) && (
         <div
           id="offline-status-banner"
           role="alert"
@@ -300,7 +351,7 @@ export default function DashboardView() {
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0 animate-ping"></span>
             <span className="font-medium text-sm">
-              You are offline. Showing cached data from {formattedIssueTime} IST.
+              ⚠️ Offline Mode: Showing cached data from {formattedIssueTime} IST
             </span>
           </div>
           <div className="flex items-center gap-3">

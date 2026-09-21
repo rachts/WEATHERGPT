@@ -87,6 +87,34 @@ export async function GET(req: NextRequest) {
     }
 
     const { district, state } = parseResult.data;
+
+    // Judge Mode demonstration shortcut: injects Red Tier Severe Cyclonic Storm alert
+    const isJudgeMode = searchParams.get("judgeMode") === "true" || searchParams.get("mock") === "true";
+    if (isJudgeMode) {
+      const { injectJudgeSevereAlert } = await import("@/lib/services/alerts");
+      const { alert, dissemination } = await injectJudgeSevereAlert(district, state);
+      return NextResponse.json(
+        {
+          data: { district, state, alerts: [alert], dissemination },
+          meta: {
+            requestId: correlationId,
+            count: 1,
+            generatedAt: new Date().toISOString(),
+            judgeMode: true,
+          },
+          district,
+          state,
+          alerts: [alert],
+        },
+        {
+          headers: {
+            "Cache-Control": "no-store, max-age=0",
+            "X-Request-Id": correlationId,
+          },
+        }
+      );
+    }
+
     const liveAlerts = await fetchLiveImdDistrictAlerts(district, state);
 
     let dbAlerts: IMDWarningProduct[] = [];

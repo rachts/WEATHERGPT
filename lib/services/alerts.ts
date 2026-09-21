@@ -399,6 +399,14 @@ export async function dispatchSmsAlert(
             message?: string[];
           };
           if (data.return === true || data.request_id) {
+            console.log(
+              `\n============================================================\n` +
+              `[PRODUCTION GATEWAY DISPATCH] Live SMS Alert Dispatched!\n` +
+              `Provider: FAST2SMS | Recipient: ${maskedPhone}\n` +
+              `Status: SENT | Request ID: ${data.request_id || "ok"}\n` +
+              `IMD Warning: "${cleanText.slice(0, 80)}..."\n` +
+              `============================================================\n`
+            );
             logger.info("Dispatched live SMS via Fast2SMS", {
               recipient: maskedPhone,
               requestId: data.request_id,
@@ -465,6 +473,14 @@ export async function dispatchSmsAlert(
 
         if (res.ok) {
           const data = (await res.json().catch(() => ({}))) as { type?: string; message?: string };
+          console.log(
+            `\n============================================================\n` +
+            `[PRODUCTION GATEWAY DISPATCH] Live SMS Alert Dispatched!\n` +
+            `Provider: MSG91 | Recipient: ${maskedPhone}\n` +
+            `Status: SENT | Message ID: ${data.message || "msg91_ok"}\n` +
+            `IMD Warning: "${cleanText.slice(0, 80)}..."\n` +
+            `============================================================\n`
+          );
           logger.info("Dispatched live SMS via Msg91", {
             recipient: maskedPhone,
             message: data.message,
@@ -530,6 +546,14 @@ export async function dispatchSmsAlert(
 
         if (res.ok) {
           const data = (await res.json()) as { sid?: string };
+          console.log(
+            `\n============================================================\n` +
+            `[PRODUCTION GATEWAY DISPATCH] Live SMS Alert Dispatched!\n` +
+            `Provider: TWILIO | Recipient: ${maskedPhone}\n` +
+            `Status: SENT | Message SID: ${data.sid}\n` +
+            `IMD Warning: "${cleanText.slice(0, 80)}..."\n` +
+            `============================================================\n`
+          );
           logger.info("Dispatched live SMS via Twilio", {
             recipient: maskedPhone,
             messageSid: data.sid,
@@ -710,6 +734,15 @@ export async function dispatchIvrAlert(
 
         if (res.ok) {
           const data = (await res.json()) as { sid?: string };
+          console.log(
+            `\n============================================================\n` +
+            `[PRODUCTION GATEWAY DISPATCH] Live IVR Voice Alert Dispatched!\n` +
+            `Provider: TWILIO VOICE | Recipient: ${maskedPhone}\n` +
+            `Status: SENT | Call SID: ${data.sid}\n` +
+            `Polly Voice Engine: ${voice} (${languageCode})\n` +
+            `Spoken Bulletin: "${cleanText.slice(0, 80)}..."\n` +
+            `============================================================\n`
+          );
           logger.info("Dispatched live IVR voice call via Twilio", {
             recipient: maskedPhone,
             callSid: data.sid,
@@ -1089,4 +1122,123 @@ export function getActiveDistrictAlerts(district: string = DEFAULT_DISTRICT, sta
   }
 
   return [];
+}
+
+/**
+ * Injects a mock "Severe Cyclonic Storm" Red Tier alert for judge evaluation.
+ * Injects into in-memory cache and database (if configured), and triggers multi-channel
+ * dissemination routing (SMS/IVR/WebPush) with full terminal gateway logging.
+ */
+export async function injectJudgeSevereAlert(
+  district: string = "Raigad",
+  state: string = "Maharashtra"
+): Promise<{ alert: IMDWarningProduct; dissemination: DisseminationResult }> {
+  const districtInfo = findDistrictInfo(district, state);
+  const districtName = districtInfo ? districtInfo.name : district;
+  const districtCode = districtInfo ? districtInfo.districtCode : `IN-${district.toUpperCase()}`;
+  const stateName = districtInfo ? districtInfo.state : state;
+
+  const nowIso = new Date().toISOString();
+  const validUntilIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+  const sourceId = `judge_mock_cyclone_${districtCode.toLowerCase()}`;
+  const warningHeadline = `RED ALERT: Severe Cyclonic Storm Warning for ${districtName} Coastal Belt`;
+  const warningText = `IMD CWDC BULLETIN: Severe Cyclonic Storm rapidly intensifying over East Central Arabian Sea. Gale winds reaching 90-100 kmph gusting to 110 kmph expected along ${districtName} coast. Total suspension of marine and fishing operations. Coastal residents must move to designated cyclone storm shelters immediately.`;
+
+  const alertHash = computeAlertHash(sourceId, districtCode, nowIso, warningText);
+
+  const mockAlert: IMDWarningProduct = {
+    id: sourceId,
+    alertHash,
+    sourceId,
+    districtCode,
+    district: districtName,
+    state: stateName,
+    severity: "Severe",
+    officialSeverity: "Red",
+    eventType: "Severe Cyclonic Storm",
+    headline: warningHeadline,
+    warningText,
+    rawBulletin: `ORIGINATING: IMD MUMBAI CYCLONE WARNING DISSEMINATION CENTRE\nSPECIAL TROPICAL CYCLONE ADVISORY BULLETIN NO. 04\nAREA: ${districtName.toUpperCase()} DISTRICT\nINTENSITY: SEVERE CYCLONIC STORM (STAGE-III WARNING)\nWIND SPEED: 50-55 KNOTS GUSTING TO 65 KNOTS\nSTATE DISASTER MANAGEMENT NOTIFIED.`,
+    normalizedBulletin: `Red Alert — Severe Cyclonic Storm impacting ${districtName}. 90-110 kmph gale winds with severe coastal inundation risk. Evacuate low-lying areas.`,
+    sourceProduct: "IMD Cyclone Warning Dissemination Centre (CWDC) — Judge Demo",
+    sourceUrl: "https://mausam.imd.gov.in/responsive/cycloneinformation.php",
+    issueTime: nowIso,
+    validFrom: nowIso,
+    validTo: validUntilIso,
+    validUntilEstimated: false,
+    isActive: true,
+  };
+
+  // 1. Inject into in-memory live alert cache
+  const cacheKey = districtCode.toLowerCase();
+  liveDistrictAlertsCache.set(cacheKey, {
+    alerts: [mockAlert],
+    cachedAt: Date.now(),
+  });
+
+  // 2. Persist to database if available
+  if (process.env.DATABASE_URL) {
+    try {
+      const { prisma } = await import("../prisma");
+      await prisma.alert.upsert({
+        where: { id: sourceId },
+        update: {
+          alertHash,
+          district: districtName,
+          districtCode,
+          state: stateName,
+          severity: "Severe",
+          officialSeverity: "Red",
+          eventType: "Severe Cyclonic Storm",
+          headline: warningHeadline,
+          warningText,
+          sourceProduct: mockAlert.sourceProduct,
+          issueTime: new Date(nowIso),
+          validFrom: new Date(nowIso),
+          validTo: new Date(validUntilIso),
+          isActive: true,
+        },
+        create: {
+          id: sourceId,
+          alertHash,
+          sourceId,
+          district: districtName,
+          districtCode,
+          state: stateName,
+          severity: "Severe",
+          officialSeverity: "Red",
+          eventType: "Severe Cyclonic Storm",
+          headline: warningHeadline,
+          warningText,
+          rawBulletin: mockAlert.rawBulletin,
+          normalizedBulletin: mockAlert.normalizedBulletin,
+          sourceProduct: mockAlert.sourceProduct,
+          issueTime: new Date(nowIso),
+          validFrom: new Date(nowIso),
+          validTo: new Date(validUntilIso),
+          isActive: true,
+        },
+      });
+    } catch (err) {
+      logger.warn("Judge mock alert DB upsert skipped (in-memory cache active)", {
+        error: (err as Error).message,
+      });
+    }
+  }
+
+  // 3. Trigger multi-channel dissemination logs (SMS + IVR + Web Push)
+  const dissemination = await routeWarningDisseminationAsync(mockAlert, [
+    "+919876543210",
+  ]);
+
+  console.log(
+    `\n🚨 ============================================================\n` +
+    `[JUDGE MODE ACTIVATED] Mock Severe Cyclonic Storm Alert Injected!\n` +
+    `District: ${districtName} (${districtCode}) | Severity: RED (Severe)\n` +
+    `Headline: ${warningHeadline}\n` +
+    `SMS Delivery Receipts: ${dissemination.receipts?.length ?? 0} dispatched\n` +
+    `============================================================\n`
+  );
+
+  return { alert: mockAlert, dissemination };
 }

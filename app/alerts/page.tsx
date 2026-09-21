@@ -146,6 +146,30 @@ export default function AlertsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            id="judge-inject-severe-btn"
+            onClick={async () => {
+              setLoading(true);
+              try {
+                const res = await fetch(`/api/alerts?district=${encodeURIComponent(activeLoc.district)}&judgeMode=true`);
+                if (res.ok) {
+                  const raw = await res.json();
+                  const alertList = raw.data?.alerts || raw.alerts || [];
+                  setAlerts(alertList);
+                  setSharedToast("🚨 [Judge Mode] Injected Severe Cyclonic Storm Warning & dispatched SMS/IVR.");
+                }
+              } catch (e) {
+                console.error(e);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="px-2.5 py-1 text-xs rounded-md border font-medium transition cursor-pointer flex items-center space-x-1.5 bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200"
+            title="Inject Red Tier Severe Cyclonic Storm Warning for Judge Demo"
+          >
+            <span>⚖️ Judge Demo: Inject Cyclone</span>
+          </button>
           <DataStatusBadge
             status={alerts.length > 0 ? "LIVE" : "LIVE"}
             provider="IMD"

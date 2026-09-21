@@ -46,8 +46,8 @@ export class ImdObservationProvider implements WeatherObservationProvider {
         });
         if (!res.ok) return imdSynopCache ? imdSynopCache.stations : [];
         const data = await res.json();
-        if (!data?.features || !Array.isArray(data.features)) {
-          return imdSynopCache ? imdSynopCache.stations : [];
+        if (!data?.features || !Array.isArray(data.features) || data.features.length < 10) {
+          throw new Error("Incomplete IMD payload");
         }
         imdSynopCache = { stations: data.features, cachedAt: Date.now() };
         return data.features;

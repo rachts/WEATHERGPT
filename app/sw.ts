@@ -29,13 +29,12 @@ const pageShellRule = {
   }),
 };
 
+// High-frequency live meteorological & alert cache rule (30 minutes TTL)
+// Critical for life safety: prevents stale disaster warnings or outdated weather numbers
 const apiCacheRule = {
   matcher: ({ url }: { url: URL }) =>
     url.pathname.startsWith("/api/weather") ||
-    url.pathname.startsWith("/api/alerts") ||
-    url.pathname.startsWith("/api/advisory") ||
-    url.pathname.startsWith("/api/synoptic") ||
-    url.pathname.startsWith("/api/satellite"),
+    url.pathname.startsWith("/api/alerts"),
   handler: new NetworkFirst({
     cacheName: "weathergpt-api-cache",
     networkTimeoutSeconds: 3,
@@ -45,7 +44,28 @@ const apiCacheRule = {
       }),
       new ExpirationPlugin({
         maxEntries: 60,
-        maxAgeSeconds: 24 * 60 * 60, // 24 hours offline cache
+        maxAgeSeconds: 1800, // 30 minutes TTL for live weather and alerts
+      }),
+    ],
+  }),
+};
+
+// Static advisory & satellite tile cache rule (24 hours TTL)
+const staticApiCacheRule = {
+  matcher: ({ url }: { url: URL }) =>
+    url.pathname.startsWith("/api/advisory") ||
+    url.pathname.startsWith("/api/synoptic") ||
+    url.pathname.startsWith("/api/satellite"),
+  handler: new NetworkFirst({
+    cacheName: "weathergpt-static-cache",
+    networkTimeoutSeconds: 3,
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new ExpirationPlugin({
+        maxEntries: 60,
+        maxAgeSeconds: 24 * 60 * 60, // 24 hours offline cache for static resources
       }),
     ],
   }),
@@ -56,7 +76,7 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: [pageShellRule, apiCacheRule, ...defaultCache],
+  runtimeCaching: [pageShellRule, apiCacheRule, staticApiCacheRule, ...defaultCache],
 });
 
 serwist.addEventListeners();
