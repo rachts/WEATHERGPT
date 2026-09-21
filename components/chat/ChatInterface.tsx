@@ -142,12 +142,25 @@ export default function ChatInterface() {
     window.speechSynthesis.speak(utterance);
   };
 
+  const [isOffline, setIsOffline] = useState(() =>
+    typeof navigator !== "undefined" ? !navigator.onLine : false
+  );
+
   useEffect(() => {
     setActiveLoc(getActiveLocation());
     const SpeechRecognition = getSpeechRecognition();
     if (!SpeechRecognition) {
       setSpeechSupported(false);
     }
+
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
   // Auto-speak when new assistant message completes in voice mode
@@ -311,6 +324,23 @@ export default function ChatInterface() {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Offline Status Banner */}
+      {isOffline && (
+        <div
+          id="chat-offline-banner"
+          role="alert"
+          className="bg-amber-500/15 border-b border-amber-500/30 px-6 py-2.5 text-xs text-amber-900 dark:text-amber-200 flex items-center justify-between"
+        >
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+            <span className="font-medium">
+              You are offline (Airplane mode). Chat answers will be resolved via cached district models and on-device templates.
+            </span>
+          </div>
+          <span className="text-[11px] opacity-75 font-mono">Serwist Cached Shell</span>
         </div>
       )}
 

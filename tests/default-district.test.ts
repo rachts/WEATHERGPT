@@ -45,7 +45,8 @@ export async function runDefaultDistrictTests() {
   assert.strictEqual(activeLoc.state, DEFAULT_STATE);
 
   // 6. getDistrictWeather options object signature (M5)
-  const optionsWeather = await getDistrictWeather("Pune", {
+  const optionsWeather = await getDistrictWeather({
+    district: "Pune",
     state: "Maharashtra",
     simulateImdFailure: true, // Forces fallback cleanly without network
   });

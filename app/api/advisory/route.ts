@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
   const { crop, district, state, language } = parseResult.data;
 
   try {
-    const weather = await getDistrictWeather(district, state);
+    const weather = await getDistrictWeather({ district, state });
     const advisory = getDeterministicCropAdvisory(
       crop,
       district,

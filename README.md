@@ -140,7 +140,7 @@ Three institutional flagships, five operational headliners, and an entire agricu
 - 🔊 **Zero-Cost Client Speech Synthesis** — native browser `window.speechSynthesis` with suggested follow-up chips when voice capabilities are absent or disabled.
 - 📡 **Multi-Tier Weather Degradation Pipeline** — queries attempt primary authenticated `data.gov.in` feeds, gracefully fall back to Open-Meteo, and display disk-cached forecasts with explicit issue timestamps when offline.
 - 🚜 **ICAR-KVK Crop Parameter Rules** — deterministic thresholds for paddy, wheat, cotton, sugarcane, and mango (e.g., wind speed > 15 km/h or rain > 5mm immediately flags pesticide spraying as unsafe).
-- 🚨 **4-Tier Multi-Channel Alert Router** — IMD impact levels route appropriately: Green/Low = in-app banner, Yellow/Moderate = Web Push, Orange/High = Push + SMS stub, Red/Severe = Push + SMS + IVR voice dialer stub.
+- 🚨 **4-Tier Multi-Channel Alert Router** — IMD impact levels route dynamically: Green/Low = in-app banner, Yellow/Moderate = Native Browser & Android Web Push, Orange/High = Web Push + Live Fast2SMS / Msg91 India SMS Gateway, Red/Severe = Multi-Channel Broadcast (Web Push + High-Priority SMS + Regional IVR Voice Dialer).
 - 🌐 **Zero Telemetry Guarantee** — no analytics tracking pixels, no session recording scripts, and no commercial ad trackers, preserving privacy and rural cellular bandwidth.
 
 </details>
@@ -179,7 +179,7 @@ WeatherGPT ships with 10 verified, specialized meteorological and agronomic modu
 | 1 | **Kisan Dashboard** | `/dashboard` | Telemetry, Nowcast, Agromet, Active Alerts | React 18 + Serwist offline state + IMD live sync |
 | 2 | **Multilingual Chat** | `/chat` | Conversational Answers + Data Cards + TTS | On-device Web Speech API + Gemini Intent Parser + Citation Gate |
 | 3 | **7-Day Forecast** | `/forecast` | Daily precipitation, min/max temp, humidity, wind | Multi-tier weather service (`data.gov.in` → Open-Meteo fallback) |
-| 4 | **Warning Center** | `/alerts` | 4-tier impact warnings (Green/Yellow/Orange/Red) | Verbatim IMD bulletin parser + multi-channel dispatch stubs |
+| 4 | **Warning Center** | `/alerts` | 4-tier impact warnings (Green/Yellow/Orange/Red) | Verbatim IMD bulletin parser + multi-channel dispatch (Web Push + Fast2SMS / Msg91 / Twilio) |
 | 5 | **Doppler Radar Hub** | `/radar` | Pan-India reflectivity map (0–250 km rings) | MapLibre GL raster layer + 10 IMD DWR official station scans |
 | 6 | **TrueColor Satellite** | `/satellite` | 250m Earth Observation + INSAT-3D disk | NASA GIBS VIIRS TrueColor + IMD INSAT-3D CTBT/IR1/VIS/WV |
 | 7 | **Synoptic Intelligence**| `/api/synoptic` | Depression coordinates, pressure, winds, tracks | Geodesic Harversine distance & compass bearing engine |
@@ -255,10 +255,10 @@ WeatherGPT is built on a **Next.js 14 App Router** foundation, combining an **Of
 │                                       ▼                                                 │
 │   ┌─────────────────────────────────────────────────────────────────────────────────┐   │
 │   │ 4-Tier Impact Warning Dissemination Router                                      │   │
-│   │ • Green  (Low)      ──> In-App Banner                                           │   │
-│   │ • Yellow (Moderate) ──> Web Push Notification                                   │   │
-│   │ • Orange (High)     ──> Web Push + SMS Gateway Stub (C-DOT Production Target)   │   │
-│   │ • Red    (Severe)   ──> Web Push + SMS + Outbound IVR Dialer Stub               │   │
+│   │ • Green  (Low)      ──> In-App Status Banner & Real-Time Polling                │   │
+│   │ • Yellow (Moderate) ──> Native Browser & Android Web Push (VAPID / Web-Push)    │   │
+│   │ • Orange (High)     ──> Web Push + Live Fast2SMS / Msg91 India SMS Gateway      │   │
+│   │ • Red    (Severe)   ──> Web Push + Priority SMS + Outbound IVR Voice Dialer     │   │
 │   └─────────────────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -450,12 +450,16 @@ Follow this sequential walkthrough to demonstrate WeatherGPT before judging pane
 
 <a id="production-deferrals"></a>
 
-## 📋 Production Deferral Disclosures
+## 📋 Institutional Production Architecture Disclosures
 
-To maintain absolute transparency before institutional evaluators, the following integrations are marked as production targets:
-1. **Live SMS Gateway (High & Severe Tiers):** Requires authenticated enterprise government tie-in (C-DOT / CDAC SMS Gateway). Architected via typed interfaces with console execution logging (`lib/services/alerts.ts`).
-2. **Outbound IVR Voice Dialer (Severe Tier):** Requires PSTN telecom gateway for rural automated outbound calling. Currently executed as a typed diagnostic stub.
-3. **Government Single Sign-On (Jan Parichay / DigiLocker):** Auth structure designed for future institutional officer role binding.
+To maintain absolute transparency before institutional evaluators, the multi-channel dissemination architecture is partitioned as follows:
+1. **Live Dissemination Connectors (Active in Repo):**
+   - **Native Web Push:** Cryptographically signed VAPID web-push delivering direct alerts to Android PWA devices and desktop browsers without gateway fees.
+   - **SMS Gateways:** Working API adapters for **Fast2SMS** (direct Indian mobile bulk route), **Msg91** transactional flow API, and **Twilio** REST SMS with automated retry and exponential backoff.
+   - **Outbound Voice Dialing:** Twilio Voice TwiML dialer with regional language phonetics (Polly.Aditi/Chitra/Raveena).
+2. **Institutional Government Federation Targets:**
+   - **C-DOT CAP Portal Integration:** Common Alerting Protocol (CAP XML) webhook ingestion for bilateral synchronization with NDMA state emergency operation centers (SEOC).
+   - **Government Single Sign-On (Jan Parichay / DigiLocker):** Authentication structure designed for future institutional officer role binding.
 
 ---
 

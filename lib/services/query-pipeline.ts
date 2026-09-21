@@ -443,7 +443,7 @@ export async function processWeatherQuery(
 
   // Parallelize weather data & district alerts retrieval
   const [weather, activeAlerts] = await Promise.all([
-    getDistrictWeather(districtInfo.name, districtInfo.state),
+    getDistrictWeather({ district: districtInfo.name, state: districtInfo.state }),
     fetchLiveImdDistrictAlerts(districtInfo.name, districtInfo.state),
   ]);
 

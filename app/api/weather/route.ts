@@ -59,7 +59,12 @@ export async function GET(req: NextRequest) {
   const simulateNetworkFailure = isDev && parseResult.data.simulateNetworkFailure === "true";
 
   try {
-    const data = await getDistrictWeather(district, state, false, simulateImdFailure, simulateNetworkFailure);
+    const data = await getDistrictWeather({
+      district,
+      state,
+      simulateImdFailure,
+      simulateNetworkFailure,
+    });
     return NextResponse.json(
       {
         data,

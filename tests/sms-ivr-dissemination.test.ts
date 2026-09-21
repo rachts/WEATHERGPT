@@ -47,6 +47,7 @@ export async function runSmsIvrDisseminationTests(): Promise<void> {
     delete process.env.TWILIO_FROM;
     delete process.env.SMS_GATEWAY_URL;
     delete process.env.MSG91_AUTH_KEY;
+    delete process.env.FAST2SMS_API_KEY;
     delete process.env.IVR_GATEWAY_URL;
 
     assert.strictEqual(isSmsGatewayConfigured(), false);
@@ -96,6 +97,9 @@ export async function runSmsIvrDisseminationTests(): Promise<void> {
   // 3. Configured Twilio dispatch and retry logic (mocking fetch)
   const originalFetch = global.fetch;
   try {
+    delete process.env.FAST2SMS_API_KEY;
+    delete process.env.MSG91_AUTH_KEY;
+    delete process.env.SMS_GATEWAY_URL;
     process.env.TWILIO_ACCOUNT_SID = "AC_test_account_sid_123456789";
     process.env.TWILIO_AUTH_TOKEN = "auth_token_secret_12345";
     process.env.TWILIO_PHONE_NUMBER = "+15005550006";

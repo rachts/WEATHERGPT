@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
         if (isAborted) return;
         try {
           const [weatherData, alertsData] = await Promise.allSettled([
-            getDistrictWeather(districtName, stateName),
+            getDistrictWeather({ district: districtName, state: stateName }),
             fetchLiveImdDistrictAlerts(districtName, stateName),
           ]);
 

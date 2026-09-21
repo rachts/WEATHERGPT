@@ -64,6 +64,11 @@ export default function DashboardView() {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isOfflineFallback, setIsOfflineFallback] = useState(false);
   const [offlineError, setOfflineError] = useState(false);
+  const [isBrowserOffline, setIsBrowserOffline] = useState(() =>
+    typeof navigator !== "undefined" ? !navigator.onLine : false
+  );
+
+
 
   // Real-time telemetry streaming over Server-Sent Events (SSE)
   const { isConnected } = useRealtimeWeather({
@@ -175,8 +180,24 @@ export default function DashboardView() {
       loadData(newDistrict, newState);
     };
 
+    const handleOnline = () => {
+      setIsBrowserOffline(false);
+      const currentLoc = getActiveLocation();
+      loadData(currentLoc.district, currentLoc.state);
+    };
+    const handleOffline = () => {
+      setIsBrowserOffline(true);
+    };
+
     window.addEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
-    return () => window.removeEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener(LOCATION_CHANGE_EVENT, handleLocationChange);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, [loadData]);
 
   const handleQuickQuestion = (text: string) => {
@@ -268,19 +289,31 @@ export default function DashboardView() {
         </span>
       </div>
 
-      {/* Offline Cached Data Notice */}
-      {isOfflineFallback && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-800 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="material-symbols-outlined text-base text-amber-600">cloud_off</span>
-            <span>Showing cached offline forecast for {weather.district}. Live connection currently unavailable.</span>
+      {/* Offline Cached Data Banner (Airplane Mode & Disconnection Resilience) */}
+      {(isBrowserOffline || isOfflineFallback) && (
+        <div
+          id="offline-status-banner"
+          role="alert"
+          aria-live="polite"
+          className="bg-amber-500/15 border-2 border-amber-500/40 rounded-xl p-3.5 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0 animate-ping"></span>
+            <span className="font-medium text-sm">
+              You are offline. Showing cached data from {formattedIssueTime} IST.
+            </span>
           </div>
-          <button
-            onClick={() => loadData(activeLoc.district)}
-            className="text-[11px] underline font-medium hover:text-amber-950 cursor-pointer"
-          >
-            Retry
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] opacity-80">
+              Airplane mode detected · Serwist cache active
+            </span>
+            <button
+              onClick={() => loadData(activeLoc.district, activeLoc.state)}
+              className="text-xs font-semibold px-2.5 py-1 bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors cursor-pointer"
+            >
+              Retry Connection
+            </button>
+          </div>
         </div>
       )}
 

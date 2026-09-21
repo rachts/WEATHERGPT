@@ -19,6 +19,7 @@ import { isProduction, isDemo } from "../config/environment";
 import { DataProvenance, DataQuality } from "../types/provenance";
 import { DEFAULT_DISTRICT } from "../config/constants";
 import { normalizeImdTimestamp } from "../utils/time";
+import { logger } from "../utils/logger";
 
 export { UnknownDistrictError };
 
@@ -126,10 +127,15 @@ async function fetchImdSynopStations(): Promise<ImdSynopStation[]> {
         signal: AbortSignal.timeout(6000),
       });
       if (!res.ok) {
+        logger.warn(
+          "IMD GeoServer returned error status; seamlessly falling back to Open-Meteo",
+          { status: res.status, statusText: res.statusText }
+        );
         return imdSynopCache ? imdSynopCache.stations : [];
       }
       const data = await res.json();
       if (!data?.features || !Array.isArray(data.features)) {
+        logger.warn("IMD GeoServer returned invalid or empty GeoJSON features");
         return imdSynopCache ? imdSynopCache.stations : [];
       }
 
@@ -163,7 +169,11 @@ async function fetchImdSynopStations(): Promise<ImdSynopStation[]> {
         imdSynopCache = { stations, cachedAt: Date.now() };
       }
       return stations;
-    } catch {
+    } catch (err: unknown) {
+      logger.warn(
+        "IMD GeoServer connection failed or timed out; seamlessly falling back to Open-Meteo",
+        { error: err instanceof Error ? err.message : String(err) }
+      );
       return imdSynopCache ? imdSynopCache.stations : [];
     } finally {
       imdSynopInFlight = null;
@@ -481,46 +491,20 @@ export interface GetDistrictWeatherOptions {
 
 /**
  * Main weather retrieval entry point with multi-tier degradation and canonical location resolution.
- * Accepts either a single configuration options object or canonical positional arguments.
+ * Accepts a single configuration options object: GetDistrictWeatherOptions.
  * If district is unknown: THROWS UnknownDistrictError (UNKNOWN_DISTRICT). Never silently falls back to Raigad!
  */
 export async function getDistrictWeather(
-  districtOrOptions: string | GetDistrictWeatherOptions = DEFAULT_DISTRICT,
-  stateOrOptionsOrForceFresh?: string | boolean | GetDistrictWeatherOptions,
-  forceFreshOrSimulateImd: boolean = false,
-  simulateImdOrNetwork: boolean = false,
-  simulateNetworkFailure: boolean = false
+  options: GetDistrictWeatherOptions | string = {}
 ): Promise<NormalizedWeather> {
-  let district = DEFAULT_DISTRICT;
-  let state: string | undefined = undefined;
-  let forceFresh = false;
-  let simulateImdFailure = false;
-  let simulateNetwork = false;
+  const opts: GetDistrictWeatherOptions =
+    typeof options === "string" ? { district: options } : options;
 
-  if (typeof districtOrOptions === "object" && districtOrOptions !== null) {
-    district = districtOrOptions.district || DEFAULT_DISTRICT;
-    state = districtOrOptions.state;
-    forceFresh = Boolean(districtOrOptions.forceFresh);
-    simulateImdFailure = Boolean(districtOrOptions.simulateImdFailure);
-    simulateNetwork = Boolean(districtOrOptions.simulateNetworkFailure);
-  } else {
-    district = districtOrOptions || DEFAULT_DISTRICT;
-    if (typeof stateOrOptionsOrForceFresh === "object" && stateOrOptionsOrForceFresh !== null) {
-      state = stateOrOptionsOrForceFresh.state;
-      forceFresh = Boolean(stateOrOptionsOrForceFresh.forceFresh);
-      simulateImdFailure = Boolean(stateOrOptionsOrForceFresh.simulateImdFailure);
-      simulateNetwork = Boolean(stateOrOptionsOrForceFresh.simulateNetworkFailure);
-    } else if (typeof stateOrOptionsOrForceFresh === "string") {
-      state = stateOrOptionsOrForceFresh;
-      forceFresh = Boolean(forceFreshOrSimulateImd);
-      simulateImdFailure = Boolean(simulateImdOrNetwork);
-      simulateNetwork = Boolean(simulateNetworkFailure);
-    } else {
-      forceFresh = Boolean(stateOrOptionsOrForceFresh);
-      simulateImdFailure = Boolean(forceFreshOrSimulateImd);
-      simulateNetwork = Boolean(simulateImdOrNetwork);
-    }
-  }
+  const district = opts.district || DEFAULT_DISTRICT;
+  const state = opts.state;
+  const forceFresh = Boolean(opts.forceFresh);
+  const simulateImdFailure = Boolean(opts.simulateImdFailure);
+  const simulateNetwork = Boolean(opts.simulateNetworkFailure);
 
   // Strictly resolve location or throw UnknownDistrictError (UNKNOWN_DISTRICT)
   // SAFETY-CRITICAL TEST 1: Unknown district must never become Raigad!
@@ -589,8 +573,16 @@ export async function getDistrictWeather(
         });
         return liveData;
       }
-    } catch {
+      logger.info(
+        "IMD observation station missing surface parameters; silently engaging Open-Meteo fallback",
+        { district: displayName, districtCode }
+      );
+    } catch (err: unknown) {
       inFlightRequests.delete(normKey);
+      logger.warn(
+        "IMD live fetch failed or timed out; silently falling back to Open-Meteo",
+        { error: err instanceof Error ? err.message : String(err), district: displayName }
+      );
     }
   }
 

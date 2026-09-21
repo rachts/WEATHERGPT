@@ -163,7 +163,8 @@ export async function runJudgeVerificationTests() {
   // ==========================================
   // SECTION 6: Zero-Fabrication & Provenance Attribution (3 Tests)
   // ==========================================
-  const demoWeather = await getDistrictWeather("Raigad", {
+  const demoWeather = await getDistrictWeather({
+    district: "Raigad",
     simulateImdFailure: true,
   });
   // Check that no fabricated numbers are generated

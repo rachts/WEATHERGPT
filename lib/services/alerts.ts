@@ -20,6 +20,7 @@ import {
   ImdNowcastArea,
 } from "./imd-nowcast-parser";
 import { DEFAULT_DISTRICT } from "../config/constants";
+import { dispatchWebPushAlert } from "./web-push";
 
 export type AlertSeverity = "Low" | "Moderate" | "High" | "Severe";
 
@@ -50,7 +51,7 @@ export interface DeliveryReceipt {
   recipient: string; // Masked for PII safety (e.g. +91*****0001)
   channel: "SMS" | "IVR";
   status: "SENT" | "STUBBED" | "FAILED" | "REJECTED";
-  provider: "TWILIO" | "MSG91" | "GENERIC_WEBHOOK" | "STUB";
+  provider: "TWILIO" | "MSG91" | "FAST2SMS" | "GENERIC_WEBHOOK" | "STUB";
   messageId?: string;
   attempts: number;
   error?: string;
@@ -209,7 +210,8 @@ export function isSmsGatewayConfigured(): boolean {
   );
   const hasWebhook = Boolean(process.env.SMS_GATEWAY_URL);
   const hasMsg91 = Boolean(process.env.MSG91_AUTH_KEY);
-  return hasTwilio || hasWebhook || hasMsg91;
+  const hasFast2Sms = Boolean(process.env.FAST2SMS_API_KEY);
+  return hasTwilio || hasWebhook || hasMsg91 || hasFast2Sms;
 }
 
 /**
@@ -362,8 +364,143 @@ export async function dispatchSmsAlert(
   const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
   const twilioFrom = process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_FROM;
   const gatewayUrl = process.env.SMS_GATEWAY_URL;
+  const fast2smsKey = process.env.FAST2SMS_API_KEY;
+  const msg91Key = process.env.MSG91_AUTH_KEY;
 
-  // 1. Twilio live SMS dispatch
+  // 1. Fast2SMS live dispatch (Instant India Route)
+  if (fast2smsKey) {
+    let attempt = 0;
+    let lastError: string | undefined;
+    const indianMobile = sanitized.replace(/^\+91/, "").replace(/\D/g, "");
+
+    while (attempt <= maxRetries) {
+      attempt++;
+      try {
+        const res = await fetch("https://www.fast2sms.com/dev/bulkV2", {
+          method: "POST",
+          headers: {
+            authorization: fast2smsKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            route: "q",
+            message: cleanText,
+            language: "english",
+            flash: 0,
+            numbers: indianMobile,
+          }),
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+
+        if (res.ok) {
+          const data = (await res.json().catch(() => ({}))) as {
+            return?: boolean;
+            request_id?: string;
+            message?: string[];
+          };
+          if (data.return === true || data.request_id) {
+            logger.info("Dispatched live SMS via Fast2SMS", {
+              recipient: maskedPhone,
+              requestId: data.request_id,
+              attempts: attempt,
+            });
+            return {
+              recipient: maskedPhone,
+              channel: "SMS",
+              status: "SENT",
+              provider: "FAST2SMS",
+              messageId: data.request_id,
+              attempts: attempt,
+              timestamp: new Date().toISOString(),
+            };
+          }
+          lastError = Array.isArray(data.message) ? data.message.join(", ") : "Fast2SMS returned error status";
+        } else {
+          const errText = await res.text();
+          lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
+          if (res.status < 500) break;
+        }
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
+      }
+    }
+
+    logger.error("Failed to dispatch live SMS via Fast2SMS", {
+      recipient: maskedPhone,
+      error: lastError,
+      attempts: attempt,
+    });
+    return {
+      recipient: maskedPhone,
+      channel: "SMS",
+      status: "FAILED",
+      provider: "FAST2SMS",
+      attempts: attempt,
+      error: lastError,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 2. Msg91 live dispatch
+  if (msg91Key) {
+    let attempt = 0;
+    let lastError: string | undefined;
+    const indianMobile = sanitized.replace(/^\+91/, "").replace(/\D/g, "");
+
+    while (attempt <= maxRetries) {
+      attempt++;
+      try {
+        const res = await fetch("https://control.msg91.com/api/v5/flow/", {
+          method: "POST",
+          headers: {
+            authkey: msg91Key,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            template_id: process.env.MSG91_TEMPLATE_ID || "weather_alert",
+            recipients: [{ mobiles: "91" + indianMobile, message: cleanText }],
+          }),
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+
+        if (res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { type?: string; message?: string };
+          logger.info("Dispatched live SMS via Msg91", {
+            recipient: maskedPhone,
+            message: data.message,
+            attempts: attempt,
+          });
+          return {
+            recipient: maskedPhone,
+            channel: "SMS",
+            status: "SENT",
+            provider: "MSG91",
+            messageId: data.message,
+            attempts: attempt,
+            timestamp: new Date().toISOString(),
+          };
+        }
+
+        const errText = await res.text();
+        lastError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
+        if (res.status < 500) break;
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
+      }
+    }
+
+    return {
+      recipient: maskedPhone,
+      channel: "SMS",
+      status: "FAILED",
+      provider: "MSG91",
+      attempts: attempt,
+      error: lastError,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // 3. Twilio live SMS dispatch
   if (twilioSid && twilioAuth && twilioFrom) {
     let attempt = 0;
     let lastError: string | undefined;
@@ -797,6 +934,23 @@ export async function routeWarningDisseminationAsync(
   let ivrSent = false;
 
   const validPhones = matchedUserPhones.filter(Boolean).slice(0, 50);
+
+  // Web Push Dissemination for Moderate, High, and Severe Tiers
+  if (warning.severity === "Moderate" || warning.severity === "High" || warning.severity === "Severe") {
+    try {
+      const pushRes = await dispatchWebPushAlert({
+        title: `🚨 IMD Warning: ${warning.district}`,
+        body: warning.warningText,
+        district: warning.district,
+        severity: warning.severity,
+      });
+      if (pushRes.sent > 0) {
+        logs.push(`Dispatched native Web Push notification to ${pushRes.sent} active subscriber devices.`);
+      }
+    } catch (err: unknown) {
+      logs.push(`Web Push dispatch error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
 
   if ((warning.severity === "High" || warning.severity === "Severe") && validPhones.length > 0) {
     const smsDispatches = await Promise.allSettled(
