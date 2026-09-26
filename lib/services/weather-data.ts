@@ -107,6 +107,23 @@ const inFlightRequests = new Map<string, Promise<NormalizedWeather | null>>();
 const openMeteoInFlightRequests = new Map<string, Promise<NormalizedWeather | null>>();
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL for live observations
+const MAX_DISTRICT_CACHE_ENTRIES = 500;
+
+function setDistrictCache(key: string, data: NormalizedWeather) {
+  const now = Date.now();
+  if (districtMemoryCache.size >= MAX_DISTRICT_CACHE_ENTRIES) {
+    for (const [k, v] of districtMemoryCache.entries()) {
+      if (now - v.cachedAt > CACHE_TTL_MS * 2) {
+        districtMemoryCache.delete(k);
+      }
+    }
+    if (districtMemoryCache.size >= MAX_DISTRICT_CACHE_ENTRIES) {
+      const oldestKey = districtMemoryCache.keys().next().value;
+      if (oldestKey) districtMemoryCache.delete(oldestKey);
+    }
+  }
+  districtMemoryCache.set(key, { data, cachedAt: now });
+}
 
 /**
  * Fetches genuine real-time surface observations from the official IMD GeoServer SYNOP layer
@@ -566,10 +583,7 @@ export async function getDistrictWeather(
       inFlightRequests.delete(normKey);
 
       if (liveData) {
-        districtMemoryCache.set(normKey, {
-          data: liveData,
-          cachedAt: Date.now(),
-        });
+        setDistrictCache(normKey, liveData);
         return liveData;
       }
       logger.info(
@@ -604,10 +618,7 @@ export async function getDistrictWeather(
     openMeteoInFlightRequests.delete(normKey);
 
     if (fallback) {
-      districtMemoryCache.set(normKey, {
-        data: fallback,
-        cachedAt: Date.now(),
-      });
+      setDistrictCache(normKey, fallback);
       return fallback;
     }
   } catch {

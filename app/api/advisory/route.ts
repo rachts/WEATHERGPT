@@ -80,7 +80,6 @@ export async function GET(req: NextRequest) {
           requestId: correlationId,
           generatedAt: new Date().toISOString(),
         },
-        ...advisory,
       },
       {
         headers: {

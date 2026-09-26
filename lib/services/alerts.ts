@@ -246,7 +246,7 @@ export function sanitizePhoneNumber(phone: string): string | null {
 export function sendSmsGatewayStub(
   recipientPhone: string,
   verbatimText: string
-): { status: "STUBBED" | "REJECTED"; note: string; receipt: DeliveryReceipt } {
+): { status: "STUBBED" | "REJECTED"; note: string; cleanText?: string; receipt: DeliveryReceipt } {
   const sanitized = sanitizePhoneNumber(recipientPhone);
   if (!sanitized) {
     return {
@@ -274,6 +274,7 @@ export function sendSmsGatewayStub(
   return {
     status: "STUBBED",
     note: "SMS gateway interface stubbed. Set TWILIO_ACCOUNT_SID / SMS_GATEWAY_URL for live dispatch.",
+    cleanText,
     receipt: {
       recipient: maskedPhone,
       channel: "SMS",
@@ -293,7 +294,7 @@ export function sendSmsGatewayStub(
 export function sendIvrGatewayStub(
   recipientPhone: string,
   verbatimText: string
-): { status: "STUBBED" | "REJECTED"; note: string; receipt: DeliveryReceipt } {
+): { status: "STUBBED" | "REJECTED"; note: string; cleanText?: string; receipt: DeliveryReceipt } {
   const sanitized = sanitizePhoneNumber(recipientPhone);
   if (!sanitized) {
     return {
@@ -321,6 +322,7 @@ export function sendIvrGatewayStub(
   return {
     status: "STUBBED",
     note: "IVR voice gateway interface stubbed. Set TWILIO_ACCOUNT_SID / IVR_GATEWAY_URL for live dialer.",
+    cleanText,
     receipt: {
       recipient: maskedPhone,
       channel: "IVR",

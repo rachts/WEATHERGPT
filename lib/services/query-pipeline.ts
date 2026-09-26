@@ -99,7 +99,7 @@ const CRISIS_PATTERNS = [
   /kill myself/i,
   /end my life/i,
   /(?:^|\s)want to die(?:\s|[.,!?]|$)/i,
-  /hopeless/i,
+  /(?:feel(?:ing)?\s+hopeless|i\s+am\s+hopeless|i'm\s+hopeless|life\s+is\s+hopeless|all\s+is\s+hopeless)/i,
   /आत्महत्या/i,
   /जान देना/i,
   /मरना चाहता/i,
