@@ -19,5 +19,21 @@ export async function register() {
         throw error;
       }
     }
+
+    // Startup maintenance: prune expired chat sessions if database is available
+    if (process.env.DATABASE_URL) {
+      try {
+        const { pruneOldChatSessions } = await import("./lib/services/chat-session");
+        pruneOldChatSessions().catch((err) => {
+          logger.warn("Server startup chat session pruning skipped", {
+            error: (err as Error).message,
+          });
+        });
+      } catch (err) {
+        logger.warn("Could not load chat session pruning on boot", {
+          error: (err as Error).message,
+        });
+      }
+    }
   }
 }

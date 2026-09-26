@@ -212,7 +212,6 @@ const WEATHER_CODE_MAP: Record<number, string> = {
   56: "Light freezing drizzle",
   57: "Dense freezing drizzle",
   61: "Slight rain",
-  62: "Moderate rain",
   63: "Moderate rain",
   65: "Heavy rain",
   66: "Light freezing rain",
