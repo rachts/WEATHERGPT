@@ -55,7 +55,7 @@ export function normalizeImdTimestamp(raw: unknown): NormalizedTimestamp {
     const cleanStr = raw.trim().replace(/^['"]|['"]$/g, "");
 
     // Check for DD-MM-YYYY or DD/MM/YYYY with optional time (standard IMD nowcast format in IST)
-    const ddmmyyyyMatch = cleanStr.match(/^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?/);
+    const ddmmyyyyMatch = cleanStr.match(/^(\d{2})[-/](\d{2})[-/](\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
     if (ddmmyyyyMatch) {
       const [, day, month, year, hours = "00", minutes = "00", seconds = "00"] = ddmmyyyyMatch;
       const isoCandidate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+05:30`;

@@ -194,6 +194,7 @@ export function getDeterministicCropAdvisory(
     sourceId: "ICAR_CRIDA_AGROMET_GUIDELINE_V2",
     provider: "OTHER",
     providerName: "ICAR-CRIDA",
+    sourceUrl: "https://icar.org.in",
     product: "ICAR-CRIDA District Agromet Advisory",
     retrievedAt: new Date().toISOString(),
     quality: "OBSERVED",

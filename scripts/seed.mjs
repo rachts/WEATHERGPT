@@ -65,6 +65,7 @@ async function seed() {
         await prisma.alert.create({
           data: {
             id: a.id,
+            alertHash: a.alertHash || `hash_${a.id}`,
             district: a.district,
             severity: a.severity,
             headline: a.headline,

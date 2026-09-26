@@ -48,7 +48,7 @@ export function calculateBearing(
  * Handles null/undefined and boundary wrapping at 359° -> N.
  */
 export function degreesToCardinal(deg: number | null | undefined): string {
-  if (deg === null || deg === undefined || isNaN(deg)) return "Calm";
+  if (deg === null || deg === undefined || isNaN(deg)) return "Variable";
   const normalized = ((deg % 360) + 360) % 360;
   const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
   const index = Math.round(normalized / 22.5) % 16;

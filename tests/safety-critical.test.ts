@@ -103,7 +103,7 @@ async function runSafetyCriticalTests() {
     assert.strictEqual(degreesToCardinal(180), "S");
     assert.strictEqual(degreesToCardinal(270), "W");
     assert.strictEqual(degreesToCardinal(359), "N");
-    assert.strictEqual(degreesToCardinal(null), "Calm");
+    assert.strictEqual(degreesToCardinal(null), "Variable");
     console.log("[PASS] Test 5: Wind direction cardinal calculation is deterministic from provider degrees.");
     passed++;
   } catch (err: any) {

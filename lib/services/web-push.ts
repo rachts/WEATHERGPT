@@ -19,24 +19,34 @@ export interface PushSubscriptionPayload {
 const subscriptionsMap = new Map<string, PushSubscriptionPayload>();
 
 // Configure Web Push VAPID credentials
-const DEFAULT_PUBLIC_VAPID = "BH0RhtWZYoJSvfVQJafuit9pYIh4XaJYz5_W760Tk9hyZVzNKhJhUUfSEsx4fep_03G-lcmyGX-o97ZjVK1EyhU";
-const DEFAULT_PRIVATE_VAPID = "DVasBXBq5GF71-JKJ6owDPr1BlwHWdR4mn_nITTLg2M";
 const DEFAULT_VAPID_SUBJECT = "mailto:weathergpt-alerts@nic.in";
+let isVapidConfigured = false;
+let vapidWarningLogged = false;
 
-function ensureVapidConfigured() {
-  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || DEFAULT_PUBLIC_VAPID;
-  const priv = process.env.VAPID_PRIVATE_KEY || DEFAULT_PRIVATE_VAPID;
+function ensureVapidConfigured(): boolean {
+  if (isVapidConfigured) return true;
+
+  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
   const sub = process.env.VAPID_SUBJECT || DEFAULT_VAPID_SUBJECT;
+
+  if (!pub || !priv) {
+    if (!vapidWarningLogged) {
+      logger.warn("Web Push disabled: NEXT_PUBLIC_VAPID_PUBLIC_KEY or VAPID_PRIVATE_KEY is missing.");
+      vapidWarningLogged = true;
+    }
+    return false;
+  }
 
   try {
     webpush.setVapidDetails(sub, pub, priv);
+    isVapidConfigured = true;
+    return true;
   } catch (err) {
     logger.warn("Failed to set VAPID details for web-push", { error: (err as Error).message });
+    return false;
   }
 }
-
-// Initialize on load
-ensureVapidConfigured();
 
 /**
  * Register or update a browser push subscription
@@ -79,7 +89,9 @@ export async function dispatchWebPushAlert(alert: {
   severity?: string;
   url?: string;
 }): Promise<{ total: number; sent: number; failed: number }> {
-  ensureVapidConfigured();
+  if (!ensureVapidConfigured()) {
+    return { total: 0, sent: 0, failed: 0 };
+  }
 
   const subscriptions = getPushSubscriptions();
   if (subscriptions.length === 0) {

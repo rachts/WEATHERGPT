@@ -82,7 +82,7 @@ const serwist = new Serwist({
 serwist.addEventListeners();
 
 // Native Web Push Notification Listeners
-self.addEventListener("push", (event: any) => {
+self.addEventListener("push", (event: PushEvent) => {
   if (!event.data) return;
   try {
     const data = event.data.json();
@@ -109,14 +109,14 @@ self.addEventListener("push", (event: any) => {
   }
 });
 
-self.addEventListener("notificationclick", (event: any) => {
+self.addEventListener("notificationclick", (event: NotificationEvent) => {
   event.notification.close();
   const urlToOpen = event.notification.data?.url || "/alerts";
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList: any) => {
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url.includes(urlToOpen) && "focus" in client) {
-          return client.focus();
+        if ("url" in client && (client as WindowClient).url.includes(urlToOpen) && "focus" in client) {
+          return (client as WindowClient).focus();
         }
       }
       if (self.clients.openWindow) {

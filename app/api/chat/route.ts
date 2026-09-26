@@ -309,18 +309,17 @@ export async function POST(req: NextRequest) {
             intent: extracted.intent,
           });
         },
+        onError: ({ error }) => {
+          logger.warn("LLM streaming error intercepted", {
+            correlationId,
+            error: (error as Error).message,
+          });
+        },
       });
 
       return result.toUIMessageStreamResponse({
         headers: {
           "X-Session-Id": activeSessionId,
-        },
-        onError: (err) => {
-          logger.warn("LLM streaming error intercepted", {
-            correlationId,
-            error: (err as Error).message,
-          });
-          return "Weather briefing service is operating with degraded live AI. Factual meteorological readings remain operational.";
         },
       });
     }

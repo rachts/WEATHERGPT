@@ -1227,9 +1227,8 @@ export async function injectJudgeSevereAlert(
   }
 
   // 3. Trigger multi-channel dissemination logs (SMS + IVR + Web Push)
-  const dissemination = await routeWarningDisseminationAsync(mockAlert, [
-    "+919876543210",
-  ]);
+  const phoneRecipients = process.env.JUDGE_TEST_PHONE ? [process.env.JUDGE_TEST_PHONE] : [];
+  const dissemination = await routeWarningDisseminationAsync(mockAlert, phoneRecipients);
 
   console.log(
     `\n🚨 ============================================================\n` +

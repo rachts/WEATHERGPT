@@ -2,9 +2,6 @@
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  experimental: {
-    instrumentationHook: true,
-  },
   async rewrites() {
     return [
       // API Versioning: /api/v1/* rewrites to /api/* while keeping original routes intact

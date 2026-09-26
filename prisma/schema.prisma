@@ -22,15 +22,15 @@ model User {
 }
 
 model SavedLocation {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  district   String   @default("Raigad")
-  state      String   @default("Maharashtra")
-  latitude   Float    @default(18.6418)
-  longitude  Float    @default(72.8722)
-  isPrimary  Boolean  @default(true)
-  createdAt  DateTime @default(now())
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  district  String   @default("Raigad")
+  state     String   @default("Maharashtra")
+  latitude  Float    @default(18.6418)
+  longitude Float    @default(72.8722)
+  isPrimary Boolean  @default(true)
+  createdAt DateTime @default(now())
 
   @@index([userId, isPrimary])
 }
@@ -53,11 +53,11 @@ model ChatMessage {
   id            String      @id @default(uuid())
   sessionId     String
   session       ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  role          String      // "user" | "assistant"
-  content       String      // plain-language text
-  intent        String?     // current_weather, rainfall_forecast, warning_status, crop_advisory, seven_day_outlook, safety_crisis
-  dataCard      Json?       // temp, humidity, wind, rainfall, advisory rules
-  sourceProduct String?     // e.g. "IMD Nowcast (Mumbai Radar / Colaba S-band)"
+  role          String // "user" | "assistant"
+  content       String // plain-language text
+  intent        String? // current_weather, rainfall_forecast, warning_status, crop_advisory, seven_day_outlook, safety_crisis
+  dataCard      Json? // temp, humidity, wind, rainfall, advisory rules
+  sourceProduct String? // e.g. "IMD Nowcast (Mumbai Radar / Colaba S-band)"
   issueTime     DateTime?
   createdAt     DateTime    @default(now())
 
@@ -68,10 +68,10 @@ model ForecastCache {
   id            String   @id @default(uuid())
   district      String   @default("Raigad")
   state         String   @default("Maharashtra")
-  sourceProduct String   // "data.gov.in — IMD Daily District Forecast" or "Open-Meteo Fallback"
+  sourceProduct String // "data.gov.in — IMD Daily District Forecast" or "Open-Meteo Fallback"
   issueTime     DateTime
   validUntil    DateTime
-  payload       Json     // full normalized forecast schema
+  payload       Json // full normalized forecast schema
   fetchedAt     DateTime @default(now())
 
   @@index([district, issueTime])
@@ -79,19 +79,19 @@ model ForecastCache {
 
 model Alert {
   id                 String   @id @default(uuid())
-  alertHash          String?  @unique
+  alertHash          String   @unique
   sourceId           String?
   districtCode       String?
   district           String
   state              String?
-  severity           String   // "Low" | "Moderate" | "High" | "Severe"
-  officialSeverity   String?  // "Red" | "Orange" | "Yellow" | "Green"
+  severity           String // "Low" | "Moderate" | "High" | "Severe"
+  officialSeverity   String? // "Red" | "Orange" | "Yellow" | "Green"
   eventType          String?
   headline           String
-  warningText        String   // Display warning text
-  rawBulletin        String?  // Verbatim untouched text
-  normalizedBulletin String?  // Cleaned / normalized summary
-  sourceProduct      String   // e.g. "IMD Mausam District Nowcast Portal (MoES)"
+  warningText        String // Display warning text
+  rawBulletin        String? // Verbatim untouched text
+  normalizedBulletin String? // Cleaned / normalized summary
+  sourceProduct      String // e.g. "IMD Mausam District Nowcast Portal (MoES)"
   sourceUrl          String?
   issueTime          DateTime
   validFrom          DateTime
@@ -105,4 +105,3 @@ model Alert {
   @@index([district, validTo])
   @@index([validFrom, validTo])
 }
-

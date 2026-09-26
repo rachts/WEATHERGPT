@@ -16,8 +16,8 @@ const testCases: Array<{ deg: number | null | undefined; expected: string | null
   { deg: 135, expected: "SE" },
   { deg: 225, expected: "SW" },
   { deg: 315, expected: "NW" },
-  { deg: null, expected: "Calm" },
-  { deg: undefined, expected: "Calm" },
+  { deg: null, expected: "Variable" },
+  { deg: undefined, expected: "Variable" },
 ];
 
 for (const tc of testCases) {

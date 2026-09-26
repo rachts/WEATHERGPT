@@ -73,8 +73,6 @@ export async function GET(req: NextRequest) {
           provenance: [data.provenance],
           generatedAt: new Date().toISOString(),
         },
-        // Spread data at root for seamless backward-compatibility with UI components
-        ...data,
       },
       {
         headers: {
