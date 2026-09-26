@@ -13,7 +13,7 @@ export function getLanguageModel() {
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (geminiKey && geminiKey.trim()) {
     const google = createGoogleGenerativeAI({ apiKey: geminiKey.trim() });
-    const modelName = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+    const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
     return google(modelName);
   }
 
