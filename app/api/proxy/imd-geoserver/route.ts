@@ -3,19 +3,20 @@
 
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/utils/logger";
+import { cacheGet, cacheSet } from "@/lib/utils/cache";
+
+export const dynamic = "force-dynamic";
 
 const IMD_GEOSERVER_URL =
   "https://reactjs.imd.gov.in/geoserver/imd/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=imd:synop_data_layer&outputFormat=application/json";
 
-let proxyCache: { data: any; cachedAt: number } | null = null;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_KEY = "imd:geoserver:synop";
+const CACHE_TTL_SECONDS = 300;
 
 export async function GET() {
-  const now = Date.now();
-
-  // Return fresh in-memory cache if available
-  if (proxyCache && now - proxyCache.cachedAt < CACHE_TTL_MS) {
-    return NextResponse.json(proxyCache.data, {
+  const cached = await cacheGet<any>(CACHE_KEY);
+  if (cached) {
+    return NextResponse.json(cached, {
       headers: {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
         "X-Cache-Status": "HIT",
@@ -30,7 +31,6 @@ export async function GET() {
         Accept: "application/json",
       },
       signal: AbortSignal.timeout(6000),
-      next: { revalidate: 300 },
     });
 
     if (!res.ok) {
@@ -38,11 +38,6 @@ export async function GET() {
         "IMD GeoServer returned non-200 status code",
         { status: res.status, statusText: res.statusText }
       );
-      if (proxyCache) {
-        return NextResponse.json(proxyCache.data, {
-          headers: { "X-Cache-Status": "STALE_FALLBACK" },
-        });
-      }
       return NextResponse.json(
         { ok: false, error: `IMD_GEOSERVER_HTTP_${res.status}`, features: [] },
         { status: 502 }
@@ -51,18 +46,12 @@ export async function GET() {
 
     const data = await res.json();
     if (data?.features && Array.isArray(data.features)) {
-      proxyCache = { data, cachedAt: now };
+      await cacheSet(CACHE_KEY, data, CACHE_TTL_SECONDS);
       return NextResponse.json(data, {
         headers: {
           "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
           "X-Cache-Status": "MISS",
         },
-      });
-    }
-
-    if (proxyCache) {
-      return NextResponse.json(proxyCache.data, {
-        headers: { "X-Cache-Status": "STALE_FALLBACK" },
       });
     }
 
@@ -75,12 +64,6 @@ export async function GET() {
       "IMD GeoServer connection error or timeout",
       { error: err instanceof Error ? err.message : String(err) }
     );
-
-    if (proxyCache) {
-      return NextResponse.json(proxyCache.data, {
-        headers: { "X-Cache-Status": "STALE_FALLBACK" },
-      });
-    }
 
     return NextResponse.json(
       {

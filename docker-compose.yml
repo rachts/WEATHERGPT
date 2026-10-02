@@ -1,4 +1,17 @@
 services:
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    container_name: weathergpt-migrate
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-weathergpt-demo}@db:5432/weathergpt?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+
   app:
     build:
       context: .
@@ -10,13 +23,18 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/weathergpt?schema=public
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-weathergpt-demo}@db:5432/weathergpt?schema=public
+      - ALERT_INGESTION_TOKEN=${ALERT_INGESTION_TOKEN:-}
       - UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL:-}
       - UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN:-}
-      - WEATHERGPT_MODE=production
+      - WEATHERGPT_MODE=${WEATHERGPT_MODE:-demo}
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      seed:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
@@ -30,10 +48,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-weathergpt-demo}
       POSTGRES_DB: weathergpt
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -41,6 +57,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: seeder
+    container_name: weathergpt-seed
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-weathergpt-demo}@db:5432/weathergpt?schema=public
+      WEATHERGPT_MODE: ${WEATHERGPT_MODE:-demo}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   pgdata:

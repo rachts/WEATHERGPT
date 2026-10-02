@@ -31,6 +31,20 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Build Next.js application (standalone bundle)
 RUN npm run build
 
+# A small migration image keeps the production runner lean while allowing
+# Compose/Kubernetes jobs to apply the checked-in Prisma migrations.
+FROM deps AS migrator
+WORKDIR /app
+ENV NODE_ENV=production
+CMD ["npx", "prisma", "migrate", "deploy"]
+
+FROM deps AS seeder
+WORKDIR /app
+COPY scripts ./scripts
+COPY lib/data ./lib/data
+ENV NODE_ENV=production
+CMD ["npm", "run", "seed"]
+
 # ------------------------------------------------------------------------------
 # Stage 4: Production Runner
 # ------------------------------------------------------------------------------
@@ -50,6 +64,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod 0555 ./docker-entrypoint.sh
 
 # Container Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
@@ -59,4 +75,5 @@ USER nextjs
 
 EXPOSE 3000
 
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "server.js"]

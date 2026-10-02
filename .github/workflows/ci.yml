@@ -51,5 +51,31 @@ jobs:
           ALERT_INGESTION_TOKEN: ${{ secrets.ALERT_INGESTION_TOKEN || 'weathergpt-ci-test-token-min-16-chars' }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: Start production server
+        run: |
+          NODE_ENV=production \
+          WEATHERGPT_MODE=demo \
+          NEXT_PUBLIC_APP_URL=http://127.0.0.1:3000 \
+          ALERT_INGESTION_TOKEN=weathergpt-ci-test-token-min-16-chars \
+          npm start > "$RUNNER_TEMP/weathergpt-next.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/weathergpt-next.pid"
+
+      - name: Smoke test production endpoints
+        run: |
+          trap 'kill "$(cat "$RUNNER_TEMP/weathergpt-next.pid")" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/api/ready > /dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              cat "$RUNNER_TEMP/weathergpt-next.log"
+              exit 1
+            fi
+            sleep 2
+          done
+          curl --fail --silent --show-error http://127.0.0.1:3000/api/health > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:3000/api/ready > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:3000/sw.js | grep -qi serwist
+
       - name: Verify Docker Container Build
         run: docker build -t weathergpt:ci .

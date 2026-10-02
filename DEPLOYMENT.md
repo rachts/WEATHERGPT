@@ -57,6 +57,8 @@ Execute production schema migrations without interactive prompts:
 npx prisma migrate deploy
 ```
 
+For Vercel, set the project Build Command to `npm run vercel-build`; it runs `prisma migrate deploy` before `next build` and requires `DATABASE_URL` at build time.
+
 ### 3.3 Verify Schema Indexes
 The following indexes are applied automatically:
 - `Alert(alertHash)`: Unique deduplication constraint.
@@ -83,7 +85,7 @@ docker run -d \
 ```
 
 ### 4.2 Multi-Container Deployment via Docker Compose
-For turnkey deployments with PostgreSQL and Redis:
+For a local or single-host stack with PostgreSQL:
 ```bash
 # Start all services with automated health checks
 docker-compose up -d --build
@@ -91,6 +93,12 @@ docker-compose up -d --build
 # View logs across services
 docker-compose logs -f app
 ```
+
+The checked-in Compose file starts `db`, one-shot `migrate` and `seed` jobs, then `app`. The seed is skipped when `WEATHERGPT_MODE=production`; the default `demo` mode gives judges a repeatable Raigad warning banner without exposing PostgreSQL on the host. Redis remains optional through Upstash environment variables.
+
+For a real deployment, set `WEATHERGPT_MODE=production`, `POSTGRES_PASSWORD`, and a generated `ALERT_INGESTION_TOKEN` before launch. Compose still runs migrations, but never seeds demo data in production mode.
+
+When `WEATHERGPT_MODE=demo` and no token is provided, the container entrypoint generates an ephemeral 32-byte token and prints a warning. This zero-setup convenience is intentionally unavailable in production mode, where the container exits until a persistent secret is supplied.
 
 ---
 
@@ -206,4 +214,9 @@ curl -N -H "Accept: text/event-stream" "https://your-domain.com/api/realtime?dis
 
 # 4. Verify weather data provenance
 curl -s "https://your-domain.com/api/weather?district=Raigad" | jq .provenance
+
+# 5. Verify the public PWA service worker asset
+curl -fsSI https://your-domain.com/sw.js
 ```
+
+The repository CI workflow performs the same build/start smoke checks against a local production server for `/api/health`, `/api/ready`, and `/sw.js`.

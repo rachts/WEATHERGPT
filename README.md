@@ -27,6 +27,8 @@
 
   <p>
     <a href="DOCS/JUDGE_PACK.md"><b>⚖️ SIH Judge Pack & Script</b></a> ·
+    <a href="DEMO.md"><b>🎬 Demo Runbook</b></a> ·
+    <a href="DEPLOYMENT.md"><b>🚀 Deployment Runbook</b></a> ·
     <a href="#screenshots">Screenshots</a> ·
     <a href="#features">Features</a> ·
     <a href="#why-weathergpt">vs Others</a> ·
@@ -50,6 +52,17 @@
 </div>
 
 <br/>
+
+### Capability summary
+
+| Surface | What is ready to demonstrate |
+|---|---|
+| **Kisan dashboard** | District weather telemetry, provenance, nowcast, alerts, and deterministic crop guidance |
+| **Conversational weather** | Text and browser voice input in English, Hindi, and Tamil with cited responses and read-aloud |
+| **Earth observation** | TrueColor satellite, INSAT products, synoptic context, and Doppler radar views |
+| **Resilience & safety** | Offline-ready PWA shell, explicit degraded states, `/api/health`, `/api/ready`, `/sw.js`, and Tele MANAS interception |
+
+Start with the [Demo Runbook](DEMO.md), or use the [Deployment Runbook](DEPLOYMENT.md) for production and container operations.
 
 <div align="center">
   <img src="./public/screenshots/02_home_dashboard_desktop.png" alt="WeatherGPT Kisan Dashboard displaying real-time Raigad district weather telemetry, temperature 30°C, humidity 81%, IMD Alibag station observation, and ICAR-CRIDA deterministic agronomic advisory banner" width="100%"/>
@@ -318,10 +331,10 @@ npm install
 
 ### 2. Configure Environment
 
-Copy `.env.example` to `.env.local`:
+Create `.env.local` (the repository does not require a checked-in environment template):
 
 ```bash
-cp .env.example .env.local
+touch .env.local
 ```
 
 ```env
@@ -342,15 +355,18 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### 3. Database Seeding & Live Demo Refresh
 
-Seed the local database with district geometries and agromet bulletins, or refresh live IMD telemetry:
+Generate the Prisma client and optionally refresh live IMD telemetry for a presentation:
 
 ```bash
-# Generate Prisma client and seed baseline bulletins
+# Generate Prisma client
 npm run prisma:generate
-npm run seed
 
 # Refresh live telemetry for presentation readiness
 npm run refresh:demo
+
+# Optional: seed the repeatable demo warning when PostgreSQL is available
+npm run prisma:migrate:deploy
+npm run seed
 ```
 
 ### 4. Run Development Server
@@ -378,7 +394,7 @@ npm start
 
 ### 6. Run with Docker (Zero-Config Container Stack)
 
-WeatherGPT ships with a multi-stage [Dockerfile](Dockerfile) and [docker-compose.yml](docker-compose.yml) orchestrating Next.js 14, PostgreSQL 16, and Redis 7 with integrated health checks:
+WeatherGPT ships with a multi-stage [Dockerfile](Dockerfile) and [docker-compose.yml](docker-compose.yml) orchestrating Next.js 14 and PostgreSQL 16 with an integrated app health check:
 
 ```bash
 # Build and launch all services in detached mode

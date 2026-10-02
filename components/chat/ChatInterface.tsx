@@ -101,6 +101,7 @@ export default function ChatInterface() {
   const [judgeMode, setJudgeMode] = useState(false);
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -115,6 +116,7 @@ export default function ChatInterface() {
     }),
     onError: (err) => {
       console.error("Chat error:", err);
+      setChatError("The weather AI provider is temporarily unavailable. Please try again.");
     },
   });
 
@@ -220,6 +222,7 @@ export default function ChatInterface() {
     e.preventDefault();
     const query = input.trim();
     if (!query || isLoading) return;
+    setChatError(null);
     sendMessage({ text: query });
     setInput("");
   };
@@ -379,6 +382,16 @@ export default function ChatInterface() {
 
       {/* Message Stream Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        {chatError && (
+          <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <div className="flex items-center justify-between gap-3">
+              <span>{chatError}</span>
+              <button type="button" onClick={() => setChatError(null)} className="text-xs font-medium underline underline-offset-2">
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto space-y-4">
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-2xl text-primary">

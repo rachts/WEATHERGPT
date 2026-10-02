@@ -2,6 +2,10 @@
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
+  // Required by Next.js 14 for instrumentation.ts to execute at server boot.
+  experimental: {
+    instrumentationHook: true,
+  },
   async rewrites() {
     return [
       // API Versioning: /api/v1/* rewrites to /api/* while keeping original routes intact
@@ -12,6 +16,10 @@ const nextConfig = {
     ];
   },
   async headers() {
+    const scriptSource = process.env.NODE_ENV === "production"
+      ? "script-src 'self' 'unsafe-inline'"
+      : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:";
+
     return [
       {
         source: "/(.*)",
@@ -36,12 +44,11 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              // Allow scripts from self, inline for Next.js hydration, and eval for React devtools/sourcemaps
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
+              scriptSource,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "img-src 'self' data: blob: https://mausam.imd.gov.in https://reactjs.imd.gov.in https://internal.imd.gov.in https://satellite.imd.gov.in https://gibs.earthdata.nasa.gov https://*.tile.openstreetmap.org https://tilecache.rainviewer.com https://*.basemaps.cartocdn.com",
-              "connect-src 'self' https://reactjs.imd.gov.in https://internal.imd.gov.in https://satellite.imd.gov.in https://api.open-meteo.com https://gibs.earthdata.nasa.gov https://*.tile.openstreetmap.org https://demotiles.maplibre.org https://generativelanguage.googleapis.com https://api.rainviewer.com https://tilecache.rainviewer.com https://*.basemaps.cartocdn.com",
+              "img-src 'self' data: blob: https://mausam.imd.gov.in https://reactjs.imd.gov.in https://internal.imd.gov.in https://satellite.imd.gov.in https://gibs.earthdata.nasa.gov https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://tilecache.rainviewer.com",
+              "connect-src 'self' https://reactjs.imd.gov.in https://internal.imd.gov.in https://satellite.imd.gov.in https://api.open-meteo.com https://gibs.earthdata.nasa.gov https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://demotiles.maplibre.org https://generativelanguage.googleapis.com https://api.rainviewer.com https://tilecache.rainviewer.com",
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
               "object-src 'none'",

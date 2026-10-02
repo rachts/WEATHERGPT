@@ -1,14 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { I18nProvider } from "@/lib/i18n/context";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "WeatherGPT — IMD Kisan Weather",
@@ -50,7 +43,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`${inter.className} min-h-screen bg-bg text-text-primary flex flex-col antialiased`}>
+      <body className="min-h-screen bg-bg text-text-primary flex flex-col antialiased">
         <I18nProvider>
           <Navigation>{children}</Navigation>
         </I18nProvider>

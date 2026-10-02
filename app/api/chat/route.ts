@@ -27,13 +27,15 @@ export const dynamic = "force-dynamic";
 
 const chatMessageSchema = z.object({
   role: z.enum(["user", "assistant", "system"]).default("user"),
-  content: z.unknown().transform((val) => {
-    if (typeof val === "string") return val;
-    if (val && typeof val === "object" && "text" in val && typeof (val as { text: unknown }).text === "string") {
-      return (val as { text: string }).text;
-    }
-    return String(val ?? "");
-  }),
+  content: z.unknown().optional(),
+  parts: z.array(z.object({ type: z.string(), text: z.string().optional() })).optional(),
+}).transform(({ role, content, parts }) => {
+  if (typeof content === "string") return { role, content };
+  if (content && typeof content === "object" && "text" in content && typeof (content as { text: unknown }).text === "string") {
+    return { role, content: (content as { text: string }).text };
+  }
+  const text = parts?.filter((part) => part.type === "text" && part.text).map((part) => part.text).join("") || "";
+  return { role, content: text };
 });
 
 const chatRequestSchema = z.object({
@@ -217,6 +219,12 @@ export async function POST(req: NextRequest) {
 
     const latestUserMessage = messages[messages.length - 1];
     const userQuery = latestUserMessage?.content || "";
+    if (!userQuery.trim()) {
+      return NextResponse.json(
+        { error: "A non-empty text message is required.", requestId: correlationId },
+        { status: 400 }
+      );
+    }
 
     // ------------------------------------------------------------------------
     // STAGE 1: Detect language (Per message, not per session)
@@ -320,6 +328,13 @@ export async function POST(req: NextRequest) {
       return result.toUIMessageStreamResponse({
         headers: {
           "X-Session-Id": activeSessionId,
+        },
+        onError: (error) => {
+          logger.warn("LLM UI stream error sent to client", {
+            correlationId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return "The weather AI provider is temporarily unavailable. Please try again, or remove the provider key to use offline demo mode.";
         },
       });
     }

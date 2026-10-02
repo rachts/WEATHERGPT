@@ -22,6 +22,7 @@ export default function SatelliteView() {
   const [showConvectiveRadius, setShowConvectiveRadius] = useState(true);
   const [activeLocation, setActiveLocation] = useState(() => getActiveLocation());
   const [synopticImpact, setSynopticImpact] = useState<DistrictSynopticImpact | null>(null);
+  const [mapError, setMapError] = useState(false);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -97,6 +98,12 @@ export default function SatelliteView() {
           style: {
             version: 8,
             sources: {
+              "osm-basemap": {
+                type: "raster",
+                tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+                tileSize: 256,
+                attribution: "© OpenStreetMap contributors",
+              },
               "nasa-gibs-satellite": {
                 type: "raster",
                 tiles: [
@@ -107,14 +114,14 @@ export default function SatelliteView() {
                 maxzoom: 8,
                 attribution: "© NASA EOSDIS GIBS | VIIRS Earth Observation",
               },
-              "carto-labels": {
-                type: "raster",
-                tiles: ["https://a.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png"],
-                tileSize: 256,
-                attribution: "© OpenStreetMap contributors, CartoDB",
-              },
             },
             layers: [
+              {
+                id: "osm-basemap-layer",
+                type: "raster",
+                source: "osm-basemap",
+                paint: { "raster-opacity": 1 },
+              },
               {
                 id: "nasa-satellite-layer",
                 type: "raster",
@@ -123,18 +130,15 @@ export default function SatelliteView() {
                   "raster-opacity": 0.95,
                 },
               },
-              {
-                id: "carto-labels-layer",
-                type: "raster",
-                source: "carto-labels",
-                paint: {
-                  "raster-opacity": 0.85,
-                },
-              },
             ],
           },
           center: [userLon, userLat],
           zoom: 6.8,
+        });
+
+        map.on("error", (event) => {
+          console.warn("Keyless map tile warning:", event.error?.message || "tile provider unavailable");
+          setMapError(true);
         });
 
         // Add User Location Marker
@@ -196,6 +200,7 @@ export default function SatelliteView() {
         };
       } catch (err) {
         console.error("MapLibre Satellite init note:", err);
+        setMapError(true);
       }
     }
 
@@ -264,6 +269,12 @@ export default function SatelliteView() {
           <span className="text-emerald-700 font-medium">INSAT-3D & EARTH OBSERVATION LIVE</span>
         </div>
       </div>
+
+      {mapError && (
+        <div role="status" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          Map imagery is temporarily unavailable. This view uses keyless OpenStreetMap and NASA open data; no API key is required.
+        </div>
+      )}
 
       {/* Submode Switcher */}
       <div className="flex items-center space-x-2 p-1 bg-surface border border-border rounded-xl text-xs w-fit overflow-x-auto">

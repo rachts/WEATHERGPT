@@ -531,9 +531,11 @@ export default function DashboardView() {
 
       {/* Ask Input Bar (Redirects to Chat) */}
       <div className="pt-2">
-        <div
+        <button
+          type="button"
+          aria-label={t.dashboard?.askPlaceholder || "Ask WeatherGPT a question"}
           onClick={() => router.push("/chat")}
-          className="bg-surface border border-border hover:border-primary cursor-pointer p-3.5 rounded-xl flex items-center justify-between text-sm text-text-secondary transition-colors"
+          className="w-full text-left bg-surface border border-border hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer p-3.5 rounded-xl flex items-center justify-between text-sm text-text-secondary transition-colors"
         >
           <div className="flex items-center space-x-2.5">
             <span className="material-symbols-outlined text-[20px] text-text-secondary">
@@ -545,7 +547,7 @@ export default function DashboardView() {
             <span>{t.dashboard?.askBtn || "Ask"}</span>
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
           </span>
-        </div>
+        </button>
       </div>
     </div>
   );
