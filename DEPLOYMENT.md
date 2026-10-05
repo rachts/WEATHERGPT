@@ -57,7 +57,13 @@ Execute production schema migrations without interactive prompts:
 npx prisma migrate deploy
 ```
 
-For Vercel, set the project Build Command to `npm run vercel-build`; it runs `prisma migrate deploy` before `next build` and requires `DATABASE_URL` at build time.
+For Vercel, use the project Build Command `npm run vercel-build`. It deliberately does not contact PostgreSQL during the build, because Vercel compilation should remain independent of database availability. Run migrations separately from a network that can reach Supabase:
+
+```bash
+DATABASE_URL="<Supabase session-pooler-or-direct-url>" npm run prisma:migrate:deploy
+```
+
+Use the exact connection string from Supabase → **Connect**. The shared Session Pooler is generally the safest choice for IPv4-only environments. Confirm migrations complete before promoting the deployment.
 
 ### 3.3 Verify Schema Indexes
 The following indexes are applied automatically:
